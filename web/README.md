@@ -44,6 +44,12 @@ The application consists of three primary domains, each optimized for specific p
 We enforce code quality early in the development lifecycle ("Shift Left") to prevent technical debt and runtime errors.
 
 - **Formatting & Style:** **Prettier** (Auto-formatting) + **EditorConfig**.
+- **CSS Assurance:** **Tailwind CSS**.
+  - **Sorting:** `prettier-plugin-tailwindcss` enforces consistent class ordering automatically on save.
+  - **Linting:** `eslint-plugin-tailwindcss` (currently v4 Beta).
+    - Detects conflicting classes (e.g., declaring `p-4` and `p-6` on the same element).
+    - Validates utility names against the Tailwind configuration to catch typos.
+    - **Strategy:** We rely on strict compile-time linting to prevent styling collisions rather than incurring the runtime performance cost of `tailwind-merge` or `cn` utilities.
 - **Static Analysis:** **ESLint** (React/Next.js best practices, accessibility rules).
 - **Type Safety:** **TypeScript** (Strict mode enabled, no `any`).
 - **Pre-commit Hooks:** **Husky** + **lint-staged**.
