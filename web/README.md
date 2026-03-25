@@ -208,13 +208,26 @@ gitGraph
     merge releases/v2.0 id: "Merge-v2-to-Dev"
 ```
 
-## x. Performance & Observability
+## 7. Performance & Observability
 
 ### A. Optimization
 
-#### i. Lazy loading
+#### 1. Lazy Loading & Resource Prioritization
 
-#### ii. Tree shaking
+Beyond component-level lazy loading (`next/dynamic`), we optimize resource delivery to improve Core Web Vitals (LCP/TBT).
+
+- **Images:** Strict usage of **`next/image`**.
+  - Automatically lazy-loaded.
+  - Requires explicit `width`/`height` to prevent Layout Shift (CLS).
+  - Use `priority` only for the LCP element (e.g., hero image).
+- **Third-Party Scripts:** Use **`next/script`** to defer non-critical JS.
+  - `strategy="lazyOnload"` for lower priority scripts (e.g., Chat widgets, Feedback forms).
+  - `strategy="afterInteractive"` for tracking tags (Analytics).
+- **Lazy Functions (Dynamic Imports):**
+  - Don't import heavy utility libraries (like `jspdf`, `xlsx`, or heavy crypto) at the top level if they are mainly used in event handlers.
+  - **Pattern:** `const { generatePDF } = await import('@utils/pdf');` inside the `onClick` handler.
+
+#### 2. Tree shaking
 
 Enforce Modular import, avoid "Barrel Files" for large libraries. A "barrel file" is an index.ts that re-exports everything(Example shown as below), which can _de-opt_ tree shaking in some scenarios, causing the bundler to process files you aren't using.
 
@@ -240,6 +253,26 @@ const nextConfig = {
 
 This forces import { Home } from 'lucide-react' to become import Home from 'lucide-react/dist/esm/icons/home', ensuring you only bundle the one icon.
 
-#### iii. Code splitting
+#### 3. Code Splitting
 
-Route-based and Component-based will be handled by Next.js automatically. More granularly, split heavy components using `next/dynamic`(lazy loading).
+Next.js handles most code splitting automatically (route-based), but manual intervention is required for optimization at a granular level.
+
+- **Route Segments:** Each `page.tsx`, `layout.tsx`, and `loading.tsx` is automatically split.
+- **Client Component Islands:** Moving interaction to leaf nodes (button, input) keeps the parent Server Component payload small, effectively splitting "interactive" code from "static" HTML generation.
+- **Granular Splitting:** Use `import('package')` for heavy logic that isn't needed immediately (e.g., parsing a complex file format only after file upload).
+
+### B. Monitoring
+
+#### 1. Performance & Real User Monitoring (RUM)
+
+Synthetic tests (Lighthouse) are not enough. We monitor actual user experiences in production.
+
+- **Vercel Speed Insights (or Google CrUX):** Tracks Core Web Vitals (LCP, INP, CLS) across different devices and regions in real-time.
+- **Route Change Profiling:** Identifying slow page transitions or navigation events that degrade the user journey.
+
+#### 2. Error Tracking & Observability
+
+- **Sentry:** Captures unhandled exceptions on both Client and Server.
+  - **Source Maps:** Uploaded during build to de-obfuscate production stack traces.
+  - **Release Health:** Tracks crash-free sessions percentage per deployment.
+- **Session Replay (LogRocket/Sentry):** Visual reproduction of user interactions leading up to an error, essential for debugging "Chamber" chat interactions.
