@@ -51,7 +51,7 @@ graph TD
 
 ### Rendering Approach
 
-SSR with (Re)hydration. HTML, CSS, and js are loaded from server when neccessary with React Server Components and Next.js.
+Client Components with Server Actions (Streaming) and Server Components (RSC) with Suspense Streaming based on features.
 
 ### Data Model
 
