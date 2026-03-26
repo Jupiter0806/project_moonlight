@@ -1,0 +1,18 @@
+$kind: collection
+description: >-
+  API collection for Project Moonlight server. All /api/* endpoints require a
+  Firebase ID token.
+
+
+  **Setup:**
+
+  1. Set the `baseUrl` variable to your server (default: http://localhost:3001).
+
+  2. Set the `idToken` variable to a valid Firebase ID token.
+
+  3. Set `userId` to the UID that matches the token.
+variables:
+  baseUrl: http://localhost:3001
+  idToken: <paste-firebase-id-token-here>
+  userId: <paste-firebase-uid-here>
+  reflectionId: ""

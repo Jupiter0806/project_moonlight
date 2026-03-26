@@ -1,0 +1,8 @@
+$kind: http-request
+description: No Authorization header — should return HTTP 401.
+url: "{{baseUrl}}/api/reflections?user_id={{userId}}&counts=10"
+method: GET
+queryParams:
+  user_id: "{{userId}}"
+  counts: "10"
+order: 1000

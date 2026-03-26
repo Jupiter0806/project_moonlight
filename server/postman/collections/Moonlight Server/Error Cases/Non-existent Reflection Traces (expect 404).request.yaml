@@ -1,0 +1,12 @@
+$kind: http-request
+description: Reflection ID doesn't exist — should return HTTP 404.
+url: "{{baseUrl}}/api/traces?user_id={{userId}}&reflection_id=nonexistent-id&co\
+  unts=10"
+method: GET
+headers:
+  Authorization: Bearer {{idToken}}
+queryParams:
+  user_id: "{{userId}}"
+  reflection_id: nonexistent-id
+  counts: "10"
+order: 3000

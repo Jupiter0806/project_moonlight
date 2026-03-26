@@ -1,0 +1,42 @@
+$kind: http-request
+description: >-
+  Creates a new reflection with optional initial traces. The response `id` is
+  saved to the `reflectionId` collection variable automatically.
+
+
+  Request body:
+
+  - `label` (required, non-empty string)
+
+  - `traces` (optional array of `{ q, a, created_time }`) 
+
+
+  Response: `{ "id": "<new-reflection-id>" }` (HTTP 201)
+url: "{{baseUrl}}/api/reflection"
+method: POST
+headers:
+  Authorization: Bearer {{idToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: >-
+    {
+      "label": "My first reflection",
+      "traces": [
+        {
+          "q": "What is spaced repetition?",
+          "a": "A learning technique that uses increasing intervals between reviews.",
+          "created_time": 1743033600000
+        }
+      ]
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const json = pm.response.json();
+      if (json.id) {
+        pm.collectionVariables.set('reflectionId', json.id);
+        console.log('reflectionId set to', json.id);
+      }
+    language: text/javascript
+order: 2000

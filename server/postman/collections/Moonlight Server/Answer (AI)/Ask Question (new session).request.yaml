@@ -1,0 +1,42 @@
+$kind: http-request
+description: >-
+  Asks a question with no existing session. The server auto-creates a new
+  reflection and returns its ID, which is saved to `reflectionId` automatically.
+
+
+  Response shape:
+
+  ```json
+
+  {
+    "reflection_id": "<new-or-existing-id>",
+    "question": "...",
+    "answer": "..."
+  }
+
+  ```
+url: "{{baseUrl}}/api/answer?user_id={{userId}}&question=What is spaced repetition?"
+method: GET
+headers:
+  Authorization: Bearer {{idToken}}
+queryParams:
+  - key: user_id
+    value: "{{userId}}"
+  - key: question
+    value: What is spaced repetition?
+    description: The question to ask the AI
+  - key: reflection_id
+    value: ""
+    disabled: true
+    description: Omit to start a new reflection session. The new reflection_id is
+      returned in the response.
+scripts:
+  - type: afterResponse
+    code: |-
+      const json = pm.response.json();
+      if (json.reflection_id) {
+        pm.collectionVariables.set('reflectionId', json.reflection_id);
+        console.log('reflectionId set to', json.reflection_id);
+      }
+    language: text/javascript
+order: 1000

@@ -1,0 +1,5 @@
+$kind: http-request
+description: No auth required. Returns {"status":"ok"} when the server is running.
+url: "{{baseUrl}}/health"
+method: GET
+order: 1000

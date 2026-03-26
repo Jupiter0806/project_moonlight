@@ -1,0 +1,29 @@
+$kind: http-request
+description: |-
+  Returns a paginated list of the authenticated user's reflections.
+
+  Response shape:
+  ```json
+  {
+    "pagination": { "size": 10, "cursor": "<next-cursor-or-empty>" },
+    "entries": [
+      { "id": "", "label": "", "owner_id": "", "trace_ids": [] }
+    ]
+  }
+  ```
+url: "{{baseUrl}}/api/reflections?user_id={{userId}}&counts=10"
+method: GET
+headers:
+  Authorization: Bearer {{idToken}}
+queryParams:
+  - key: user_id
+    value: "{{userId}}"
+  - key: counts
+    value: "10"
+    description: Number of results per page (1–100, default 10)
+  - key: cursor
+    value: ""
+    disabled: true
+    description: Opaque cursor from previous response pagination.cursor. Leave empty
+      for first page.
+order: 1000
