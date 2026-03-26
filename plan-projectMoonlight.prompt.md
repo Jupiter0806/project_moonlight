@@ -44,3 +44,8 @@ An application designed to optimize the learning process by distinguishing betwe
   - `perf`: A code change that improves performance.
   - `test`: Adding missing tests or correcting existing tests.
   - `chore`: Changes to the build process or auxiliary tools.
+
+## Immediate Next Steps
+
+- icon library research and selection.
+- accessibility review and implementation plan.
