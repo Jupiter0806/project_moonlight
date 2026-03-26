@@ -1,11 +1,11 @@
 export default function AboutUs() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-zinc-50 p-8 font-sans dark:bg-black">
-      <main className="flex w-full max-w-3xl flex-1 flex-col items-start gap-8 bg-white px-16 py-32 dark:bg-black">
-        <h1 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50">
+    <div className="bg-surface flex flex-1 flex-col items-center justify-center p-8 font-sans">
+      <main className="bg-surface-elevated flex w-full max-w-3xl flex-1 flex-col items-start gap-8 px-16 py-32">
+        <h1 className="text-foreground text-4xl font-bold tracking-tight">
           About Project Moonlight
         </h1>
-        <div className="flex flex-col gap-4 text-lg text-zinc-600 dark:text-zinc-400">
+        <div className="text-muted flex flex-col gap-4 text-lg">
           <p>
             Welcome to Project Moonlight. Our mission is to transform how you
             learn and retain knowledge.

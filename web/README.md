@@ -282,3 +282,61 @@ Synthetic tests (Lighthouse) are not enough. We monitor actual user experiences 
   - **Source Maps:** Uploaded during build to de-obfuscate production stack traces.
   - **Release Health:** Tracks crash-free sessions percentage per deployment.
 - **Session Replay (LogRocket/Sentry):** Visual reproduction of user interactions leading up to an error, essential for debugging "Chamber" chat interactions.
+
+## 8. Theming Strategy
+
+We use a **CSS custom property + Tailwind semantic token** approach so that adding or changing a theme only requires editing `globals.css` — zero component changes needed.
+
+### A. Architecture
+
+```
+globals.css  ──►  :root / [data-theme]  ──►  @theme inline  ──►  Tailwind classes in JSX
+```
+
+All colors are defined as CSS custom properties in `globals.css` and exposed to Tailwind via `@theme inline`. Components **only** ever use semantic Tailwind classes — never raw palette classes like `bg-zinc-50` or hardcoded hex values like `#383838`.
+
+### B. Semantic Tokens
+
+| CSS Variable          | Tailwind Class           | Purpose                                       |
+| --------------------- | ------------------------ | --------------------------------------------- |
+| `--background`        | `bg-background`          | Page-level background                         |
+| `--foreground`        | `text-foreground`        | Primary body text                             |
+| `--foreground-strong` | `text-foreground-strong` | High-emphasis headings & labels               |
+| `--foreground-hover`  | `bg-foreground-hover`    | Hover state on filled (foreground BG) buttons |
+| `--surface`           | `bg-surface`             | Subtle background, outer wrappers             |
+| `--surface-elevated`  | `bg-surface-elevated`    | Cards, panels, raised containers              |
+| `--surface-hover`     | `bg-surface-hover`       | Hover state on outlined / ghost elements      |
+| `--muted`             | `text-muted`             | Subdued text (descriptions, captions)         |
+| `--border`            | `border-border`          | Borders and dividers                          |
+
+### C. Theme Switching
+
+Each token is defined **once** using the CSS `light-dark()` function. The active variant is controlled entirely by the `color-scheme` property — no duplicated values, no `@media` fallback blocks needed:
+
+```css
+:root {
+  color-scheme: light dark;
+} /* respects system preference */
+[data-theme="light"] {
+  color-scheme: light;
+} /* force light */
+[data-theme="dark"] {
+  color-scheme: dark;
+} /* force dark */
+```
+
+Themes are applied by setting the `data-theme` attribute on `<html>`. When no attribute is set, the browser's system preference is used automatically.
+
+### D. Adding a New Theme
+
+To add a new theme (e.g. a high-contrast or brand theme), only touch `globals.css`:
+
+1. Add a `[data-theme="your-theme"]` block that overrides the CSS variables directly (without `light-dark()`).
+2. Apply it via `<html data-theme="your-theme">` (server-side) or toggle the attribute with a client component.
+
+No component file changes are required.
+
+### E. Rule
+
+> Any color that changes between themes → CSS variable → `@theme inline` → semantic Tailwind class.
+> Never use a raw palette class (`bg-zinc-50`, `text-zinc-600`) or a hardcoded hex value in JSX.

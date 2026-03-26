@@ -11,6 +11,18 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   ...tailwind.configs["flat/recommended"],
+  {
+    settings: {
+      tailwindcss: {
+        cssFiles: ["./src/app/globals.css"],
+        // eslint-plugin-tailwindcss beta doesn't parse Tailwind v4 @theme inline blocks,
+        // so custom color tokens must be whitelisted explicitly.
+        whitelist: [
+          "(bg|text|border|hover:bg|hover:text)-(surface|foreground|muted|background|border)(-(elevated|hover|strong))?",
+        ],
+      },
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
