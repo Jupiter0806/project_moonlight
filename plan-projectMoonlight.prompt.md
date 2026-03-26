@@ -30,7 +30,7 @@ An application designed to optimize the learning process by distinguishing betwe
 
 ## Proposed Tech Stack (Draft)
 
-- **Frontend**: React, TypeScript, StyleX/Tailwind, Next.js
+- **Frontend**: React, TypeScript, Tailwind, Next.js
 - **Backend/Storage**: Firebase Node.js
 
 ## Development Standards
@@ -44,9 +44,3 @@ An application designed to optimize the learning process by distinguishing betwe
   - `perf`: A code change that improves performance.
   - `test`: Adding missing tests or correcting existing tests.
   - `chore`: Changes to the build process or auxiliary tools.
-
-## Immediate Next Steps
-
-1.  **Define Tech Stack**: Select frameworks and languages.
-2.  **Data Modeling**: Design the schema for "Items", "Reviews", and "Sessions".
-3.  **Prototype**: Build a CLI or Basic Web MVP to test the Day/Night cycle flow.
