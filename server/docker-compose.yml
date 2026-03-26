@@ -1,0 +1,35 @@
+services:
+  server:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      NODE_ENV: development
+      USE_FIREBASE_EMULATOR: "true"
+      FIREBASE_PROJECT_ID: demo-moonlight
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      # Point to the emulator container
+      FIRESTORE_EMULATOR_HOST: firebase-emulator:8080
+      FIREBASE_AUTH_EMULATOR_HOST: firebase-emulator:9099
+    depends_on:
+      firebase-emulator:
+        condition: service_healthy
+
+  firebase-emulator:
+    image: andreysenov/firebase-tools:latest
+    command: >
+      firebase emulators:start
+      --project demo-moonlight
+      --only auth,firestore
+      --host 0.0.0.0
+    ports:
+      - "4000:4000" # Emulator UI
+      - "8080:8080" # Firestore
+      - "9099:9099" # Auth
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
