@@ -1,4 +1,5 @@
 import { ChatWindow } from "@/widgets/playground/ChatWindow/ChatWindow";
+import { LazyLoad } from "@/widgets/playground/LazyLoad/LazyLoad";
 
 export default function PlaygroundPage() {
   return (
@@ -10,6 +11,10 @@ export default function PlaygroundPage() {
 
         <div className="flex w-full flex-col items-center gap-8">
           <ChatWindow />
+        </div>
+
+        <div>
+          <LazyLoad />
         </div>
       </main>
     </div>
