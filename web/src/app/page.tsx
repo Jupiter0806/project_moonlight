@@ -1,13 +1,11 @@
+import { SignOutButton } from "@/widgets/SignOutButton/SignOutButton";
 import Image from "next/image";
 import Link from "next/link";
-import { Card } from "@/components/Card/Card";
 
 export default function Home() {
   return (
     <div className="bg-surface flex flex-1 flex-col items-center justify-center font-sans">
       <main className="bg-surface-elevated flex w-full max-w-3xl flex-1 flex-col items-center justify-between px-16 py-32 sm:items-start">
-        <Card />
-
         <Image
           className="dark:invert"
           src="/file.svg"
@@ -68,6 +66,7 @@ export default function Home() {
           >
             About Us
           </Link>
+          <SignOutButton />
         </div>
       </main>
     </div>
