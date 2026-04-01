@@ -7,6 +7,8 @@
   },
   "scripts": {
     "dev": "next dev",
+    "dev:local": "NEXT_PUBLIC_USE_FIREBASE_EMULATOR=true next dev",
+    "emulators:start": "firebase emulators:start",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -25,6 +27,7 @@
     ]
   },
   "dependencies": {
+    "firebase": "^12.11.0",
     "next": "16.2.1",
     "react": "19.2.4",
     "react-dom": "19.2.4"
@@ -39,6 +42,7 @@
     "eslint-config-next": "16.2.1",
     "eslint-plugin-tailwindcss": "4.0.0-beta.0",
     "lint-staged": "^16.4.0",
+    "firebase-tools": "^15.12.0",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "tailwindcss": "^4",
