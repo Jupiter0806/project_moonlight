@@ -1,4 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { adminAuth } from "@/lib/firebaseAdmin";
+
+// 5 days — maximum allowed by Firebase for session cookies
+const SESSION_MAX_AGE = 60 * 60 * 24 * 5;
 
 /**
  * POST /api/auth/session
@@ -6,15 +10,9 @@ import { type NextRequest, NextResponse } from "next/server";
  * Called by the client immediately after Firebase sign-in.
  * Body: { idToken: string }
  *
- * TODO
- * In a full implementation this would:
- *   1. Verify the idToken with Firebase Admin SDK
- *   2. Create a session cookie via admin.auth().createSessionCookie()
- *   3. Set it as an HttpOnly cookie
- *
- * For now it stores the raw ID token as the session value so the middleware
- * can detect an authenticated state. Replace with Admin SDK session cookies
- * before shipping to production.
+ * 1. Verifies the Firebase ID token with the Admin SDK (server-side, cryptographic check)
+ * 2. Mints a long-lived Firebase session cookie (up to 5 days)
+ * 3. Sets it as an HttpOnly cookie so JS on the client can never read it
  */
 export async function POST(request: NextRequest) {
   const body = (await request.json()) as { idToken?: string };
@@ -24,14 +22,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "idToken is required" }, { status: 400 });
   }
 
-  // TODO: verify idToken with Firebase Admin SDK and create a proper session cookie
+  let sessionCookie: string;
+  try {
+    // Verify the ID token first — rejects tampered/expired tokens
+    await adminAuth.verifyIdToken(idToken);
+    // Mint a proper session cookie valid for SESSION_MAX_AGE seconds
+    sessionCookie = await adminAuth.createSessionCookie(idToken, {
+      expiresIn: SESSION_MAX_AGE * 1000, // Firebase expects milliseconds
+    });
+  } catch {
+    return NextResponse.json({ error: "Invalid ID token" }, { status: 401 });
+  }
+
   const response = NextResponse.json({ status: "ok" });
-  response.cookies.set("__session", idToken, {
+  response.cookies.set("__session", sessionCookie, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    // Firebase ID tokens expire after 1 hour; keep cookie lifetime in sync
-    maxAge: 60 * 60,
+    maxAge: SESSION_MAX_AGE,
     path: "/",
   });
 
