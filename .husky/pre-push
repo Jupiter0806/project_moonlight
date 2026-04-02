@@ -1,0 +1,15 @@
+# Run tsc --noEmit in workspaces that have changes being pushed.
+# Catches type errors in ~10s without the full build overhead.
+# The real pnpm build runs in CI.
+
+ROOT=$(git rev-parse --show-toplevel)
+
+if git diff --name-only @{upstream}...HEAD 2>/dev/null | grep -q "^web/"; then
+  echo "→ Type-checking web/"
+  (cd "$ROOT/web" && pnpm exec tsc --noEmit)
+fi
+
+if git diff --name-only @{upstream}...HEAD 2>/dev/null | grep -q "^server/"; then
+  echo "→ Type-checking server/"
+  (cd "$ROOT/server" && pnpm exec tsc --noEmit)
+fi

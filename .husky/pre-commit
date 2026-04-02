@@ -1,0 +1,22 @@
+# Run lint-staged only in workspaces that have staged files.
+# This avoids running lint on unrelated packages and keeps pre-commit fast.
+
+ROOT=$(git rev-parse --show-toplevel)
+
+# Scan all staged files for secrets (API keys, tokens, credentials).
+# Uses secretlint — a Node.js tool, no system-level install required.
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+if [ -n "$STAGED_FILES" ]; then
+  echo "→ Scanning staged files for secrets"
+  echo "$STAGED_FILES" | xargs pnpm exec secretlint
+fi
+
+if git diff --cached --name-only | grep -q "^web/"; then
+  echo "→ Running lint-staged in web/"
+  (cd "$ROOT/web" && pnpm exec lint-staged)
+fi
+
+if git diff --cached --name-only | grep -q "^server/"; then
+  echo "→ Running lint-staged in server/"
+  (cd "$ROOT/server" && pnpm exec lint-staged)
+fi

@@ -52,8 +52,10 @@ We enforce code quality early in the development lifecycle ("Shift Left") to pre
     - **Strategy:** We rely on strict compile-time linting to prevent styling collisions rather than incurring the runtime performance cost of `tailwind-merge` or `cn` utilities.
 - **Static Analysis:** **ESLint** (React/Next.js best practices, accessibility rules).
 - **Type Safety:** **TypeScript** (Strict mode enabled, no `any`).
-- **Pre-commit Hooks:** **Husky** + **lint-staged**.
-  - Ensures all staged files pass linting and formatting.
+- **Pre-commit Hooks:** **Husky** + **lint-staged** + **commitlint**.
+  - `pre-commit`: Runs ESLint + Prettier via lint-staged on staged files only (not the whole codebase). Workspace-aware — only triggers for the package(s) with staged files.
+  - `commit-msg`: Enforces [Conventional Commits](https://www.conventionalcommits.org/) prefix (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `revert`).
+  - `pre-push`: Runs `tsc --noEmit` in affected workspaces to catch type errors before CI (~10s, no full build).
   - **Secret Scanning:** Prevents accidental credential commits.
 
 ## 4. Test Strategy
