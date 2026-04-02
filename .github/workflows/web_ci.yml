@@ -50,3 +50,5 @@ jobs:
 
       - name: Build
         run: pnpm build
+        env:
+          FIREBASE_SERVICE_ACCOUNT_KEY_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}
