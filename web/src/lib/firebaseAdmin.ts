@@ -29,7 +29,8 @@ function initFirebaseAdmin() {
     });
   }
 }
-
+// todo
+// init at build time, is it good?
 initFirebaseAdmin();
 
 export const adminAuth = getAuth();
