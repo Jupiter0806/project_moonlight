@@ -42,12 +42,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsubscribe;
   }, []);
 
+  // Google's recommended two-call pattern for Firebase session cookies:
+  // https://firebase.google.com/docs/auth/admin/manage-sessions
   async function handleRegister(email: string, password: string) {
+    // Call 1: credentials go directly from the browser to Firebase Auth servers (Google).
+    // Our server never sees the raw password.
     const credential = await createUserWithEmailAndPassword(
       auth,
       email,
       password,
     );
+
+    // Call 2: exchange the short-lived Firebase ID token (1 hr) for a long-lived
+    // HttpOnly session cookie (5 days) issued by our own server.
+    // The Admin SDK verifies the token cryptographically before minting the cookie.
     const idToken = await credential.user.getIdToken();
     await fetch("/api/auth/session", {
       method: "POST",
@@ -57,7 +65,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function handleSignIn(email: string, password: string) {
+    // Call 1: credentials go directly from the browser to Firebase Auth servers (Google)
+    // over TLS — our server never sees the raw password.
     const credential = await signInWithEmailAndPassword(auth, email, password);
+
+    // Call 2: exchange the short-lived Firebase ID token (1 hr) for a long-lived
+    // HttpOnly session cookie (5 days) issued by our own server.
+    // The Admin SDK verifies the token cryptographically before minting the cookie.
     const idToken = await credential.user.getIdToken();
     await fetch("/api/auth/session", {
       method: "POST",
