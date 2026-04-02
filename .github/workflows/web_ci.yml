@@ -48,6 +48,18 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Check required secrets
+        run: |
+          missing=()
+          [[ -z "$FIREBASE_SERVICE_ACCOUNT_KEY_BASE64" ]] && missing+=("FIREBASE_SERVICE_ACCOUNT_KEY_BASE64")
+          if [[ ${#missing[@]} -gt 0 ]]; then
+            echo "::error::Missing required secrets: ${missing[*]}"
+            exit 1
+          fi
+          echo "All required secrets are present."
+        env:
+          FIREBASE_SERVICE_ACCOUNT_KEY_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}
+
       - name: Build
         run: pnpm build
         env:
