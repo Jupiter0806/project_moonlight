@@ -4,11 +4,9 @@ name: Web CI
 
 # Controls when the workflow will run
 on:
-  # Run on PRs targeting main or dev — pre-merge gate to catch issues before they land
+  # Run on all PRs — catches issues on feat→feat and feat→releases/* merges too.
+  # Branch filtering is intentionally omitted; the paths filter below is the real gate.
   pull_request:
-    branches:
-      - main
-      - dev
     # Run only when files under web/ change (or when the workflow itself changes)
     paths:
       - "web/**"
