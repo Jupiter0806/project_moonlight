@@ -31,6 +31,8 @@ function initFirebase() {
   }
 }
 
+// todo
+// init at build time, is it good?
 initFirebase();
 
 export const db = getFirestore();

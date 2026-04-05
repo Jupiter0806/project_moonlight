@@ -4,9 +4,19 @@ name: Web CI
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
+  # Run on all PRs — catches issues on feat→feat and feat→releases/* merges too.
+  # Branch filtering is intentionally omitted; the paths filter below is the real gate.
   pull_request:
     # Run only when files under web/ change (or when the workflow itself changes)
+    paths:
+      - "web/**"
+      - ".github/workflows/web_ci.yml"
+
+  # Run on push to main or dev — post-merge safety net (catches squash-merge drift)
+  push:
+    branches:
+      - main
+      - dev
     paths:
       - "web/**"
       - ".github/workflows/web_ci.yml"
@@ -14,39 +24,159 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# Cancel any in-progress run for the same workflow + branch when a new one is triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Restrict default token permissions to read-only (principle of least privilege)
+permissions:
+  contents: read
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
+    environment:
+      name: firebase dev
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: ./web
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
         with:
           version: 10.20.0
 
       - name: Setup Node (with pnpm cache)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: "24"
+          node-version-file: "web/.nvmrc"
           cache: "pnpm"
           cache-dependency-path: web/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Type check
+        run: pnpm exec tsc --noEmit
+
       - name: Lint
         run: pnpm lint
 
+      - name: Check required secrets
+        run: |
+          missing=()
+          [[ -z "$NEXT_PUBLIC_FIREBASE_API_KEY" ]] && missing+=("NEXT_PUBLIC_FIREBASE_API_KEY")
+          [[ -z "$NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN" ]] && missing+=("NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN")
+          [[ -z "$NEXT_PUBLIC_FIREBASE_PROJECT_ID" ]] && missing+=("NEXT_PUBLIC_FIREBASE_PROJECT_ID")
+          [[ -z "$NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET" ]] && missing+=("NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET")
+          [[ -z "$NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID" ]] && missing+=("NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID")
+          [[ -z "$NEXT_PUBLIC_FIREBASE_APP_ID" ]] && missing+=("NEXT_PUBLIC_FIREBASE_APP_ID")
+          [[ -z "$FIREBASE_SERVICE_ACCOUNT_KEY_BASE64" ]] && missing+=("FIREBASE_SERVICE_ACCOUNT_KEY_BASE64")
+          if [[ ${#missing[@]} -gt 0 ]]; then
+            echo "::error::Missing required secrets: ${missing[*]}"
+            exit 1
+          fi
+          echo "All required secrets are present."
+        env:
+          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+          NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
+          FIREBASE_SERVICE_ACCOUNT_KEY_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}
+
       - name: Build
         run: pnpm build
+        env:
+          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+          NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
+          FIREBASE_SERVICE_ACCOUNT_KEY_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}
+
+  # Unit tests run after build succeeds — no secrets needed since all Firebase
+  # dependencies are mocked in Vitest
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: ./web
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 10.20.0
+
+      - name: Setup Node (with pnpm cache)
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: "web/.nvmrc"
+          cache: "pnpm"
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run unit tests
+        run: pnpm test
+
+  # Security runs in parallel with build/test — no dependency on either
+  security:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: ./web
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 10.20.0
+
+      - name: Setup Node (with pnpm cache)
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: "web/.nvmrc"
+          cache: "pnpm"
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Dependency auditing — fails on high/critical vulnerabilities
+      - name: Dependency audit
+        run: pnpm audit --audit-level=high
+
+      # SAST — runs locally, prints findings to the log, fails if anything is found
+      - name: Run Semgrep SAST
+        run: |
+          python3 -m pip install semgrep --quiet
+          semgrep scan \
+            --config=p/javascript \
+            --config=p/typescript \
+            --config=p/secrets \
+            --config=p/owasp-top-ten \
+            --error \
+            --verbose \
+            src/

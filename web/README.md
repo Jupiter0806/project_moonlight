@@ -52,8 +52,10 @@ We enforce code quality early in the development lifecycle ("Shift Left") to pre
     - **Strategy:** We rely on strict compile-time linting to prevent styling collisions rather than incurring the runtime performance cost of `tailwind-merge` or `cn` utilities.
 - **Static Analysis:** **ESLint** (React/Next.js best practices, accessibility rules).
 - **Type Safety:** **TypeScript** (Strict mode enabled, no `any`).
-- **Pre-commit Hooks:** **Husky** + **lint-staged**.
-  - Ensures all staged files pass linting and formatting.
+- **Pre-commit Hooks:** **Husky** + **lint-staged** + **commitlint**.
+  - `pre-commit`: Runs ESLint + Prettier via lint-staged on staged files only (not the whole codebase). Workspace-aware — only triggers for the package(s) with staged files.
+  - `commit-msg`: Enforces [Conventional Commits](https://www.conventionalcommits.org/) prefix (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `revert`).
+  - `pre-push`: Runs `tsc --noEmit` in affected workspaces to catch type errors before CI (~10s, no full build).
   - **Secret Scanning:** Prevents accidental credential commits.
 
 ## 4. Test Strategy
@@ -70,10 +72,15 @@ The pipeline ensures that every commit is verifiable and every deployment is rep
 
 ### A. Pipeline Workflow (GitHub Actions)
 
-1.  **Validation (On Pull Request)**
-    - **Static Checks:** Parallel execution of Lint, Prettier, and TypeScript compilation.
-    - **Tests:** Run Unit and Integration suites.
-    - **Security:** SAST (Static Application Security Testing) and dependency auditing (e.g., `npm audit`, Snyk).
+0.  **Automated Dependency Updates (Dependabot)**
+    - **Schedule:** Weekly PRs targeting `dev` for both npm packages (`/web`) and GitHub Actions.
+    - **Grouping:** npm updates are split into two grouped PRs — `production-dependencies` and `dev-dependencies` — to reduce noise.
+    - Dependabot PRs go through the same CI pipeline as any other PR targeting `dev`.
+
+1.  **Validation (On Pull Request/Push)**
+    - **Static Checks** _(sequential)_: Lint → TypeScript compilation → Build. Runs first as the primary gate.
+    - **Tests** _(depends on Static Checks)_: Run Unit and Integration suites.
+    - **Security** _(depends on Static Checks)_: SAST (Static Application Security Testing) and dependency auditing (e.g., `pnpm audit`, CodeQL). Tests and Security run in parallel once Static Checks pass.
 
 2.  **Preview Environment (Ephemeral)**
     - **Deploy:** Automatic deployment to a temporary URL (Vercel Preview / Netlify).
@@ -91,7 +98,9 @@ The pipeline ensures that every commit is verifiable and every deployment is rep
 ```mermaid
 flowchart TD
     %% Trigger Events
+    Dependabot(["Dependabot<br/>(Weekly)"]) -->|"PR targeting dev"| CI_Start
     PR([Pull Request]) --> CI_Start
+    Push([Push to main / dev]) --> CI_Start
     Merge([Merge to Main]) --> CD_Start
 
     %% CI / PR Phase
@@ -99,8 +108,12 @@ flowchart TD
         direction TB
         CI_Start{Start Gates}
 
-        subgraph Parallel_Jobs ["Parallel Validation"]
-            Static["Static Analysis<br/>(Lint/Prettier/TS)"]
+        subgraph Static_Job ["Static Checks (sequential)"]
+            direction TB
+            Lint["Lint"] --> TSC["TypeScript<br/>Compilation"] --> BuildCheck["Build"]
+        end
+
+        subgraph Parallel_Jobs ["Parallel (after Static Checks)"]
             Tests["Test Suites<br/>(Unit/Integration)"]
             Sec["Security<br/>(SAST/Audit)"]
         end
@@ -108,8 +121,9 @@ flowchart TD
         PreviewDep["Deploy Preview<br/>(Ephemeral URL)"]
         SmokeTest["E2E Smoke Tests<br/>(Playwright)"]
 
-        CI_Start --> Static & Tests & Sec
-        Static & Tests & Sec --> PreviewDep
+        CI_Start --> Lint
+        BuildCheck --> Tests & Sec
+        Tests & Sec --> PreviewDep
         PreviewDep --> SmokeTest
     end
 
@@ -132,8 +146,8 @@ flowchart TD
     classDef event fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
     classDef job fill:#e3f2fd,stroke:#1565c0,stroke-width:1px,color:#000
 
-    class PR,Merge,CI_Start,CD_Start event
-    class Static,Tests,Sec,PreviewDep,SmokeTest,Build,Promote job
+    class PR,Merge,CI_Start,CD_Start,Dependabot,Push event
+    class Lint,TSC,BuildCheck,Tests,Sec,PreviewDep,SmokeTest,Build,Promote job
 ```
 
 ## 6. Git Branching Strategy

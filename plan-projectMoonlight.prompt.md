@@ -17,12 +17,13 @@ An application designed to optimize the learning process by distinguishing betwe
   - Resource bookmarking.
   - "Today's Focus" list.
   - Categorization (tags/topics/groups).
+  - Able to highlight parts of the answer which will assist a summary generation and review process in the Night Mode.
 
 ### 2. Night Mode (Review & Consolidation)
 
 - **Goal**: Active recall and transferring checks to long-term memory.
 - **Features**:
-  - Daily recap summary.
+  - Daily recap summary, generated from highlights and notes taken during Day Mode.
   - Spaced Repetition System (SRS) interactions.
   - Sleep-friendly UI (dark mode default).
   - Progress visualization.
