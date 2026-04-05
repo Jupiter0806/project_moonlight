@@ -143,7 +143,9 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: read
-      security-events: write # Required to upload CodeQL SARIF results
+      security-events: write # Required to upload CodeQL SARIF resultscontents: read
+      actions: read
+      pull-requests: read
     defaults:
       run:
         working-directory: ./web
