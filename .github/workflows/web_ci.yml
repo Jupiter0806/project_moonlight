@@ -10,7 +10,7 @@ on:
     # Run only when files under web/ change (or when the workflow itself changes)
     paths:
       - "web/**"
-      - ".github/workflows/web_CI.yml"
+      - ".github/workflows/web_ci.yml"
 
   # Run on push to main or dev — post-merge safety net (catches squash-merge drift)
   push:
@@ -19,7 +19,7 @@ on:
       - dev
     paths:
       - "web/**"
-      - ".github/workflows/web_CI.yml"
+      - ".github/workflows/web_ci.yml"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -173,12 +173,12 @@ jobs:
 
       # SAST — static analysis for security vulnerabilities in source code
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: javascript-typescript
           source-root: web
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
           category: /language:javascript-typescript
