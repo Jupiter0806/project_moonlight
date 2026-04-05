@@ -4,12 +4,24 @@ name: Web CI
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
+  # Run on PRs targeting main or dev — pre-merge gate to catch issues before they land
   pull_request:
+    branches:
+      - main
+      - dev
     # Run only when files under web/ change (or when the workflow itself changes)
     paths:
       - "web/**"
-      - ".github/workflows/web_ci.yml"
+      - ".github/workflows/web_CI.yml"
+
+  # Run on push to main or dev — post-merge safety net (catches squash-merge drift)
+  push:
+    branches:
+      - main
+      - dev
+    paths:
+      - "web/**"
+      - ".github/workflows/web_CI.yml"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
