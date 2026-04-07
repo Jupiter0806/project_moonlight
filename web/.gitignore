@@ -41,4 +41,4 @@ yarn-error.log*
 next-env.d.ts
 
 # firebase log
-firebase-debug.log
+firebase-debug.log.env.local

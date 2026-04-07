@@ -8,6 +8,11 @@ function initFirebaseAdmin() {
 
   const useEmulator = process.env.USE_FIREBASE_EMULATOR === "true";
 
+  console.debug(
+    "Initializing Firebase Admin SDK in emulator mode",
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  );
+
   if (useEmulator) {
     initializeApp({
       projectId:
@@ -29,6 +34,12 @@ function initFirebaseAdmin() {
     });
   }
 }
+
+console.debug(
+  "Initializing Firebase Admin SDK in emulator mode",
+  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+);
+
 // todo
 // init at build time, is it good?
 initFirebaseAdmin();

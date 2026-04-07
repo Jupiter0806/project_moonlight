@@ -66,6 +66,12 @@ export default function Home() {
           >
             About Us
           </Link>
+          <Link
+            className="border-border hover:bg-surface-hover flex h-12 w-full items-center justify-center rounded-full border border-solid px-5 transition-colors hover:border-transparent md:w-[158px]"
+            href="/camphor"
+          >
+            Camphor
+          </Link>
           <SignOutButton />
         </div>
       </main>
