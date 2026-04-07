@@ -30,7 +30,8 @@ export async function POST(request: NextRequest) {
     sessionCookie = await adminAuth.createSessionCookie(idToken, {
       expiresIn: SESSION_MAX_AGE * 1000, // Firebase expects milliseconds
     });
-  } catch {
+  } catch (error) {
+    console.debug("error", error);
     return NextResponse.json({ error: "Invalid ID token" }, { status: 401 });
   }
 

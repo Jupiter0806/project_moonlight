@@ -7,6 +7,7 @@
 - **Architectural Style:** Modular Monolith / Micro-Frontend (Logical separation by feature domain).
 - **Development Methodology:** Component-Driven Development (CDD).
 - **Project Structure:** Feature-Based Folder Structure (Colocation of logic, UI, and tests).
+- **State Management:** redux for global and jotai for local
 
 ## 2. Feature Modules & Rendering Strategies
 

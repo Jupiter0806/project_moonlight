@@ -36,6 +36,17 @@ An application designed to optimize the learning process by distinguishing betwe
 
 ## Development Standards
 
+- **Testing**: Always generate unit tests when implementing a feature or component.
+  - Tests must be based on the **stated requirements**, not the implementation details, so core behavior is protected regardless of internal changes.
+  - Always include edge case coverage alongside happy-path tests. Edge cases to consider:
+    - Default/initial state renders correctly without errors.
+    - Empty or missing values are handled gracefully.
+    - State is independent between unrelated atoms/fields (changes to one don't affect the other).
+    - Repeated or toggled actions are idempotent or reversible (e.g. swap twice restores originals).
+    - Reactive updates: external state changes are reflected in the UI.
+  - If requirements are clear, proceed directly to implementation and tests.
+  - If requirements are ambiguous or incomplete, ask for clarification **before** implementing.
+
 - **Commit Format**: Follow [Conventional Commits](https://www.conventionalcommits.org/).
   - `feat`: New feature.
   - `fix`: Bug fix.
