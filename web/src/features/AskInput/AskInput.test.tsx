@@ -1,13 +1,27 @@
-import { render, screen, fireEvent, act } from "@testing-library/react";
-import { describe, it, expect, beforeEach } from "vitest";
+import {
+  render,
+  screen,
+  fireEvent,
+  act,
+  waitFor,
+} from "@testing-library/react";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createStore, Provider } from "jotai";
 import { AskInput } from "./AskInput";
 import { askInputAtom } from "./atom/askInputAtoms";
 
+// Mock the server action so tests don't hit real async logic
+vi.mock("./actions", () => ({
+  askAction: vi.fn(async (state: unknown) => state),
+}));
+
 // --- Tests are written against the stated requirements, not the implementation ---
 // Requirements:
-//   1. Renders an Input component with placeholder "Ask"
+//   1. Renders an Input component with placeholder "Ask Camphor"
 //   2. User input is reflected in askInputAtom
+//   3. Pressing Enter submits the form and calls the server action
+//   4. Pressing Shift+Enter does NOT submit (allows newlines)
+//   5. Input is disabled while the action is pending
 
 function renderWithStore(store = createStore()) {
   return {
@@ -25,13 +39,14 @@ describe("AskInput", () => {
 
   beforeEach(() => {
     store = createStore();
+    vi.clearAllMocks();
   });
 
-  // Req 1: renders Input with placeholder "Ask"
+  // Req 1: renders Input with placeholder "Ask Camphor"
   describe("placeholder", () => {
-    it('renders with placeholder "Ask"', () => {
+    it('renders with placeholder "Ask Camphor"', () => {
       renderWithStore(store);
-      expect(screen.getByPlaceholderText("Ask")).toBeTruthy();
+      expect(screen.getByPlaceholderText("Ask Camphor")).toBeTruthy();
     });
   });
 
@@ -44,7 +59,7 @@ describe("AskInput", () => {
 
     it("updates the atom when the user types", () => {
       renderWithStore(store);
-      const textarea = screen.getByPlaceholderText("Ask");
+      const textarea = screen.getByPlaceholderText("Ask Camphor");
       fireEvent.change(textarea, { target: { value: "What is gravity?" } });
       expect(store.get(askInputAtom)).toBe("What is gravity?");
     });
@@ -55,13 +70,13 @@ describe("AskInput", () => {
         store.set(askInputAtom, "Pre-filled question");
       });
       expect(
-        screen.getByPlaceholderText<HTMLTextAreaElement>("Ask").value,
+        screen.getByPlaceholderText<HTMLTextAreaElement>("Ask Camphor").value,
       ).toBe("Pre-filled question");
     });
 
     it("clears the atom when the user clears the input", () => {
       renderWithStore(store);
-      const textarea = screen.getByPlaceholderText("Ask");
+      const textarea = screen.getByPlaceholderText("Ask Camphor");
       fireEvent.change(textarea, { target: { value: "Something" } });
       fireEvent.change(textarea, { target: { value: "" } });
       expect(store.get(askInputAtom)).toBe("");
@@ -75,10 +90,58 @@ describe("AskInput", () => {
           <AskInput />
         </Provider>,
       );
-      const textarea = screen.getByPlaceholderText("Ask");
+      const textarea = screen.getByPlaceholderText("Ask Camphor");
       fireEvent.change(textarea, { target: { value: "Store A question" } });
       expect(storeA.get(askInputAtom)).toBe("Store A question");
       expect(storeB.get(askInputAtom)).toBe("");
+    });
+  });
+
+  // Req 3: Enter submits the form
+  describe("Enter key submission", () => {
+    it("submits the form when Enter is pressed with text", async () => {
+      const { askAction } = await import("./actions");
+      renderWithStore(store);
+      const textarea = screen.getByPlaceholderText("Ask Camphor");
+      fireEvent.change(textarea, { target: { value: "What is light?" } });
+      fireEvent.keyDown(textarea, { key: "Enter", shiftKey: false });
+      await waitFor(() => {
+        expect(askAction).toHaveBeenCalled();
+      });
+    });
+
+    it("clears the input after submission", async () => {
+      renderWithStore(store);
+      const textarea = screen.getByPlaceholderText("Ask Camphor");
+      fireEvent.change(textarea, { target: { value: "My question" } });
+      fireEvent.keyDown(textarea, { key: "Enter", shiftKey: false });
+      await waitFor(() => {
+        expect(store.get(askInputAtom)).toBe("");
+      });
+    });
+
+    it("does not submit when input is empty", async () => {
+      const { askAction } = await import("./actions");
+      renderWithStore(store);
+      const textarea = screen.getByPlaceholderText("Ask Camphor");
+      fireEvent.keyDown(textarea, { key: "Enter", shiftKey: false });
+      await waitFor(() => {
+        expect(askAction).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  // Req 4: Shift+Enter does NOT submit
+  describe("Shift+Enter", () => {
+    it("does not submit when Shift+Enter is pressed", async () => {
+      const { askAction } = await import("./actions");
+      renderWithStore(store);
+      const textarea = screen.getByPlaceholderText("Ask Camphor");
+      fireEvent.change(textarea, { target: { value: "Multi-line" } });
+      fireEvent.keyDown(textarea, { key: "Enter", shiftKey: true });
+      await waitFor(() => {
+        expect(askAction).not.toHaveBeenCalled();
+      });
     });
   });
 });

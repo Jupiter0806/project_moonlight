@@ -47,7 +47,7 @@ graph TD
 - **Client Store:** Stores data across the whole application and control the flow of data.
 - **Day:** Contains **Camphor** (list of recent reflections) and **Chamber** (UI for creating new reflections).
 - **Night:** Contains a list of reflections for today.
-- **Reflection:** Contains a series of questions and answers.
+- **Reflection:** Contains a series of traces.
 
 ### Rendering Approach
 

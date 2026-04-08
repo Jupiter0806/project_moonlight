@@ -95,6 +95,19 @@ describe("Input", () => {
     });
   });
 
+  // name prop — required for FormData inclusion on form submit
+  describe("name prop", () => {
+    it("sets the name attribute on the textarea when provided", () => {
+      render(<Input name="question" />);
+      expect(screen.getByRole("textbox")).toHaveAttribute("name", "question");
+    });
+
+    it("has no name attribute when not provided", () => {
+      render(<Input />);
+      expect(screen.getByRole("textbox")).not.toHaveAttribute("name");
+    });
+  });
+
   // Req 4: built-in debounce — default is no debounce
   describe("debounce behaviour", () => {
     beforeEach(() => {
