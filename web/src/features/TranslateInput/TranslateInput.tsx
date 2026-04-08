@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import { useAtom, useSetAtom } from "jotai";
-import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/Input/Input";
 import { LanguageSelect } from "../LanguageSelect/LanguageSelect";
 import {
@@ -13,6 +12,8 @@ import {
 } from "./atom/translateAtoms";
 import { LanguageKey } from "@/lib/languages";
 import dynamic from "next/dynamic";
+import { Button } from "@/components/Button/Button";
+import { MdOutlineSwapCalls } from "react-icons/md";
 
 const TranslateThis = dynamic(() => import("../TranslateThis/TranslateThis"), {
   loading: () => <span>Translating...</span>,
@@ -46,7 +47,11 @@ export function TranslateInput() {
           placeholder={sourceLang.inputPlaceholder ?? "Enter text"}
         />
       </div>
-      <button onClick={handleSwap}>switch</button>
+      <div className="flex justify-center">
+        <Button onClick={handleSwap}>
+          <MdOutlineSwapCalls />
+        </Button>
+      </div>
       <div className="flex min-h-6 gap-2">
         <LanguageSelect
           className="text-[#66D9EF]"
