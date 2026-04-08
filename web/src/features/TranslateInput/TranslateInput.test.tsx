@@ -331,7 +331,7 @@ describe("TranslateInput", () => {
 
       await waitFor(() => expect(screen.getByText("你好")).toBeInTheDocument());
 
-      act(() => store.set(targetLanguageAtom, LANGUAGES[0].key));
+      act(() => store.set(targetLanguageAtom, LANGUAGES[0]));
 
       await waitFor(() => expect(screen.getByText("Hola")).toBeInTheDocument());
     });
