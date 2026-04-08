@@ -49,3 +49,5 @@ export function AskInput() {
     </form>
   );
 }
+
+export default AskInput;

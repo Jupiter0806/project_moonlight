@@ -1,6 +1,8 @@
 import { Button } from "@/components/Button/Button";
 import { atom, useAtom } from "jotai";
 
+// todo
+// this should be from redux and save to local storage, so that the choice can be preserved across sessions and shared with other components
 export const modelAtom = atom<"asking" | "translating">("translating");
 
 export function CamphorInputControlBar() {

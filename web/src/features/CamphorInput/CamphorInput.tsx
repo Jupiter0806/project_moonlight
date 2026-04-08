@@ -3,8 +3,18 @@ import {
   CamphorInputControlBar,
   modelAtom,
 } from "../CamphorInputControlBar/CamphorInputControlBar";
-import { TranslateInput } from "../TranslateInput/TranslateInput";
-import { AskInput } from "../AskInput/AskInput";
+import dynamic from "next/dynamic";
+
+const TranslateInput = dynamic(
+  () => import("../TranslateInput/TranslateInput"),
+  {
+    loading: () => <span>Translating...</span>,
+  },
+);
+
+const AskInput = dynamic(() => import("../AskInput/AskInput"), {
+  loading: () => <span>Loading...</span>,
+});
 
 export function CamphorInput() {
   const [model] = useAtom(modelAtom);
