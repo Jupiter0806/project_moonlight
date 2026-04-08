@@ -1,5 +1,7 @@
 import { Button } from "@/components/Button/Button";
 import { atom, useAtom } from "jotai";
+import { RiTranslateAi } from "react-icons/ri";
+import { RiTreeFill } from "react-icons/ri";
 
 // todo
 // this should be from redux and save to local storage, so that the choice can be preserved across sessions and shared with other components
@@ -19,7 +21,7 @@ function ModelToggle() {
     <Button
       onClick={() => setModel(model === "asking" ? "translating" : "asking")}
     >
-      {model === "asking" ? "Switch to Translating" : "Switch to Asking"}
+      {model === "asking" ? <RiTranslateAi /> : <RiTreeFill />}
     </Button>
   );
 }
