@@ -34,7 +34,7 @@ export function TranslateInput() {
   const [translationResult] = useAtom(translationResultAtom);
   const setTranslationResult = useSetAtom(translationResultAtom);
 
-  const { data: translatedText } = useQuery({
+  const { data: translatedText, isLoading } = useQuery({
     queryKey: ["translate", sourceText, sourceLang, targetLang],
     queryFn: () => fetchTranslation(sourceText, sourceLang, targetLang),
     enabled: sourceText.trim().length > 0,
@@ -59,6 +59,7 @@ export function TranslateInput() {
       <div className="flex gap-2">
         <LanguageSelect value={sourceLang} onChange={setSourceLang} />
         <Input
+          className="placeholder:text-white/50"
           value={sourceText}
           onChange={setSourceText}
           placeholder="Enter text"
@@ -67,8 +68,14 @@ export function TranslateInput() {
       </div>
       <button onClick={handleSwap}>switch</button>
       <div className="flex gap-2">
-        <LanguageSelect value={targetLang} onChange={setTargetLang} />
-        <p>{translationResult}</p>
+        <LanguageSelect
+          className="text-[#66D9EF]"
+          value={targetLang}
+          onChange={setTargetLang}
+        />
+        <p className="text-[#66D9EF] placeholder:text-[#66D9EF]/50">
+          {isLoading ? "Translating..." : translationResult}
+        </p>
       </div>
     </div>
   );

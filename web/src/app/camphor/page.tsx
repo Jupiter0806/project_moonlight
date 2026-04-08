@@ -9,7 +9,7 @@ export default function CamphorPage() {
      * On mobile, `dvh` units ensure the layout responds to the browser chrome
      * (address bar appearing/disappearing) correctly.
      */
-    <div className="flex h-dvh flex-col">
+    <div className="flex h-dvh max-w-xl flex-col">
       {/*
        * SCROLL VIEW — placeholder
        *

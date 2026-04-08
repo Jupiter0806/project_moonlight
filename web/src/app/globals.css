@@ -12,11 +12,11 @@
 
   --background: light-dark(#ffffff, #0a0a0a);
   --foreground: light-dark(#171717, #ededed);
-  --surface: light-dark(#f9f9f9, #000000);
-  --surface-elevated: light-dark(#ffffff, #111111);
-  --surface-hover: light-dark(rgba(0, 0, 0, 0.04), #1a1a1a);
+  --surface: light-dark(#f9f9f9, #202124);
+  --surface-elevated: light-dark(#ffffff, #2d2f33);
+  --surface-hover: light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.06));
   --muted: light-dark(#71717a, #a1a1aa);
-  --border: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.145));
+  --border: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.1));
   --foreground-strong: light-dark(#0a0a0a, #f5f5f5);
   --foreground-hover: light-dark(#383838, #cccccc);
 }
