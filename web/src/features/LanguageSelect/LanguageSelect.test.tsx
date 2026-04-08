@@ -35,7 +35,7 @@ describe("LanguageSelect", () => {
       expect(screen.getByRole("combobox")).toBeInTheDocument();
     });
 
-    it("calls onChange with the language key when selection changes", () => {
+    it("calls onChange with the language object when selection changes", () => {
       const onChange = vi.fn();
       render(<LanguageSelect onChange={onChange} />);
 
@@ -45,12 +45,12 @@ describe("LanguageSelect", () => {
       });
 
       expect(onChange).toHaveBeenCalledOnce();
-      expect(onChange).toHaveBeenCalledWith(secondLang.key);
+      expect(onChange).toHaveBeenCalledWith(secondLang);
     });
 
     it("reflects the controlled value", () => {
       const firstLang = LANGUAGES[0];
-      render(<LanguageSelect value={firstLang.key} onChange={vi.fn()} />);
+      render(<LanguageSelect value={firstLang} onChange={vi.fn()} />);
       const select = screen.getByRole("combobox") as HTMLSelectElement;
       expect(select.value).toBe(firstLang.key);
     });

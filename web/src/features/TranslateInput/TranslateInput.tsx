@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAtom, useSetAtom } from "jotai";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/Input/Input";
@@ -33,10 +33,14 @@ export function TranslateInput() {
   const [sourceText, setSourceText] = useAtom(sourceTextAtom);
   const [translationResult] = useAtom(translationResultAtom);
   const setTranslationResult = useSetAtom(translationResultAtom);
+  const sourceInputRef = useRef<HTMLTextAreaElement>(null);
 
+  // todo
+  // useQuery or server action?
+  // also add useStransition for loading state
   const { data: translatedText, isLoading } = useQuery({
-    queryKey: ["translate", sourceText, sourceLang, targetLang],
-    queryFn: () => fetchTranslation(sourceText, sourceLang, targetLang),
+    queryKey: ["translate", sourceText, sourceLang.key, targetLang.key],
+    queryFn: () => fetchTranslation(sourceText, sourceLang.key, targetLang.key),
     enabled: sourceText.trim().length > 0,
     staleTime: Infinity,
   });
@@ -52,6 +56,7 @@ export function TranslateInput() {
   const handleSwap = () => {
     setSourceLang(targetLang);
     setTargetLang(sourceLang);
+    sourceInputRef.current?.focus();
   };
 
   return (
@@ -59,10 +64,11 @@ export function TranslateInput() {
       <div className="flex gap-2">
         <LanguageSelect value={sourceLang} onChange={setSourceLang} />
         <Input
+          ref={sourceInputRef}
           className="placeholder:text-white/50"
           value={sourceText}
           onChange={setSourceText}
-          placeholder="Enter text"
+          placeholder={sourceLang.inputPlaceholder ?? "Enter text"}
           debounce={200}
         />
       </div>
@@ -74,7 +80,17 @@ export function TranslateInput() {
           onChange={setTargetLang}
         />
         <p className="text-[#66D9EF] placeholder:text-[#66D9EF]/50">
-          {isLoading ? "Translating..." : translationResult}
+          {isLoading
+            ? "Translating..."
+            : translationResult || (
+                <span
+                  className="cursor-pointer text-[#66D9EF]/50"
+                  onClick={handleSwap}
+                >
+                  {targetLang.inputPlaceholder ??
+                    "Translation will appear here"}
+                </span>
+              )}
         </p>
       </div>
     </div>

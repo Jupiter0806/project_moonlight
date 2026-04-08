@@ -24,23 +24,23 @@ describe("translateAtoms", () => {
 
   describe("sourceLanguageAtom", () => {
     it("defaults to the first language in the config", () => {
-      expect(store.get(sourceLanguageAtom)).toBe(LANGUAGES[0].key);
+      expect(store.get(sourceLanguageAtom)).toEqual(LANGUAGES[0]);
     });
 
-    it("can be updated to a new language key", () => {
-      store.set(sourceLanguageAtom, LANGUAGES[1].key);
-      expect(store.get(sourceLanguageAtom)).toBe(LANGUAGES[1].key);
+    it("can be updated to a new language object", () => {
+      store.set(sourceLanguageAtom, LANGUAGES[1]);
+      expect(store.get(sourceLanguageAtom)).toEqual(LANGUAGES[1]);
     });
   });
 
   describe("targetLanguageAtom", () => {
     it("defaults to the second language in the config", () => {
-      expect(store.get(targetLanguageAtom)).toBe(LANGUAGES[1].key);
+      expect(store.get(targetLanguageAtom)).toEqual(LANGUAGES[1]);
     });
 
-    it("can be updated to a new language key", () => {
-      store.set(targetLanguageAtom, LANGUAGES[0].key);
-      expect(store.get(targetLanguageAtom)).toBe(LANGUAGES[0].key);
+    it("can be updated to a new language object", () => {
+      store.set(targetLanguageAtom, LANGUAGES[0]);
+      expect(store.get(targetLanguageAtom)).toEqual(LANGUAGES[0]);
     });
   });
 
@@ -68,10 +68,10 @@ describe("translateAtoms", () => {
 
   describe("atom independence", () => {
     it("source and target language atoms are independent", () => {
-      store.set(sourceLanguageAtom, LANGUAGES[0].key);
-      store.set(targetLanguageAtom, LANGUAGES[1].key);
-      expect(store.get(sourceLanguageAtom)).toBe(LANGUAGES[0].key);
-      expect(store.get(targetLanguageAtom)).toBe(LANGUAGES[1].key);
+      store.set(sourceLanguageAtom, LANGUAGES[0]);
+      store.set(targetLanguageAtom, LANGUAGES[1]);
+      expect(store.get(sourceLanguageAtom)).toEqual(LANGUAGES[0]);
+      expect(store.get(targetLanguageAtom)).toEqual(LANGUAGES[1]);
     });
 
     it("source text and translation result are independent", () => {

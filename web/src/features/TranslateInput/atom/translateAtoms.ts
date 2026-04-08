@@ -1,8 +1,8 @@
 import { atom } from "jotai";
-import { LANGUAGES } from "@/lib/languages";
+import { LANGUAGES, type Language } from "@/lib/languages";
 
-export const sourceLanguageAtom = atom<string>(LANGUAGES[0].key);
-export const targetLanguageAtom = atom<string>(LANGUAGES[1].key);
+export const sourceLanguageAtom = atom<Language>(LANGUAGES[0]);
+export const targetLanguageAtom = atom<Language>(LANGUAGES[1]);
 
 export const sourceTextAtom = atom<string>("");
 export const translationResultAtom = atom<string>("");
