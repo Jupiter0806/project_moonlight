@@ -1,5 +1,5 @@
-import { render, screen, fireEvent, act } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
 import { Input } from "./Input";
 
 // --- Tests are written against the stated requirements, not the implementation ---
@@ -108,17 +108,9 @@ describe("Input", () => {
     });
   });
 
-  // Req 4: built-in debounce — default is no debounce
-  describe("debounce behaviour", () => {
-    beforeEach(() => {
-      vi.useFakeTimers();
-    });
-
-    afterEach(() => {
-      vi.useRealTimers();
-    });
-
-    it("calls onChange immediately by default (no debounce)", () => {
+  // onChange fires immediately on every keystroke
+  describe("onChange behaviour", () => {
+    it("calls onChange immediately on each change", () => {
       const onChange = vi.fn();
       render(<Input onChange={onChange} />);
       fireEvent.change(screen.getByRole("textbox"), {
@@ -128,39 +120,24 @@ describe("Input", () => {
       expect(onChange).toHaveBeenCalledWith("hello");
     });
 
-    it("does not call onChange immediately when debounce is set", () => {
+    it("calls onChange on every keystroke", () => {
       const onChange = vi.fn();
-      render(<Input onChange={onChange} debounce={300} />);
-      fireEvent.change(screen.getByRole("textbox"), {
-        target: { value: "hello" },
-      });
-      expect(onChange).not.toHaveBeenCalled();
-    });
-
-    it("calls onChange after the debounce delay", () => {
-      const onChange = vi.fn();
-      render(<Input onChange={onChange} debounce={300} />);
-      fireEvent.change(screen.getByRole("textbox"), {
-        target: { value: "hello" },
-      });
-      act(() => vi.advanceTimersByTime(300));
-      expect(onChange).toHaveBeenCalledOnce();
-      expect(onChange).toHaveBeenCalledWith("hello");
-    });
-
-    it("only fires onChange once for rapid changes within the debounce window", () => {
-      const onChange = vi.fn();
-      render(<Input onChange={onChange} debounce={300} />);
+      render(<Input onChange={onChange} />);
       const textarea = screen.getByRole("textbox");
-
       fireEvent.change(textarea, { target: { value: "a" } });
       fireEvent.change(textarea, { target: { value: "ab" } });
       fireEvent.change(textarea, { target: { value: "abc" } });
+      expect(onChange).toHaveBeenCalledTimes(3);
+      expect(onChange).toHaveBeenLastCalledWith("abc");
+    });
 
-      act(() => vi.advanceTimersByTime(300));
-
-      expect(onChange).toHaveBeenCalledOnce();
-      expect(onChange).toHaveBeenCalledWith("abc");
+    it("does not call onChange when not provided", () => {
+      expect(() => {
+        render(<Input />);
+        fireEvent.change(screen.getByRole("textbox"), {
+          target: { value: "hello" },
+        });
+      }).not.toThrow();
     });
   });
 });

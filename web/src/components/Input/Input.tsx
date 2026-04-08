@@ -1,7 +1,7 @@
 "use client";
 
 import { WithClassName } from "@/types/withClassName";
-import { useCallback, useEffect, useRef, useState, type Ref } from "react";
+import { useCallback, useState, type Ref } from "react";
 
 interface InputProps extends WithClassName {
   ref?: Ref<HTMLTextAreaElement>;
@@ -9,7 +9,6 @@ interface InputProps extends WithClassName {
   placeholder?: string;
   onChange?: (value: string) => void;
   onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
-  debounce?: number;
   value?: string;
   defaultValue?: string;
   disabled?: boolean;
@@ -21,14 +20,12 @@ export function Input({
   placeholder,
   onChange,
   onKeyDown,
-  debounce: debounceDelay,
   value,
   defaultValue,
   disabled,
   className,
 }: InputProps) {
   const [internalValue, setInternalValue] = useState(defaultValue ?? "");
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const displayValue = value !== undefined ? value : internalValue;
 
@@ -43,23 +40,8 @@ export function Input({
     const val = e.target.value;
     setInternalValue(val);
     autoResize(e.target);
-
-    if (debounceDelay && debounceDelay > 0) {
-      if (timerRef.current) clearTimeout(timerRef.current);
-      // todo
-      // useDebounce hook?
-      console.debug("Setting debounce timer with delay", debounceDelay);
-      timerRef.current = setTimeout(() => fireChange(val), debounceDelay);
-    } else {
-      fireChange(val);
-    }
+    fireChange(val);
   };
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
 
   return (
     <textarea
