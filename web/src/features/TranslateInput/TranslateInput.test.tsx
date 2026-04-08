@@ -52,7 +52,7 @@ describe("TranslateInput", () => {
 
     it("reflects sourceLanguageAtom in the source selector", () => {
       const store = createStore();
-      store.set(sourceLanguageAtom, LANGUAGES[0].key);
+      store.set(sourceLanguageAtom, LANGUAGES[0]);
       renderWithStore(store);
       const [sourceSelect] = screen.getAllByRole(
         "combobox",
@@ -65,7 +65,7 @@ describe("TranslateInput", () => {
       renderWithStore(store);
       const [sourceSelect] = screen.getAllByRole("combobox");
       fireEvent.change(sourceSelect, { target: { value: LANGUAGES[1].key } });
-      expect(store.get(sourceLanguageAtom)).toBe(LANGUAGES[1].key);
+      expect(store.get(sourceLanguageAtom)).toEqual(LANGUAGES[1]);
     });
 
     it("renders a text input for source text", () => {
@@ -113,7 +113,7 @@ describe("TranslateInput", () => {
 
     it("reflects targetLanguageAtom in the destination selector", () => {
       const store = createStore();
-      store.set(targetLanguageAtom, LANGUAGES[1].key);
+      store.set(targetLanguageAtom, LANGUAGES[1]);
       renderWithStore(store);
       const selects = screen.getAllByRole("combobox") as HTMLSelectElement[];
       expect(selects[1].value).toBe(LANGUAGES[1].key);
@@ -124,7 +124,7 @@ describe("TranslateInput", () => {
       renderWithStore(store);
       const selects = screen.getAllByRole("combobox");
       fireEvent.change(selects[1], { target: { value: LANGUAGES[0].key } });
-      expect(store.get(targetLanguageAtom)).toBe(LANGUAGES[0].key);
+      expect(store.get(targetLanguageAtom)).toEqual(LANGUAGES[0]);
     });
 
     it("displays the translation result from translationResultAtom", async () => {
@@ -169,20 +169,20 @@ describe("TranslateInput", () => {
 
     it("swaps source and target language atoms when clicked", () => {
       const store = createStore();
-      store.set(sourceLanguageAtom, LANGUAGES[0].key);
-      store.set(targetLanguageAtom, LANGUAGES[1].key);
+      store.set(sourceLanguageAtom, LANGUAGES[0]);
+      store.set(targetLanguageAtom, LANGUAGES[1]);
       renderWithStore(store);
 
       fireEvent.click(screen.getByRole("button", { name: /switch/i }));
 
-      expect(store.get(sourceLanguageAtom)).toBe(LANGUAGES[1].key);
-      expect(store.get(targetLanguageAtom)).toBe(LANGUAGES[0].key);
+      expect(store.get(sourceLanguageAtom)).toEqual(LANGUAGES[1]);
+      expect(store.get(targetLanguageAtom)).toEqual(LANGUAGES[0]);
     });
 
     it("reflects swapped languages in both selectors after switching", () => {
       const store = createStore();
-      store.set(sourceLanguageAtom, LANGUAGES[0].key);
-      store.set(targetLanguageAtom, LANGUAGES[1].key);
+      store.set(sourceLanguageAtom, LANGUAGES[0]);
+      store.set(targetLanguageAtom, LANGUAGES[1]);
       renderWithStore(store);
 
       fireEvent.click(screen.getByRole("button", { name: /switch/i }));
@@ -201,16 +201,16 @@ describe("TranslateInput", () => {
 
     it("switching twice restores the original language pair", () => {
       const store = createStore();
-      store.set(sourceLanguageAtom, LANGUAGES[0].key);
-      store.set(targetLanguageAtom, LANGUAGES[1].key);
+      store.set(sourceLanguageAtom, LANGUAGES[0]);
+      store.set(targetLanguageAtom, LANGUAGES[1]);
       renderWithStore(store);
 
       const btn = screen.getByRole("button", { name: /switch/i });
       fireEvent.click(btn);
       fireEvent.click(btn);
 
-      expect(store.get(sourceLanguageAtom)).toBe(LANGUAGES[0].key);
-      expect(store.get(targetLanguageAtom)).toBe(LANGUAGES[1].key);
+      expect(store.get(sourceLanguageAtom)).toEqual(LANGUAGES[0]);
+      expect(store.get(targetLanguageAtom)).toEqual(LANGUAGES[1]);
     });
   });
 

@@ -1,9 +1,10 @@
 "use client";
 
 import { WithClassName } from "@/types/withClassName";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type Ref } from "react";
 
 interface InputProps extends WithClassName {
+  ref?: Ref<HTMLTextAreaElement>;
   name?: string;
   placeholder?: string;
   onChange?: (value: string) => void;
@@ -15,6 +16,7 @@ interface InputProps extends WithClassName {
 }
 
 export function Input({
+  ref,
   name,
   placeholder,
   onChange,
@@ -25,18 +27,14 @@ export function Input({
   disabled,
   className,
 }: InputProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [internalValue, setInternalValue] = useState(defaultValue ?? "");
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const displayValue = value !== undefined ? value : internalValue;
 
-  const autoResize = () => {
-    const el = textareaRef.current;
-    if (el) {
-      el.style.height = "auto";
-      el.style.height = `${el.scrollHeight}px`;
-    }
+  const autoResize = (el: HTMLTextAreaElement) => {
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
   };
 
   const fireChange = useCallback((val: string) => onChange?.(val), [onChange]);
@@ -44,10 +42,12 @@ export function Input({
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
     setInternalValue(val);
-    autoResize();
+    autoResize(e.target);
 
     if (debounceDelay && debounceDelay > 0) {
       if (timerRef.current) clearTimeout(timerRef.current);
+      // todo
+      // useDebounce hook?
       console.debug("Setting debounce timer with delay", debounceDelay);
       timerRef.current = setTimeout(() => fireChange(val), debounceDelay);
     } else {
@@ -63,7 +63,7 @@ export function Input({
 
   return (
     <textarea
-      ref={textareaRef}
+      ref={ref}
       name={name}
       rows={1}
       placeholder={placeholder}

@@ -1,12 +1,12 @@
 "use client";
 
-import { LANGUAGES } from "@/lib/languages";
+import { LANGUAGES, type Language } from "@/lib/languages";
 import { WithClassName } from "@/types/withClassName";
 
 interface LanguageSelectProps extends WithClassName {
-  value?: string;
-  defaultValue?: string;
-  onChange?: (key: string) => void;
+  value?: Language;
+  defaultValue?: Language;
+  onChange?: (lang: Language) => void;
 }
 
 export function LanguageSelect({
@@ -15,11 +15,16 @@ export function LanguageSelect({
   onChange,
   className,
 }: LanguageSelectProps) {
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const lang = LANGUAGES.find((l) => l.key === e.target.value);
+    if (lang) onChange?.(lang);
+  };
+
   return (
     <select
-      value={value}
-      defaultValue={defaultValue}
-      onChange={(e) => onChange?.(e.target.value)}
+      value={value?.key}
+      defaultValue={defaultValue?.key}
+      onChange={handleChange}
       className={className}
     >
       {LANGUAGES.map((lang) => (
