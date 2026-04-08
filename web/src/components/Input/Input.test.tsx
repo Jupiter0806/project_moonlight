@@ -63,6 +63,38 @@ describe("Input", () => {
     });
   });
 
+  // value / defaultValue props
+  describe("value prop", () => {
+    it("displays the provided value", () => {
+      render(<Input value="controlled" onChange={() => {}} />);
+      expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe(
+        "controlled",
+      );
+    });
+
+    it("reflects value prop changes", () => {
+      const { rerender } = render(<Input value="first" onChange={() => {}} />);
+      rerender(<Input value="second" onChange={() => {}} />);
+      expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe(
+        "second",
+      );
+    });
+
+    it("displays defaultValue when value prop is not provided", () => {
+      render(<Input defaultValue="preset" />);
+      expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe(
+        "preset",
+      );
+    });
+
+    it("starts empty when neither value nor defaultValue is provided", () => {
+      render(<Input />);
+      expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe(
+        "",
+      );
+    });
+  });
+
   // Req 4: built-in debounce — default is no debounce
   describe("debounce behaviour", () => {
     beforeEach(() => {

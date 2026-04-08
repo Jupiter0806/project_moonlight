@@ -15,12 +15,15 @@ export function Input({
   placeholder,
   onChange,
   debounce: debounceDelay,
+  value,
   defaultValue,
   className,
 }: InputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [internalValue, setInternalValue] = useState(defaultValue ?? "");
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const displayValue = value !== undefined ? value : internalValue;
 
   const autoResize = () => {
     const el = textareaRef.current;
@@ -57,7 +60,7 @@ export function Input({
       ref={textareaRef}
       rows={1}
       placeholder={placeholder}
-      value={internalValue}
+      value={displayValue}
       onChange={handleChange}
       className={`w-full resize-none overflow-hidden border-none bg-transparent outline-none ${className}`}
     />
