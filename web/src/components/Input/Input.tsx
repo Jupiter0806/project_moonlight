@@ -1,8 +1,9 @@
 "use client";
 
+import { WithClassName } from "@/types/withClassName";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-interface InputProps {
+interface InputProps extends WithClassName {
   placeholder?: string;
   onChange?: (value: string) => void;
   debounce?: number;
@@ -15,6 +16,7 @@ export function Input({
   onChange,
   debounce: debounceDelay,
   defaultValue,
+  className,
 }: InputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [internalValue, setInternalValue] = useState(defaultValue ?? "");
@@ -57,7 +59,7 @@ export function Input({
       placeholder={placeholder}
       value={internalValue}
       onChange={handleChange}
-      className="w-full resize-none overflow-hidden border-none bg-transparent outline-none"
+      className={`w-full resize-none overflow-hidden border-none bg-transparent outline-none ${className}`}
     />
   );
 }
