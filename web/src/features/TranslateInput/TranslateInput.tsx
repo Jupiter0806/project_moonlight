@@ -74,3 +74,5 @@ export function TranslateInput() {
     </div>
   );
 }
+
+export default TranslateInput;
