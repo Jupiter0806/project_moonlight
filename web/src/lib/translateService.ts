@@ -4,6 +4,8 @@ const url =
 
 import type { LanguageKey } from "@/lib/languages";
 
+// todo
+// could google api return back the source language for spell checking? if not, we might want to detect language first before translating
 export async function translateText(
   text: string,
   sourceLang: LanguageKey,

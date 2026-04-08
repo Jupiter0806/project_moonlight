@@ -11,43 +11,19 @@ import {
   sourceTextAtom,
   translationResultAtom,
 } from "./atom/translateAtoms";
+import { LanguageKey } from "@/lib/languages";
+import dynamic from "next/dynamic";
 
-async function fetchTranslation(
-  text: string,
-  sourceLang: string,
-  targetLang: string,
-): Promise<string> {
-  const res = await fetch("/api/translate", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, sourceLang, targetLang }),
-  });
-  if (!res.ok) throw new Error("Translation failed");
-  const data = (await res.json()) as { translatedText: string };
-  return data.translatedText;
-}
+const TranslateThis = dynamic(() => import("../TranslateThis/TranslateThis"), {
+  loading: () => <span>Translating...</span>,
+});
 
 export function TranslateInput() {
   const [sourceLang, setSourceLang] = useAtom(sourceLanguageAtom);
   const [targetLang, setTargetLang] = useAtom(targetLanguageAtom);
   const [sourceText, setSourceText] = useAtom(sourceTextAtom);
-  const [translationResult] = useAtom(translationResultAtom);
   const setTranslationResult = useSetAtom(translationResultAtom);
   const sourceInputRef = useRef<HTMLTextAreaElement>(null);
-
-  // todo
-  // useQuery or server action?
-  // also add useStransition for loading state
-  const { data: translatedText, isLoading } = useQuery({
-    queryKey: ["translate", sourceText, sourceLang.key, targetLang.key],
-    queryFn: () => fetchTranslation(sourceText, sourceLang.key, targetLang.key),
-    enabled: sourceText.trim().length > 0,
-    staleTime: Infinity,
-  });
-
-  useEffect(() => {
-    if (translatedText !== undefined) setTranslationResult(translatedText);
-  }, [translatedText, setTranslationResult]);
 
   useEffect(() => {
     if (!sourceText.trim()) setTranslationResult("");
@@ -61,36 +37,38 @@ export function TranslateInput() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex gap-2">
+      <div className="flex min-h-6 gap-2">
         <LanguageSelect value={sourceLang} onChange={setSourceLang} />
         <Input
           ref={sourceInputRef}
           className="placeholder:text-white/50"
-          value={sourceText}
           onChange={setSourceText}
           placeholder={sourceLang.inputPlaceholder ?? "Enter text"}
-          debounce={200}
         />
       </div>
       <button onClick={handleSwap}>switch</button>
-      <div className="flex gap-2">
+      <div className="flex min-h-6 gap-2">
         <LanguageSelect
           className="text-[#66D9EF]"
           value={targetLang}
           onChange={setTargetLang}
         />
         <p className="text-[#66D9EF] placeholder:text-[#66D9EF]/50">
-          {isLoading
-            ? "Translating..."
-            : translationResult || (
-                <span
-                  className="cursor-pointer text-[#66D9EF]/50"
-                  onClick={handleSwap}
-                >
-                  {targetLang.inputPlaceholder ??
-                    "Translation will appear here"}
-                </span>
-              )}
+          {sourceText ? (
+            <TranslateThis
+              sourceText={sourceText}
+              source={sourceLang.key as LanguageKey}
+              target={targetLang.key as LanguageKey}
+              onResult={setTranslationResult}
+            />
+          ) : (
+            <span
+              className="cursor-pointer text-[#66D9EF]/50"
+              onClick={handleSwap}
+            >
+              {targetLang.inputPlaceholder ?? "Translation will appear here"}
+            </span>
+          )}
         </p>
       </div>
     </div>

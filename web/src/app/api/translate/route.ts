@@ -2,6 +2,9 @@ import { type NextRequest, NextResponse } from "next/server";
 import { translateText } from "@/lib/translateService";
 import type { LanguageKey } from "@/lib/languages";
 
+// todo
+// no authentication
+
 interface TranslateRequestBody {
   text: string;
   sourceLang: LanguageKey;

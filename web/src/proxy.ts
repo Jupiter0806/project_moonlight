@@ -15,6 +15,8 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // todo
+  // no session validation
   // The login page sets this cookie via /api/auth/session after verifying the
   // Firebase ID token server-side. If absent, redirect to login.
   const session = request.cookies.get("__session");
