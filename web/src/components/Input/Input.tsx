@@ -4,19 +4,25 @@ import { WithClassName } from "@/types/withClassName";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface InputProps extends WithClassName {
+  name?: string;
   placeholder?: string;
   onChange?: (value: string) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   debounce?: number;
   value?: string;
   defaultValue?: string;
+  disabled?: boolean;
 }
 
 export function Input({
+  name,
   placeholder,
   onChange,
+  onKeyDown,
   debounce: debounceDelay,
   value,
   defaultValue,
+  disabled,
   className,
 }: InputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -58,10 +64,13 @@ export function Input({
   return (
     <textarea
       ref={textareaRef}
+      name={name}
       rows={1}
       placeholder={placeholder}
       value={displayValue}
       onChange={handleChange}
+      onKeyDown={onKeyDown}
+      disabled={disabled}
       className={`w-full resize-none overflow-hidden border-none bg-transparent outline-none ${className}`}
     />
   );
