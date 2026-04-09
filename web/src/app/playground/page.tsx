@@ -1,4 +1,4 @@
-import { ChatWindow } from "@/widgets/playground/ChatWindow/ChatWindow";
+import { ChatWindow } from "@/features/ChatWindow/ChatWindow";
 import { LazyLoad } from "@/widgets/playground/LazyLoad/LazyLoad";
 
 export default function PlaygroundPage() {

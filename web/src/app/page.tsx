@@ -1,4 +1,4 @@
-import { SignOutButton } from "@/widgets/SignOutButton/SignOutButton";
+import { SignOutButton } from "@/features/SignOutButton/SignOutButton";
 import Image from "next/image";
 import Link from "next/link";
 
