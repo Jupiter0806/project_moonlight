@@ -20,6 +20,7 @@ const makeRootState = (
         { type: "camphor" },
         { type: "camphor-translate", sort: "popular" },
         { type: "camphor-self" },
+        { type: "camphor-today" },
       ],
       ...overrides,
     },
@@ -31,7 +32,7 @@ describe("pinnedTimelinesSlice", () => {
       const state = pinnedTimelinesReducer(undefined, { type: "@@INIT" });
       expect(state.fetchState).toBe("none");
       expect(state.selectedTimeline).toBeNull();
-      expect(state.timelines).toHaveLength(3);
+      expect(state.timelines).toHaveLength(4);
     });
 
     it("pre-populates timelines with the available timelines", () => {
@@ -40,6 +41,7 @@ describe("pinnedTimelinesSlice", () => {
         { type: "camphor" },
         { type: "camphor-translate", sort: "popular" },
         { type: "camphor-self" },
+        { type: "camphor-today" },
       ]);
     });
   });
