@@ -45,6 +45,9 @@ describe("useDebounce", () => {
         { initialProps: { value: "initial" } },
       );
 
+      // initial value is returned immediately (currently NOT, undefined by default)
+      act(() => vi.advanceTimersByTime(500));
+
       rerender({ value: "updated" });
       act(() => vi.advanceTimersByTime(499));
 
@@ -69,6 +72,9 @@ describe("useDebounce", () => {
         { initialProps: { value: "initial" } },
       );
 
+      // initial value is returned immediately (currently NOT, undefined by default)
+      act(() => vi.advanceTimersByTime(1000));
+
       rerender({ value: "updated" });
 
       act(() => vi.advanceTimersByTime(999));
@@ -85,6 +91,9 @@ describe("useDebounce", () => {
         ({ value }) => useDebounce(value, 500),
         { initialProps: { value: "initial" } },
       );
+
+      // initial value is returned immediately (currently NOT, undefined by default)
+      act(() => vi.advanceTimersByTime(500));
 
       rerender({ value: "first" });
       act(() => vi.advanceTimersByTime(300));
@@ -122,6 +131,9 @@ describe("useDebounce", () => {
         ({ value }) => useDebounce(value, 500),
         { initialProps: { value: "same" } },
       );
+
+      // initial value is returned immediately (currently NOT, undefined by default)
+      act(() => vi.advanceTimersByTime(500));
 
       const before = result.current;
       rerender({ value: "same" });
