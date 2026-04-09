@@ -1,18 +1,16 @@
 import { useAtom } from "jotai";
-import {
-  CamphorInputControlBar,
-  modelAtom,
-} from "../CamphorInputControlBar/CamphorInputControlBar";
+import { CamphorInputControlBar } from "@/features/CamphorInputControlBar/CamphorInputControlBar";
+import { modelAtom } from "@/features/CamphorInputControlBar/atom/camphorInputControlBarAtoms";
 import dynamic from "next/dynamic";
 
 const TranslateInput = dynamic(
-  () => import("../TranslateInput/TranslateInput"),
+  () => import("@/features/TranslateInput/TranslateInput"),
   {
     loading: () => <span>Translating...</span>,
   },
 );
 
-const AskInput = dynamic(() => import("../AskInput/AskInput"), {
+const AskInput = dynamic(() => import("@/features/AskInput/AskInput"), {
   loading: () => <span>Loading...</span>,
 });
 

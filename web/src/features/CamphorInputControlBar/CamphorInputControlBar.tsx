@@ -1,11 +1,8 @@
 import { Button } from "@/components/Button/Button";
-import { atom, useAtom } from "jotai";
+import { useAtom } from "jotai";
 import { RiTranslateAi } from "react-icons/ri";
 import { RiTreeFill } from "react-icons/ri";
-
-// todo
-// this should be from redux and save to local storage, so that the choice can be preserved across sessions and shared with other components
-export const modelAtom = atom<"asking" | "translating">("translating");
+import { modelAtom } from "./atom/camphorInputControlBarAtoms";
 
 export function CamphorInputControlBar() {
   return (

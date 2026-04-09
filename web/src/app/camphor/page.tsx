@@ -1,6 +1,6 @@
 "use client";
 
-import { CamphorInput } from "@/features/CamphorInput/CamphorInput";
+import { CamphorInput } from "@/widgets/CamphorInput/CamphorInput";
 
 export default function CamphorPage() {
   return (
