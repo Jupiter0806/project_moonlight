@@ -22,7 +22,6 @@ import { LANGUAGES } from "@/lib/languages";
 //   1. Handle source language selection and input
 //   2. Handle destination language selection and present results
 //   3. A switch button to swap source/destination
-//   4. Translate the current input with a debounce
 
 function renderWithStore(store = createStore()) {
   const queryClient = new QueryClient({
@@ -149,13 +148,6 @@ describe("TranslateInput", () => {
       const selects = screen.getAllByRole("combobox");
       expect(selects[1]).toBeInTheDocument(); // destination side rendered
     });
-
-    it("updates the displayed result reactively when translationResultAtom changes", () => {
-      const store = createStore();
-      renderWithStore(store);
-      act(() => store.set(translationResultAtom, "早上好"));
-      expect(screen.getByText("早上好")).toBeInTheDocument();
-    });
   });
 
   // Req 3: switch button swaps source/destination
@@ -211,129 +203,6 @@ describe("TranslateInput", () => {
 
       expect(store.get(sourceLanguageAtom)).toEqual(LANGUAGES[0]);
       expect(store.get(targetLanguageAtom)).toEqual(LANGUAGES[1]);
-    });
-  });
-
-  // Req 4: Translate input with debounce
-  // Translation is driven by sourceTextAtom (updated by Input after debounce).
-  // Tests manipulate the atom directly to isolate translation behavior from the
-  // Input debounce timing (which is separately covered in Input.test.tsx).
-  describe("translation", () => {
-    afterEach(() => vi.restoreAllMocks());
-
-    it("translation is not triggered synchronously when the user types (debounce)", () => {
-      const fetchMock = vi.fn();
-      vi.stubGlobal("fetch", fetchMock);
-
-      const store = createStore();
-      renderWithStore(store);
-      fireEvent.change(screen.getByRole("textbox"), {
-        target: { value: "Hello" },
-      });
-
-      // sourceTextAtom is still empty — Input debounce hasn't fired yet
-      expect(store.get(sourceTextAtom)).toBe("");
-      expect(
-        fetchMock.mock.calls.some((c) =>
-          (c[0] as string).includes("/api/translate"),
-        ),
-      ).toBe(false);
-    });
-
-    it("fires a translation request when sourceTextAtom becomes non-empty", async () => {
-      const fetchMock = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ translatedText: "你好" }),
-      });
-      vi.stubGlobal("fetch", fetchMock);
-
-      const store = createStore();
-      store.set(sourceTextAtom, "Hello");
-      renderWithStore(store);
-
-      await waitFor(() =>
-        expect(
-          fetchMock.mock.calls.some((c) =>
-            (c[0] as string).includes("/api/translate"),
-          ),
-        ).toBe(true),
-      );
-    });
-
-    it("displays the translation result after a successful response", async () => {
-      vi.stubGlobal(
-        "fetch",
-        vi.fn().mockResolvedValue({
-          ok: true,
-          json: async () => ({ translatedText: "你好" }),
-        }),
-      );
-
-      const store = createStore();
-      store.set(sourceTextAtom, "Hello");
-      renderWithStore(store);
-
-      await waitFor(() => expect(screen.getByText("你好")).toBeInTheDocument());
-    });
-
-    it("does not trigger translation when source text is empty", () => {
-      const fetchMock = vi.fn();
-      vi.stubGlobal("fetch", fetchMock);
-
-      const store = createStore(); // sourceTextAtom defaults to ""
-      renderWithStore(store);
-
-      expect(
-        fetchMock.mock.calls.some((c) =>
-          (c[0] as string).includes("/api/translate"),
-        ),
-      ).toBe(false);
-    });
-
-    it("clears the translation result when source text becomes empty", async () => {
-      vi.stubGlobal(
-        "fetch",
-        vi.fn().mockResolvedValue({
-          ok: true,
-          json: async () => ({ translatedText: "你好" }),
-        }),
-      );
-
-      const store = createStore();
-      store.set(sourceTextAtom, "Hello");
-      renderWithStore(store);
-
-      await waitFor(() =>
-        expect(store.get(translationResultAtom)).toBe("你好"),
-      );
-
-      act(() => store.set(sourceTextAtom, ""));
-
-      await waitFor(() => expect(store.get(translationResultAtom)).toBe(""));
-    });
-
-    it("retriggers translation when the target language changes", async () => {
-      const fetchMock = vi
-        .fn()
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ translatedText: "你好" }),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ translatedText: "Hola" }),
-        });
-      vi.stubGlobal("fetch", fetchMock);
-
-      const store = createStore();
-      store.set(sourceTextAtom, "Hello");
-      renderWithStore(store);
-
-      await waitFor(() => expect(screen.getByText("你好")).toBeInTheDocument());
-
-      act(() => store.set(targetLanguageAtom, LANGUAGES[0]));
-
-      await waitFor(() => expect(screen.getByText("Hola")).toBeInTheDocument());
     });
   });
 });

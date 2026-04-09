@@ -48,7 +48,7 @@ export function TranslateInput() {
         />
       </div>
       <div className="flex justify-center">
-        <Button onClick={handleSwap}>
+        <Button aria-label="Switch" onClick={handleSwap}>
           <MdOutlineSwapCalls />
         </Button>
       </div>
