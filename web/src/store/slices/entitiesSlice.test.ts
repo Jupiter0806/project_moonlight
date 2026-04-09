@@ -17,10 +17,10 @@ import entitiesReducer, {
   selectReflectionFetchStatus,
 } from "./entitiesSlice";
 import {
-  fetchTimeline,
+  fetchTimelineThunk,
   type TimelineApiResponse,
   type FetchTimelineResult,
-} from "@/store/thunks/fetchTimeline";
+} from "@/store/thunks/fetchTimelineThunk";
 import type { RootState } from "@/store/store";
 import type { Trace } from "@/types/Trace";
 import type { Reflection } from "@/types/Reflection";
@@ -234,10 +234,10 @@ describe("entitiesSlice", () => {
     });
   });
 
-  describe("fetchTimeline.fulfilled extraReducers (normalization)", () => {
+  describe("fetchTimelineThunk.fulfilled extraReducers (normalization)", () => {
     it("normalizes traces from the API response", () => {
       const t1 = makeTrace("t1");
-      const action = fetchTimeline.fulfilled(
+      const action = fetchTimelineThunk.fulfilled(
         makeResult({ traces: [t1] }),
         "r1",
         baseArg,
@@ -248,7 +248,7 @@ describe("entitiesSlice", () => {
 
     it("normalizes reflections from the API response", () => {
       const r1 = makeReflection("r1");
-      const action = fetchTimeline.fulfilled(
+      const action = fetchTimelineThunk.fulfilled(
         makeResult({ reflections: [r1] }),
         "r1",
         baseArg,
@@ -259,7 +259,7 @@ describe("entitiesSlice", () => {
 
     it("normalizes users from the API response", () => {
       const u1 = makeUser("u1");
-      const action = fetchTimeline.fulfilled(
+      const action = fetchTimelineThunk.fulfilled(
         makeResult({ users: [u1] }),
         "r1",
         baseArg,
@@ -272,7 +272,7 @@ describe("entitiesSlice", () => {
       const t1 = makeTrace("t1");
       const t2 = makeTrace("t2");
       let state = entitiesReducer(undefined, upsertTraces([t1]));
-      const action = fetchTimeline.fulfilled(
+      const action = fetchTimelineThunk.fulfilled(
         makeResult({ traces: [t2] }),
         "r1",
         baseArg,
@@ -283,7 +283,7 @@ describe("entitiesSlice", () => {
     });
 
     it("handles a response with all empty arrays gracefully", () => {
-      const action = fetchTimeline.fulfilled(makeResult(), "r1", baseArg);
+      const action = fetchTimelineThunk.fulfilled(makeResult(), "r1", baseArg);
       const state = entitiesReducer(undefined, action);
       expect(state.traces.ids).toEqual([]);
       expect(state.reflections.ids).toEqual([]);
@@ -291,7 +291,7 @@ describe("entitiesSlice", () => {
     });
 
     it("merges multiple entities from the same response", () => {
-      const action = fetchTimeline.fulfilled(
+      const action = fetchTimelineThunk.fulfilled(
         makeResult({
           traces: [makeTrace("t1"), makeTrace("t2"), makeTrace("t3")],
         }),

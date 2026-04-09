@@ -8,10 +8,13 @@ import type { FetchState } from "@/types/FetchState";
  * and display, and which one is currently selected
  */
 
+// todo
+// figure out the relationship between this timeline and timeline in fetchTimeline
 const AvailTimelines: { type: string; sort?: string }[] = [
   { type: "camphor" },
   { type: "camphor-translate", sort: "popular" },
   { type: "camphor-self" },
+  { type: "camphor-today" },
 ];
 
 interface PinnedTimelinesState {

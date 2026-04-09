@@ -5,7 +5,8 @@ import type { FetchState } from "@/types/FetchState";
 import type { Reflection } from "@/types/Reflection";
 import type { Trace } from "@/types/Trace";
 import type { User } from "@/types/User";
-import { fetchTimeline } from "@/store/thunks/fetchTimeline";
+import { fetchTimelineThunk } from "@/store/thunks/fetchTimelineThunk";
+import { timelineApi } from "@/store/api/timelineApi";
 
 const tracesAdapter = createEntityAdapter<Trace>();
 const reflectionsAdapter = createEntityAdapter<Reflection>();
@@ -72,13 +73,26 @@ export const entitiesSlice = createSlice({
   extraReducers: (builder) => {
     // When a timeline fetch succeeds, normalize all returned entities into the store.
     // The urtSlice independently updates the ordered entry list.
-    builder.addCase(fetchTimeline.fulfilled, (state, action) => {
-      const { traces, reflections, users } = action.payload.response;
-      if (traces.length) tracesAdapter.upsertMany(state.traces, traces);
-      if (reflections.length)
-        reflectionsAdapter.upsertMany(state.reflections, reflections);
-      if (users.length) usersAdapter.upsertMany(state.users, users);
-    });
+    builder
+      .addCase(fetchTimelineThunk.fulfilled, (state, action) => {
+        const { traces, reflections, users } = action.payload.response;
+        if (traces.length) tracesAdapter.upsertMany(state.traces, traces);
+        if (reflections.length)
+          reflectionsAdapter.upsertMany(state.reflections, reflections);
+        if (users.length) usersAdapter.upsertMany(state.users, users);
+      })
+      // ── RTK Query matcher ─────────────────────────────────────────────────
+      // action.payload is TimelineApiResponse directly (no wrapper object)
+      .addMatcher(
+        timelineApi.endpoints.getTimeline.matchFulfilled,
+        (state, action) => {
+          const { traces, reflections, users } = action.payload;
+          if (traces.length) tracesAdapter.upsertMany(state.traces, traces);
+          if (reflections.length)
+            reflectionsAdapter.upsertMany(state.reflections, reflections);
+          if (users.length) usersAdapter.upsertMany(state.users, users);
+        },
+      );
   },
 });
 

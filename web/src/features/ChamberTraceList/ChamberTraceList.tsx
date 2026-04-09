@@ -5,31 +5,26 @@
  * - TODO: preserve scroll position when the keyboard opens/closes
  */
 
+import { Trace } from "@/features/Trace/Trace";
+import { useGetTimelineQuery } from "@/store/api/timelineApi";
 import { useAppSelector } from "@/store/hooks";
-import { useQuery } from "@tanstack/react-query";
 
 export function ChamberTraceList() {
-  const { data, isLoading } = useTraceList();
+  const traces = useTraceList();
 
-  console.log("Traces data:", data, isLoading);
-
-  return <div className="h-full overflow-y-auto">traces</div>;
+  return (
+    <div className="flex h-full flex-col gap-4 overflow-y-auto">
+      {traces.map((trace) => (
+        <Trace key={trace.entryId} traceId={trace.content.id} />
+      ))}
+    </div>
+  );
 }
 
 function useTraceList() {
-  const timeline = useAppSelector(
-    (state) => state.pinnedTimelines.selectedTimeline,
-  );
+  // RTK Query: handles fetching, caching, and deduplication automatically.
+  // On fulfilled, urtSlice + entitiesSlice both update via extraReducers/matchers.
+  useGetTimelineQuery({ timeline: "camphorTraces", direction: "new" });
 
-  return useQuery({
-    queryKey: ["traces", timeline],
-    queryFn: () => fetchTraces(timeline!),
-    enabled: !!timeline,
-  });
-}
-
-async function fetchTraces(timeline: string) {
-  console.log("Traces data:", timeline);
-
-  return Promise.resolve([]);
+  return useAppSelector((state) => state.urt.camphorTraces.entries);
 }
