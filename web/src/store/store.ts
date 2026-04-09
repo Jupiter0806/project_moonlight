@@ -1,9 +1,15 @@
 import { configureStore } from "@reduxjs/toolkit";
 import counterReducer from "@/features/counter/counterSlice";
+import pinnedTimelinesReducer from "@/features/ChamberTraceList/slices/pinnedTimelinesSlice";
+import urtReducer from "@/store/slices/urtSlice";
+import entitiesReducer from "@/store/slices/entitiesSlice";
 
 export const store = configureStore({
   reducer: {
     counter: counterReducer,
+    pinnedTimelines: pinnedTimelinesReducer,
+    urt: urtReducer,
+    entities: entitiesReducer,
   },
 });
 
