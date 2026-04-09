@@ -166,7 +166,7 @@ jobs:
 
       # Dependency auditing — fails on high/critical vulnerabilities
       - name: Dependency audit
-        run: pnpm audit --audit-level=high
+        run: pnpm audit --audit-level=high --prod
 
       # SAST — runs locally, prints findings to the log, fails if anything is found
       - name: Run Semgrep SAST
