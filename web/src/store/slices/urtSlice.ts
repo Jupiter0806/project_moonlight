@@ -4,10 +4,11 @@ import type { RootState } from "@/store/store";
 import type { FetchState } from "@/types/FetchState";
 import type { URTInstruction } from "@/types/URTInstruction";
 import {
-  fetchTimeline,
+  fetchTimelineThunk,
   type URTTimeline,
   type URTEntry,
-} from "@/store/thunks/fetchTimeline";
+} from "@/store/thunks/fetchTimelineThunk";
+import { timelineApi } from "@/store/api/timelineApi";
 
 interface URT {
   entries: URTEntry[];
@@ -95,11 +96,11 @@ export const urtSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchTimeline.pending, (state, action) => {
+      .addCase(fetchTimelineThunk.pending, (state, action) => {
         const { timeline, cursor = "initial" } = action.meta.arg;
         state[timeline].fetchStatus[cursor] = "loading";
       })
-      .addCase(fetchTimeline.fulfilled, (state, action) => {
+      .addCase(fetchTimelineThunk.fulfilled, (state, action) => {
         const {
           timeline,
           direction,
@@ -122,10 +123,53 @@ export const urtSlice = createSlice({
           state[timeline].newReflectionsBar = response.newReflectionsBar;
         }
       })
-      .addCase(fetchTimeline.rejected, (state, action) => {
+      .addCase(fetchTimelineThunk.rejected, (state, action) => {
         const { timeline, cursor = "initial" } = action.meta.arg;
         state[timeline].fetchStatus[cursor] = "none";
-      });
+      })
+      // ── RTK Query matchers ────────────────────────────────────────────────
+      // action.meta.arg.originalArgs  → the FetchTimelineArg passed to the hook
+      // action.payload                → TimelineApiResponse (the resolved data)
+      .addMatcher(
+        timelineApi.endpoints.getTimeline.matchPending,
+        (state, action) => {
+          const { timeline, cursor = "initial" } = action.meta.arg.originalArgs;
+          state[timeline].fetchStatus[cursor] = "loading";
+        },
+      )
+      .addMatcher(
+        timelineApi.endpoints.getTimeline.matchFulfilled,
+        (state, action) => {
+          const {
+            timeline,
+            direction,
+            cursor = "initial",
+          } = action.meta.arg.originalArgs;
+          const response = action.payload;
+          const now = Date.now();
+
+          state[timeline].fetchStatus[cursor] = "loaded";
+
+          if (direction === "top") {
+            state[timeline].entries.unshift(...response.entries);
+            state[timeline].lastTopFetchTimestamp = now;
+          } else {
+            state[timeline].entries.push(...response.entries);
+            state[timeline].lastFetchTimestamp = now;
+          }
+
+          if (response.newReflectionsBar) {
+            state[timeline].newReflectionsBar = response.newReflectionsBar;
+          }
+        },
+      )
+      .addMatcher(
+        timelineApi.endpoints.getTimeline.matchRejected,
+        (state, action) => {
+          const { timeline, cursor = "initial" } = action.meta.arg.originalArgs;
+          state[timeline].fetchStatus[cursor] = "none";
+        },
+      );
   },
 });
 

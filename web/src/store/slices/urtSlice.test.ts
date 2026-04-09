@@ -10,10 +10,10 @@ import urtReducer, {
   selectNewReflectionsBar,
 } from "./urtSlice";
 import {
-  fetchTimeline,
+  fetchTimelineThunk,
   type URTEntry,
   type FetchTimelineResult,
-} from "@/store/thunks/fetchTimeline";
+} from "@/store/thunks/fetchTimelineThunk";
 import type { RootState } from "@/store/store";
 
 const makeEntry = (id: string): URTEntry => ({
@@ -230,7 +230,7 @@ describe("urtSlice", () => {
       it("sets fetchStatus to 'loading' for 'initial' when no cursor provided", () => {
         const state = urtReducer(
           undefined,
-          fetchTimeline.pending("r1", baseArg),
+          fetchTimelineThunk.pending("r1", baseArg),
         );
         expect(state.camphorTraces.fetchStatus["initial"]).toBe("loading");
       });
@@ -238,7 +238,10 @@ describe("urtSlice", () => {
       it("sets fetchStatus to 'loading' for the specified cursor", () => {
         const state = urtReducer(
           undefined,
-          fetchTimeline.pending("r1", { ...baseArg, cursor: "cursor-xyz" }),
+          fetchTimelineThunk.pending("r1", {
+            ...baseArg,
+            cursor: "cursor-xyz",
+          }),
         );
         expect(state.camphorTraces.fetchStatus["cursor-xyz"]).toBe("loading");
       });
@@ -246,7 +249,7 @@ describe("urtSlice", () => {
       it("does not affect other timelines", () => {
         const state = urtReducer(
           undefined,
-          fetchTimeline.pending("r1", baseArg),
+          fetchTimelineThunk.pending("r1", baseArg),
         );
         expect(state.camphorReflections.fetchStatus).toEqual({});
       });
@@ -264,7 +267,7 @@ describe("urtSlice", () => {
         });
         const state = urtReducer(
           undefined,
-          fetchTimeline.fulfilled(payload, "r1", baseArg),
+          fetchTimelineThunk.fulfilled(payload, "r1", baseArg),
         );
         expect(state.camphorTraces.entries).toEqual([
           makeEntry("e1"),
@@ -278,7 +281,7 @@ describe("urtSlice", () => {
         });
         const state = urtReducer(
           undefined,
-          fetchTimeline.fulfilled(payload, "r1", baseArg),
+          fetchTimelineThunk.fulfilled(payload, "r1", baseArg),
         );
         expect(state.camphorTraces.fetchStatus["initial"]).toBe("loaded");
       });
@@ -289,7 +292,7 @@ describe("urtSlice", () => {
         });
         const state = urtReducer(
           undefined,
-          fetchTimeline.fulfilled(payload, "r1", baseArg),
+          fetchTimelineThunk.fulfilled(payload, "r1", baseArg),
         );
         expect(state.camphorTraces.lastFetchTimestamp).toBeGreaterThan(0);
         expect(state.camphorTraces.lastTopFetchTimestamp).toBe(0);
@@ -316,7 +319,7 @@ describe("urtSlice", () => {
         });
         state = urtReducer(
           state,
-          fetchTimeline.fulfilled(payload, "r1", topArg),
+          fetchTimelineThunk.fulfilled(payload, "r1", topArg),
         );
         expect(state.camphorTraces.entries[0]).toEqual(makeEntry("new-top"));
         expect(state.camphorTraces.entries[1]).toEqual(existing);
@@ -329,7 +332,7 @@ describe("urtSlice", () => {
         });
         const state = urtReducer(
           undefined,
-          fetchTimeline.fulfilled(payload, "r1", topArg),
+          fetchTimelineThunk.fulfilled(payload, "r1", topArg),
         );
         expect(state.camphorTraces.lastTopFetchTimestamp).toBeGreaterThan(0);
         expect(state.camphorTraces.lastFetchTimestamp).toBe(0);
@@ -350,7 +353,7 @@ describe("urtSlice", () => {
         });
         const state = urtReducer(
           undefined,
-          fetchTimeline.fulfilled(payload, "r1", baseArg),
+          fetchTimelineThunk.fulfilled(payload, "r1", baseArg),
         );
         expect(state.camphorTraces.newReflectionsBar).toEqual(bar);
       });
@@ -368,7 +371,7 @@ describe("urtSlice", () => {
         });
         state = urtReducer(
           state,
-          fetchTimeline.fulfilled(payload, "r1", baseArg),
+          fetchTimelineThunk.fulfilled(payload, "r1", baseArg),
         );
         expect(state.camphorTraces.newReflectionsBar.count).toBe(5);
       });
@@ -376,16 +379,22 @@ describe("urtSlice", () => {
 
     describe("rejected", () => {
       it("sets fetchStatus back to 'none'", () => {
-        let state = urtReducer(undefined, fetchTimeline.pending("r1", baseArg));
+        let state = urtReducer(
+          undefined,
+          fetchTimelineThunk.pending("r1", baseArg),
+        );
         expect(state.camphorTraces.fetchStatus["initial"]).toBe("loading");
-        state = urtReducer(state, fetchTimeline.rejected(null, "r1", baseArg));
+        state = urtReducer(
+          state,
+          fetchTimelineThunk.rejected(null, "r1", baseArg),
+        );
         expect(state.camphorTraces.fetchStatus["initial"]).toBe("none");
       });
 
       it("does not modify entries", () => {
         const state = urtReducer(
           undefined,
-          fetchTimeline.rejected(null, "r1", baseArg),
+          fetchTimelineThunk.rejected(null, "r1", baseArg),
         );
         expect(state.camphorTraces.entries).toEqual([]);
       });
@@ -416,7 +425,7 @@ describe("urtSlice", () => {
       const rootState = toRoot(
         urtReducer(
           undefined,
-          fetchTimeline.pending("r1", {
+          fetchTimelineThunk.pending("r1", {
             timeline: "camphorTraces",
             direction: "new",
           }),
