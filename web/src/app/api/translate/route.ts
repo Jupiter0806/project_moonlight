@@ -1,9 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { translateText } from "@/lib/translateService";
 import type { LanguageKey } from "@/lib/languages";
-
-// todo
-// no authentication
+import { translateRatelimit } from "@/lib/rateLimit";
+import { getRequestKey } from "@/lib/getRequestKey";
 
 interface TranslateRequestBody {
   text: string;
@@ -12,6 +11,24 @@ interface TranslateRequestBody {
 }
 
 export async function POST(request: NextRequest) {
+  const key = await getRequestKey(request);
+  const { success, limit, remaining, reset } =
+    await translateRatelimit.limit(key);
+  if (!success) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": String(limit),
+          "X-RateLimit-Remaining": String(remaining),
+          "X-RateLimit-Reset": String(reset),
+          "Retry-After": String(Math.ceil((reset - Date.now()) / 1000)),
+        },
+      },
+    );
+  }
+
   const body = (await request.json()) as Partial<TranslateRequestBody>;
 
   if (!body.text || !body.sourceLang || !body.targetLang) {
