@@ -1,5 +1,6 @@
 import { useAppSelector } from "@/store/hooks";
 import type { WithClassName } from "@/types/withClassName";
+import { clsx } from "clsx";
 
 interface TraceProps extends WithClassName {
   traceId: string;
@@ -18,12 +19,11 @@ export function Trace({ traceId, className }: TraceProps) {
 
   return (
     <article
-      className={[
+      // use clsx
+      className={clsx(
         "border-border bg-surface flex flex-col gap-2 rounded-xl border p-4",
         className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
+      )}
     >
       <p className="text-muted text-sm">{date}</p>
       <p className="text-foreground">{trace.q}</p>
