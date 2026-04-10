@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/Button/Button";
 import { useAtom } from "jotai";
 import { RiTranslateAi } from "react-icons/ri";
