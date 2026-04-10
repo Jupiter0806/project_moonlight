@@ -1,8 +1,8 @@
 "use client";
 
 import { useAtom } from "jotai";
-import { CamphorInputControlBar } from "@/features/CamphorInputControlBar/CamphorInputControlBar";
-import { modelAtom } from "@/features/CamphorInputControlBar/atom/camphorInputControlBarAtoms";
+import { ChamberInputControlBar } from "@/features/ChamberInputControlBar/ChamberInputControlBar";
+import { modelAtom } from "@/features/ChamberInputControlBar/atom/chamberInputControlBarAtoms";
 import dynamic from "next/dynamic";
 
 const TranslateInput = dynamic(
@@ -16,13 +16,13 @@ const AskInput = dynamic(() => import("@/features/AskInput/AskInput"), {
   loading: () => <span>Loading...</span>,
 });
 
-export function CamphorInput() {
+export function ChamberInput() {
   const [model] = useAtom(modelAtom);
 
   return (
     <div className="bg-surface flex flex-col gap-3 rounded-3xl p-6">
       {model === "asking" ? <AskInput /> : <TranslateInput />}
-      <CamphorInputControlBar />
+      <ChamberInputControlBar />
     </div>
   );
 }

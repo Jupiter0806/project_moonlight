@@ -4,9 +4,9 @@ import { Button } from "@/components/Button/Button";
 import { useAtom } from "jotai";
 import { RiTranslateAi } from "react-icons/ri";
 import { RiTreeFill } from "react-icons/ri";
-import { modelAtom } from "./atom/camphorInputControlBarAtoms";
+import { modelAtom } from "./atom/chamberInputControlBarAtoms";
 
-export function CamphorInputControlBar() {
+export function ChamberInputControlBar() {
   return (
     <div className="flex gap-2">
       <ModelToggle />
