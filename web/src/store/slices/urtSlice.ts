@@ -34,6 +34,8 @@ interface URT {
 interface URTState {
   camphorReflections: URT;
   camphorTraces: URT;
+  /** Local-only timeline for translation traces flushed from ChamberInput. */
+  chamberTraces: URT;
   moonlightReflections: URT;
   moonlightTraces: URT;
 }
@@ -50,6 +52,7 @@ const emptyURT = (): URT => ({
 const initialState: URTState = {
   camphorReflections: emptyURT(),
   camphorTraces: emptyURT(),
+  chamberTraces: emptyURT(),
   moonlightReflections: emptyURT(),
   moonlightTraces: emptyURT(),
 };

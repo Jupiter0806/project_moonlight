@@ -5,4 +5,5 @@ export interface Trace {
   a: string;
   user: string;
   reflection: string;
+  type: "qna" | "translation";
 }
