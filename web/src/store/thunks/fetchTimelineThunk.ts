@@ -8,6 +8,7 @@ import type { URTInstruction } from "@/types/URTInstruction";
 export type URTTimeline =
   | "camphorReflections"
   | "camphorTraces"
+  | "chamberTraces"
   | "moonlightReflections"
   | "moonlightTraces";
 
@@ -77,6 +78,7 @@ export const MOCK_DB: Partial<Record<URTTimeline, TimelineApiResponse>> = {
         a: "Finding beauty in imperfection.",
         user: "user-1",
         reflection: "reflection-1",
+        type: "translation",
       },
       {
         id: "trace-2",
@@ -85,6 +87,7 @@ export const MOCK_DB: Partial<Record<URTTimeline, TimelineApiResponse>> = {
         a: "不完全さに美を見出すこと。",
         user: "user-2",
         reflection: "reflection-1",
+        type: "translation",
       },
     ],
     reflections: [

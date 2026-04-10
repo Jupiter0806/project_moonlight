@@ -26,7 +26,7 @@ export function ChamberTraceList() {
 function useTraceList() {
   // RTK Query: handles fetching, caching, and deduplication automatically.
   // On fulfilled, urtSlice + entitiesSlice both update via extraReducers/matchers.
-  useGetTimelineQuery({ timeline: "camphorTraces", direction: "new" });
+  // useGetTimelineQuery({ timeline: "camphorTraces", direction: "new" });
 
-  return useAppSelector((state) => state.urt.camphorTraces.entries);
+  return useAppSelector((state) => state.urt.chamberTraces.entries);
 }
