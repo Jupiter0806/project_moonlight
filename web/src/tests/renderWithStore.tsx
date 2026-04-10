@@ -7,6 +7,7 @@ import counterReducer from "@/features/counter/counterSlice";
 import pinnedTimelinesReducer from "@/features/ChamberTraceList/slices/pinnedTimelinesSlice";
 import urtReducer from "@/store/slices/urtSlice";
 import entitiesReducer from "@/store/slices/entitiesSlice";
+import sessionReducer from "@/store/slices/sessionSlice";
 import { timelineApi } from "@/store/api/timelineApi";
 
 export function createReduxStore(): EnhancedStore {
@@ -14,6 +15,7 @@ export function createReduxStore(): EnhancedStore {
     reducer: {
       counter: counterReducer,
       pinnedTimelines: pinnedTimelinesReducer,
+      session: sessionReducer,
       urt: urtReducer,
       entities: entitiesReducer,
       [timelineApi.reducerPath]: timelineApi.reducer,

@@ -15,6 +15,11 @@ import {
   type User,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import {
+  setUser as setSessionUser,
+  clearUser as clearSessionUser,
+} from "@/store/slices/sessionSlice";
+import { useAppDispatch } from "@/store/hooks";
 
 interface AuthContextValue {
   user: User | null;
@@ -33,11 +38,17 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       setLoading(false);
+      if (firebaseUser) {
+        dispatch(setSessionUser(firebaseUser.uid));
+      } else {
+        dispatch(clearSessionUser());
+      }
     });
     return unsubscribe;
   }, []);
