@@ -1,3 +1,5 @@
+"use client";
+
 import { useAtom } from "jotai";
 import { CamphorInputControlBar } from "@/features/CamphorInputControlBar/CamphorInputControlBar";
 import { modelAtom } from "@/features/CamphorInputControlBar/atom/camphorInputControlBarAtoms";

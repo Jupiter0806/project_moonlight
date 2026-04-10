@@ -1,3 +1,5 @@
+"use client";
+
 /**
  *
  * - TODO: map over answers from state/atoms and render each answer card
