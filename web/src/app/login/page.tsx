@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
+import { Page } from "@/components/Page/Page";
 
 interface FormState {
   error: string | null;
@@ -35,7 +36,7 @@ export default function LoginPage() {
   const isRegister = mode === "register";
 
   return (
-    <div className="bg-surface flex min-h-screen items-center justify-center p-8">
+    <Page className="p-8">
       <div className="max-w-sm">
         <h1 className="text-foreground mb-6 text-2xl font-bold tracking-tight">
           {isRegister ? "Create account" : "Sign in"}
@@ -102,6 +103,6 @@ export default function LoginPage() {
           </button>
         </p>
       </div>
-    </div>
+    </Page>
   );
 }

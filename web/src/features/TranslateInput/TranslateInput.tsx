@@ -38,7 +38,7 @@ export function TranslateInput() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex min-h-6 gap-2">
+      <div className="flex min-h-6 items-center gap-2">
         <LanguageSelect value={sourceLang} onChange={setSourceLang} />
         <Input
           ref={sourceInputRef}
@@ -52,7 +52,7 @@ export function TranslateInput() {
           <MdOutlineSwapCalls />
         </Button>
       </div>
-      <div className="flex min-h-6 gap-2">
+      <div className="flex min-h-6 items-center gap-2">
         <LanguageSelect
           className="text-[#66D9EF]"
           value={targetLang}
