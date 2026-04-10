@@ -14,6 +14,7 @@ import { LanguageKey } from "@/lib/languages";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/Button/Button";
 import { MdOutlineSwapCalls } from "react-icons/md";
+import { useFlushTranslation } from "./hooks/useFlushTranslation";
 
 const TranslateThis = dynamic(() => import("../TranslateThis/TranslateThis"), {
   loading: () => <span>Translating...</span>,
@@ -25,6 +26,7 @@ export function TranslateInput() {
   const [sourceText, setSourceText] = useAtom(sourceTextAtom);
   const setTranslationResult = useSetAtom(translationResultAtom);
   const sourceInputRef = useRef<HTMLTextAreaElement>(null);
+  const flushTranslation = useFlushTranslation();
 
   useEffect(() => {
     if (!sourceText.trim()) setTranslationResult("");
@@ -43,8 +45,15 @@ export function TranslateInput() {
         <Input
           ref={sourceInputRef}
           className="placeholder:text-white/50"
+          value={sourceText}
           onChange={setSourceText}
           placeholder={sourceLang.inputPlaceholder ?? "Enter text"}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              flushTranslation();
+            }
+          }}
         />
       </div>
       <div className="flex justify-center">
