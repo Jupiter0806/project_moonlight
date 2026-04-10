@@ -1,12 +1,31 @@
 import { type NextRequest, NextResponse } from "next/server";
 import type { WordResult } from "@/lib/wordsService";
+import { wordsRatelimit } from "@/lib/rateLimit";
+import { getRequestKey } from "@/lib/getRequestKey";
 
 const WORDS_API_BASE = "https://wordsapiv1.p.rapidapi.com/words";
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ word: string }> },
 ) {
+  const key = await getRequestKey(request);
+  const { success, limit, remaining, reset } = await wordsRatelimit.limit(key);
+  if (!success) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": String(limit),
+          "X-RateLimit-Remaining": String(remaining),
+          "X-RateLimit-Reset": String(reset),
+          "Retry-After": String(Math.ceil((reset - Date.now()) / 1000)),
+        },
+      },
+    );
+  }
+
   const { word } = await params;
 
   const apiKey = process.env.WORDS_API_KEY;

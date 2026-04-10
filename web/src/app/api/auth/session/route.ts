@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { adminAuth } from "@/lib/firebaseAdmin";
+import { authRatelimit } from "@/lib/rateLimit";
+import { getIpKey } from "@/lib/getRequestKey";
 
 // 5 days — maximum allowed by Firebase for session cookies
 const SESSION_MAX_AGE = 60 * 60 * 24 * 5;
@@ -15,6 +17,24 @@ const SESSION_MAX_AGE = 60 * 60 * 24 * 5;
  * 3. Sets it as an HttpOnly cookie so JS on the client can never read it
  */
 export async function POST(request: NextRequest) {
+  const { success, limit, remaining, reset } = await authRatelimit.limit(
+    getIpKey(request),
+  );
+  if (!success) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": String(limit),
+          "X-RateLimit-Remaining": String(remaining),
+          "X-RateLimit-Reset": String(reset),
+          "Retry-After": String(Math.ceil((reset - Date.now()) / 1000)),
+        },
+      },
+    );
+  }
+
   const body = (await request.json()) as { idToken?: string };
   const idToken = body.idToken;
 
