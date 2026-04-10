@@ -1,6 +1,7 @@
 "use client";
 
 import { WithClassName } from "@/types/withClassName";
+import { clsx } from "clsx";
 import { useCallback, useState, type Ref } from "react";
 
 interface InputProps extends WithClassName {
@@ -53,7 +54,10 @@ export function Input({
       onChange={handleChange}
       onKeyDown={onKeyDown}
       disabled={disabled}
-      className={`w-full resize-none overflow-hidden border-none bg-transparent outline-none ${className}`}
+      className={clsx(
+        "w-full resize-none overflow-hidden border-none bg-transparent outline-none",
+        className,
+      )}
     />
   );
 }
