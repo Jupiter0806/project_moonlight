@@ -36,7 +36,7 @@ export default function LoginPage() {
 
   return (
     <div className="bg-surface flex min-h-screen items-center justify-center p-8">
-      <div className="bg-surface-elevated w-full max-w-sm rounded-xl border p-8 shadow">
+      <div className="max-w-sm">
         <h1 className="text-foreground mb-6 text-2xl font-bold tracking-tight">
           {isRegister ? "Create account" : "Sign in"}
         </h1>
@@ -52,7 +52,7 @@ export default function LoginPage() {
               type="email"
               required
               autoComplete="email"
-              className="border-border bg-surface rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              className="border-border bg-surface-elevated rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -66,7 +66,7 @@ export default function LoginPage() {
               type="password"
               required
               autoComplete={isRegister ? "new-password" : "current-password"}
-              className="border-border bg-surface rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              className="border-border bg-surface-elevated rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
