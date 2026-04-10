@@ -1,4 +1,5 @@
 import { useAppSelector } from "@/store/hooks";
+import { selectTraceById } from "@/store/slices/entitiesSlice";
 import type { WithClassName } from "@/types/withClassName";
 import { clsx } from "clsx";
 
@@ -7,9 +8,7 @@ interface TraceProps extends WithClassName {
 }
 
 export function Trace({ traceId, className }: TraceProps) {
-  const trace = useAppSelector(
-    (state) => state.entities.traces.entities[traceId],
-  );
+  const trace = useAppSelector((state) => selectTraceById(state, traceId));
 
   const date = new Date(trace.created_at).toLocaleDateString(undefined, {
     month: "short",

@@ -10,6 +10,7 @@
 import { Trace } from "@/features/Trace/Trace";
 import { useGetTimelineQuery } from "@/store/api/timelineApi";
 import { useAppSelector } from "@/store/hooks";
+import { selectURTEntries } from "@/store/slices/urtSlice";
 
 export function ChamberTraceList() {
   const traces = useTraceList();
@@ -28,5 +29,5 @@ function useTraceList() {
   // On fulfilled, urtSlice + entitiesSlice both update via extraReducers/matchers.
   // useGetTimelineQuery({ timeline: "camphorTraces", direction: "new" });
 
-  return useAppSelector((state) => state.urt.chamberTraces.entries);
+  return useAppSelector(selectURTEntries("chamberTraces"));
 }

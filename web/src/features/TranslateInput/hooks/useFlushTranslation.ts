@@ -1,10 +1,11 @@
 "use client";
 
 import { useAtomValue, useSetAtom } from "jotai";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { upsertTraces } from "@/store/slices/entitiesSlice";
 import { prependEntries } from "@/store/slices/urtSlice";
 import { sourceTextAtom, translationResultAtom } from "../atom/translateAtoms";
+import { selectActiveUserId } from "@/store/slices/sessionSlice";
 
 /**
  * Returns a flush function that:
@@ -22,6 +23,7 @@ export function useFlushTranslation(): () => void {
   const setSourceText = useSetAtom(sourceTextAtom);
   const setTranslationResult = useSetAtom(translationResultAtom);
   const dispatch = useAppDispatch();
+  const userId = useAppSelector(selectActiveUserId);
 
   return () => {
     if (!sourceText.trim() || !translationResult.trim()) return;
@@ -35,7 +37,7 @@ export function useFlushTranslation(): () => void {
           created_at: Date.now(),
           q: sourceText,
           a: translationResult,
-          user: "",
+          user: userId,
           reflection: "",
           type: "translation",
         },
