@@ -35,13 +35,7 @@ function initFirebaseAdmin() {
   }
 }
 
-console.debug(
-  "Initializing Firebase Admin SDK in emulator mode",
-  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-);
-
-// todo
-// init at build time, is it good?
-initFirebaseAdmin();
-
-export const adminAuth = getAuth();
+export function getAdminAuth() {
+  initFirebaseAdmin();
+  return getAuth();
+}

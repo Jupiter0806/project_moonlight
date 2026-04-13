@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { adminAuth } from "@/lib/firebaseAdmin";
+import { getAdminAuth } from "@/lib/firebaseAdmin";
 
 /**
  * Returns a rate-limit key for the request.
@@ -16,7 +16,7 @@ export async function getRequestKey(request: NextRequest): Promise<string> {
 
   if (sessionCookie) {
     try {
-      const decoded = await adminAuth.verifySessionCookie(sessionCookie);
+      const decoded = await getAdminAuth().verifySessionCookie(sessionCookie);
       return `uid:${decoded.uid}`;
     } catch {
       // Invalid/expired cookie — fall through to IP-based key
