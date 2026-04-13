@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { adminAuth } from "@/lib/firebaseAdmin";
+import { getAdminAuth } from "@/lib/firebaseAdmin";
 import { authRatelimit } from "@/lib/rateLimit";
 import { getIpKey } from "@/lib/getRequestKey";
 
@@ -45,9 +45,9 @@ export async function POST(request: NextRequest) {
   let sessionCookie: string;
   try {
     // Verify the ID token first — rejects tampered/expired tokens
-    await adminAuth.verifyIdToken(idToken);
+    await getAdminAuth().verifyIdToken(idToken);
     // Mint a proper session cookie valid for SESSION_MAX_AGE seconds
-    sessionCookie = await adminAuth.createSessionCookie(idToken, {
+    sessionCookie = await getAdminAuth().createSessionCookie(idToken, {
       expiresIn: SESSION_MAX_AGE * 1000, // Firebase expects milliseconds
     });
   } catch (error) {
