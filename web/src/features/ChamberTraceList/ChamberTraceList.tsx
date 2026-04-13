@@ -8,7 +8,7 @@
  */
 
 import { Trace } from "@/features/Trace/Trace";
-import { useGetTimelineQuery } from "@/store/api/timelineApi";
+// import { useGetTimelineQuery } from "@/store/api/timelineApi";
 import { useAppSelector } from "@/store/hooks";
 import { selectURTEntries } from "@/store/slices/urtSlice";
 
