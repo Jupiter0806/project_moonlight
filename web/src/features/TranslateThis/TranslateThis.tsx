@@ -3,18 +3,20 @@ import { useQuery } from "@tanstack/react-query";
 import { LanguageKey } from "@/lib/languages";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { WithClassName } from "@/types/withClassName";
 
 export function TranslateThis({
   sourceText,
   source,
   target,
   onResult,
+  className,
 }: {
   sourceText: string;
   source: LanguageKey;
   target: LanguageKey;
   onResult?: (result: string) => void;
-}) {
+} & WithClassName) {
   const isMobile = useIsMobile();
   const debounceDelay = isMobile ? 1000 : 400;
   const deferredSource = useDebounce(sourceText, debounceDelay);
@@ -38,9 +40,11 @@ export function TranslateThis({
 
   // todo
   // shimmer or skeleton for loading state?
-  if (isLoading) return <span>Translating...</span>;
+  if (isLoading) return <span className={className}>Translating...</span>;
 
-  return <span>{sourceText.length === 0 ? "" : data}</span>;
+  return (
+    <span className={className}>{sourceText.length === 0 ? "" : data}</span>
+  );
 }
 
 export async function fetchTranslation(
