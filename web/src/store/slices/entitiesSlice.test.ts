@@ -33,6 +33,7 @@ const makeTrace = (id: string, overrides: Partial<Trace> = {}): Trace => ({
   a: "answer",
   user: "user-1",
   reflection: "reflection-1",
+  type: "qna",
   ...overrides,
 });
 
