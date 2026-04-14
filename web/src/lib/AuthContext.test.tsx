@@ -36,11 +36,11 @@ vi.mock("firebase/auth", () => ({
 }));
 
 import {
-  onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
 } from "firebase/auth";
+import { renderWithStore } from "@/tests/renderWithStore";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 function makeFirebaseUser(uid: string) {
@@ -62,10 +62,12 @@ function AuthConsumer() {
 }
 
 function renderAuth() {
-  return render(
+  return renderWithStore(
     <AuthProvider>
       <AuthConsumer />
     </AuthProvider>,
+    undefined,
+    store,
   );
 }
 
@@ -80,7 +82,7 @@ beforeEach(() => {
 describe("AuthContext", () => {
   describe("AuthProvider — rendering", () => {
     it("renders its children", () => {
-      render(
+      renderWithStore(
         <AuthProvider>
           <span data-testid="child">hello</span>
         </AuthProvider>,
