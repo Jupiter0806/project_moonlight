@@ -20,13 +20,13 @@ export function Trace({ traceId, className }: TraceProps) {
     <article
       // use clsx
       className={clsx(
-        "border-border bg-surface flex flex-col gap-2 rounded-xl border p-4",
+        "border-border bg-card flex flex-col gap-2 rounded-xl border p-4",
         className,
       )}
     >
-      <p className="text-muted text-sm">{date}</p>
+      <p className="text-muted-foreground text-sm">{date}</p>
       <p className="text-foreground">{trace.q}</p>
-      <p className="text-foreground-strong font-medium">{trace.a}</p>
+      <p className="text-foreground font-medium">{trace.a}</p>
     </article>
   );
 }
