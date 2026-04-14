@@ -20,7 +20,7 @@ export function ChamberInput() {
   const [model] = useAtom(modelAtom);
 
   return (
-    <div className="bg-surface flex flex-col gap-3 rounded-3xl p-6">
+    <div className="bg-card flex flex-col gap-3 rounded-3xl p-6">
       {model === "asking" ? <AskInput /> : <TranslateInput />}
       <ChamberInputControlBar />
     </div>
