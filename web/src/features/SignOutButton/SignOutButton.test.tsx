@@ -27,7 +27,7 @@ describe("SignOutButton", () => {
     expect(screen.getByText("Sign Out")).toBeInTheDocument();
   });
 
-  it("calls signOut and redirects to /login when clicked", async () => {
+  it("calls signOut and redirects to /login on success", async () => {
     mockSignOut.mockResolvedValue(undefined);
 
     render(<SignOutButton />);
@@ -39,7 +39,7 @@ describe("SignOutButton", () => {
     });
   });
 
-  it("calls signOut before redirecting", async () => {
+  it("redirects only after signOut resolves", async () => {
     const order: string[] = [];
     mockSignOut.mockImplementation(async () => {
       order.push("signOut");
@@ -54,5 +54,69 @@ describe("SignOutButton", () => {
     await waitFor(() => {
       expect(order).toEqual(["signOut", "push"]);
     });
+  });
+
+  it("shows 'Signing Out...' while in progress", async () => {
+    let resolve: () => void;
+    mockSignOut.mockImplementation(
+      () =>
+        new Promise<void>((res) => {
+          resolve = res;
+        }),
+    );
+
+    render(<SignOutButton />);
+    fireEvent.click(screen.getByText("Sign Out"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Signing Out...")).toBeInTheDocument();
+    });
+
+    resolve!();
+    await waitFor(() => {
+      expect(screen.getByText("Sign Out")).toBeInTheDocument();
+    });
+  });
+
+  it("ignores clicks while signing out", async () => {
+    let resolve: () => void;
+    mockSignOut.mockImplementation(
+      () =>
+        new Promise<void>((res) => {
+          resolve = res;
+        }),
+    );
+
+    render(<SignOutButton />);
+    fireEvent.click(screen.getByText("Sign Out"));
+
+    await waitFor(() =>
+      expect(screen.getByText("Signing Out...")).toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByText("Signing Out..."));
+    fireEvent.click(screen.getByText("Signing Out..."));
+
+    resolve!();
+    await waitFor(() =>
+      expect(screen.getByText("Sign Out")).toBeInTheDocument(),
+    );
+
+    expect(mockSignOut).toHaveBeenCalledOnce();
+  });
+
+  it("does not redirect and re-enables the button when signOut throws", async () => {
+    mockSignOut.mockRejectedValue(
+      new Error("Failed to end session. Please try again."),
+    );
+
+    render(<SignOutButton />);
+    fireEvent.click(screen.getByText("Sign Out"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Sign Out")).toBeInTheDocument();
+    });
+
+    expect(mockPush).not.toHaveBeenCalled();
   });
 });
