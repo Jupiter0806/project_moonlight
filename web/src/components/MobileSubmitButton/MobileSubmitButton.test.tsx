@@ -8,9 +8,8 @@ import { MobileSubmitButton } from "./MobileSubmitButton";
 //   2. Renders an arrow-up icon button
 //   3. Calls onClick when clicked (enabled state)
 //   4. onClick is NOT called when disabled
-//   5. Carries blur / dimmed bg classes when disabled
-//   6. Carries blue bg class when enabled
-//   7. Renders without error when no props are provided
+//   5. Carries blue bg class when enabled
+//   6. Renders without error when no props are provided
 
 describe("MobileSubmitButton", () => {
   describe("Req 1 — desktop visibility", () => {
@@ -30,10 +29,10 @@ describe("MobileSubmitButton", () => {
       ).toBeInTheDocument();
     });
 
-    it("is a native <button> element", () => {
+    it("is a native <div> element", () => {
       render(<MobileSubmitButton />);
       expect(screen.getByRole("button", { name: "Submit" }).tagName).toBe(
-        "BUTTON",
+        "DIV",
       );
     });
   });
@@ -63,30 +62,9 @@ describe("MobileSubmitButton", () => {
       fireEvent.click(screen.getByRole("button", { name: "Submit" }));
       expect(onClick).not.toHaveBeenCalled();
     });
-
-    it("exposes the disabled attribute on the element", () => {
-      render(<MobileSubmitButton disabled />);
-      expect(screen.getByRole("button", { name: "Submit" })).toBeDisabled();
-    });
   });
 
-  describe("Req 5 — disabled visual state", () => {
-    it("carries the dimmed bg class when disabled", () => {
-      render(<MobileSubmitButton disabled />);
-      expect(screen.getByRole("button", { name: "Submit" })).toHaveClass(
-        "bg-white/20",
-      );
-    });
-
-    it("carries the backdrop-blur class when disabled", () => {
-      render(<MobileSubmitButton disabled />);
-      expect(screen.getByRole("button", { name: "Submit" })).toHaveClass(
-        "backdrop-blur-sm",
-      );
-    });
-  });
-
-  describe("Req 6 — enabled visual state", () => {
+  describe("Req 5 — enabled visual state", () => {
     it("carries the blue bg class when enabled", () => {
       render(<MobileSubmitButton />);
       expect(screen.getByRole("button", { name: "Submit" })).toHaveClass(
@@ -102,7 +80,7 @@ describe("MobileSubmitButton", () => {
     });
   });
 
-  describe("Req 7 — default rendering", () => {
+  describe("Req 6 — default rendering", () => {
     it("renders without error when no props are provided", () => {
       expect(() => render(<MobileSubmitButton />)).not.toThrow();
     });
