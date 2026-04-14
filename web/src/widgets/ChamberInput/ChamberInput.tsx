@@ -8,7 +8,7 @@ import dynamic from "next/dynamic";
 const TranslateInput = dynamic(
   () => import("@/features/TranslateInput/TranslateInput"),
   {
-    loading: () => <span>Translating...</span>,
+    loading: () => <span>Loading...</span>,
   },
 );
 

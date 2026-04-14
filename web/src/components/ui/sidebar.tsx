@@ -262,6 +262,8 @@ function SidebarTrigger({
 
   return (
     <Button
+      nativeButton={false}
+      render={(props) => <div {...props} />}
       data-sidebar="trigger"
       data-slot="sidebar-trigger"
       variant="outline"
