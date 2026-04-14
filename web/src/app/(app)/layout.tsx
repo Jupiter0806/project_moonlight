@@ -1,16 +1,15 @@
 import { AppSidebar } from "@/features/app-siderbar";
-import { Page } from "@/components/Page/Page";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Chamber } from "@/widgets/Chamber/Chamber";
 import { AppSidebarTrigger } from "@/features/app-siderbar/app-sidebar-trigger";
+import { Page } from "@/components/Page/Page";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
-export default function Home() {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <AppSidebar />
       <Page>
         <AppSidebarTrigger />
-        <Chamber />
+        {children}
       </Page>
     </SidebarProvider>
   );
