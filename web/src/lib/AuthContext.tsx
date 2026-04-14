@@ -92,8 +92,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function handleSignOut() {
-    await signOut(auth);
-    await fetch("/api/auth/session", { method: "DELETE" });
+    const [firebaseResult, sessionResult] = await Promise.allSettled([
+      signOut(auth),
+      fetch("/api/auth/session", { method: "DELETE" }),
+    ]);
+
+    // The session cookie MUST be deleted — it's the security-critical operation
+    if (sessionResult.status === "rejected") {
+      // Firebase client may already be signed out, but the server cookie is still alive.
+      // Throw so the button component re-enables and shows an error.
+      throw new Error("Failed to end session. Please try again.");
+    }
+
+    // signOut(auth) failed but cookie is gone — server is safe, proceed
+    if (firebaseResult.status === "rejected") {
+      console.warn("Firebase client sign-out failed:", firebaseResult.reason);
+      // Non-fatal — onAuthStateChanged will eventually sync
+    }
   }
 
   return (
