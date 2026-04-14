@@ -38,13 +38,16 @@ export default function LoginPage() {
   return (
     <Page className="p-8">
       <div className="max-w-sm">
-        <h1 className="text-foreground mb-6 text-2xl font-bold tracking-tight">
+        <h1 className="text-muted-foreground mb-6 text-2xl font-bold tracking-tight">
           {isRegister ? "Create account" : "Sign in"}
         </h1>
 
         <form action={formAction} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <label className="text-muted text-sm" htmlFor="email">
+            <label
+              className="text-secondary-foreground text-sm"
+              htmlFor="email"
+            >
               Email
             </label>
             <input
@@ -58,7 +61,10 @@ export default function LoginPage() {
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-muted text-sm" htmlFor="password">
+            <label
+              className="text-secondary-foreground text-sm"
+              htmlFor="password"
+            >
               Password
             </label>
             <input
@@ -92,12 +98,12 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="text-muted mt-6 text-center text-sm">
+        <p className="text-secondary-foreground mt-6 text-center text-sm">
           {isRegister ? "Already have an account?" : "Don't have an account?"}{" "}
           <button
             type="button"
             onClick={() => setMode(isRegister ? "signin" : "register")}
-            className="text-foreground font-medium underline underline-offset-2"
+            className="text-muted-foreground font-medium underline underline-offset-2"
           >
             {isRegister ? "Sign in" : "Register"}
           </button>
