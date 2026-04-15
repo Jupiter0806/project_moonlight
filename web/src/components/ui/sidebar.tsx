@@ -23,7 +23,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { IoMenu } from "react-icons/io5";
+import { TfiMenuAlt } from "react-icons/tfi";
+import { IconButton } from "../icon-button";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -259,21 +260,20 @@ function SidebarTrigger({
   const { toggleSidebar } = useSidebar();
 
   return (
-    <Button
+    <IconButton
       data-sidebar="trigger"
       data-slot="sidebar-trigger"
       variant="outline"
-      size="icon-lg"
+      accessibleLabel="Toggle Sidebar"
       className={cn(className)}
+      icon={<TfiMenuAlt />}
+      iconSize="sm"
       onClick={(event) => {
         onClick?.(event);
         toggleSidebar();
       }}
       {...props}
-    >
-      <IoMenu />
-      <span className="sr-only">Toggle Sidebar</span>
-    </Button>
+    />
   );
 }
 

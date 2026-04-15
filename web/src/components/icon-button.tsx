@@ -35,10 +35,12 @@ interface IconButtonProps
     VariantProps<typeof buttonVariants> {
   /** Icon to render. Hidden when loading. */
   icon: React.ReactNode;
+  /** Optional prop to control icon size */
+  iconSize?: "sm" | "md" | "lg";
   /** Replaces the icon with a spinner and disables interaction. */
   loading?: boolean;
   /** Accessible label — required for icon-only buttons. */
-  "aria-label": string;
+  accessibleLabel: string;
 }
 
 export function IconButton({
@@ -46,7 +48,9 @@ export function IconButton({
   loading = false,
   variant = "ghost",
   size = "icon",
+  iconSize = "md",
   className,
+  accessibleLabel,
   ...props
 }: IconButtonProps) {
   return (
@@ -54,10 +58,18 @@ export function IconButton({
       variant={variant}
       size={size}
       disabled={loading || props.disabled}
-      className={cn("[&_svg]:h-6! [&_svg]:w-6!", className)}
+      className={cn(
+        iconSize === "sm"
+          ? "[&_svg]:h-4! [&_svg]:w-4!"
+          : iconSize === "lg"
+            ? "[&_svg]:h-8! [&_svg]:w-8!"
+            : "[&_svg]:h-6! [&_svg]:w-6!",
+        className,
+      )}
       {...props}
     >
       {loading ? <Spinner /> : icon}
+      <span className="sr-only">{accessibleLabel}</span>
     </Button>
   );
 }

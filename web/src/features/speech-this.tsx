@@ -37,7 +37,7 @@ export function SpeechThis({ text, language }: SpeechThisProps) {
 
   return (
     <IconButton
-      aria-label="Play"
+      accessibleLabel="Play"
       data-testid="play-button"
       loading={isLoading}
       icon={<IoPlayOutline />}
