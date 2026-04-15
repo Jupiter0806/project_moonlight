@@ -253,7 +253,7 @@ describe("TranslateInput", () => {
       const entries = selectURTEntries("chamberTraces")(reduxStore.getState());
       expect(entries).toHaveLength(1);
       expect(entries[0].type).toBe("trace");
-      expect(entries[0].content.displayType).toBe("translationTrace");
+      expect(entries[0].content.displayType).toBe("translation-trace");
     });
 
     it("the URTEntry id matches the Trace entity id", () => {

@@ -7,7 +7,7 @@
  * - TODO: preserve scroll position when the keyboard opens/closes
  */
 
-import { Trace } from "@/features/Trace/Trace";
+import { Trace } from "../Trace";
 // import { useGetTimelineQuery } from "@/store/api/timelineApi";
 import { useAppSelector } from "@/store/hooks";
 import { selectURTEntries } from "@/store/slices/urtSlice";
@@ -18,7 +18,11 @@ export function ChamberTraceList() {
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto">
       {traces.map((trace) => (
-        <Trace key={trace.entryId} traceId={trace.content.id} />
+        <Trace
+          key={trace.entryId}
+          traceId={trace.content.id}
+          displayType={trace.content.displayType}
+        />
       ))}
     </div>
   );
