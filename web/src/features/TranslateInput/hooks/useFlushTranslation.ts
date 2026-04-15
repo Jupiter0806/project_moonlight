@@ -51,7 +51,7 @@ export function useFlushTranslation(): () => void {
           {
             type: "trace",
             entryId: `entry-${id}`,
-            content: { id, displayType: "translationTrace" },
+            content: { id, displayType: "translation-trace" },
           },
         ],
       }),

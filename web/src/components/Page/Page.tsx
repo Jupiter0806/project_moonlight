@@ -1,6 +1,6 @@
 import { WithClassName } from "@/types/withClassName";
 import { PropsWithChildren } from "react";
-import { clsx } from "clsx";
+import { cn } from "@/lib/utils";
 
 export function Page(props: PropsWithChildren & WithClassName) {
   /*
@@ -10,8 +10,8 @@ export function Page(props: PropsWithChildren & WithClassName) {
    */
   return (
     <div
-      className={clsx(
-        "mx-auto flex h-dvh w-full max-w-xl flex-col",
+      className={cn(
+        "bg-background mx-auto flex h-dvh w-full max-w-xl flex-col",
         props.className,
       )}
     >

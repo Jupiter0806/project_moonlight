@@ -20,8 +20,8 @@ export interface URTEntry {
     displayType:
       | "reflection"
       | "translationReflection"
-      | "trace"
-      | "translationTrace";
+      | "qa-trace"
+      | "translation-trace";
   };
 }
 
@@ -62,12 +62,12 @@ export const MOCK_DB: Partial<Record<URTTimeline, TimelineApiResponse>> = {
       {
         type: "trace",
         entryId: "entry-t1",
-        content: { id: "trace-1", displayType: "trace" },
+        content: { id: "trace-1", displayType: "qa-trace" },
       },
       {
         type: "trace",
         entryId: "entry-t2",
-        content: { id: "trace-2", displayType: "translationTrace" },
+        content: { id: "trace-2", displayType: "translation-trace" },
       },
     ],
     traces: [
