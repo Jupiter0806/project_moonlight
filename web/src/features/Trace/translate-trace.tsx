@@ -2,33 +2,25 @@ import { useAppSelector } from "@/store/hooks";
 import { selectTraceById } from "@/store/slices/entitiesSlice";
 import { CommonTraceProps } from "./types";
 import { cn } from "@/lib/utils";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { LanguageSection } from "@/features/language-section";
 
 export function TranslateTrace({ traceId, className }: CommonTraceProps) {
   const trace = useAppSelector((state) => selectTraceById(state, traceId));
 
-  if (!trace) return null;
-
-  const date = new Date(trace.created_at).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  if (!trace || trace.type === "qa") return null;
 
   return (
     <Card size="sm" className={cn(className)}>
-      <CardHeader>
-        <CardTitle>{trace.q}</CardTitle>
-        <CardDescription>{date}</CardDescription>
-      </CardHeader>
       <CardContent>
-        <p className="text-foreground font-medium">{trace.a}</p>
+        <LanguageSection lang={trace.sourceLang} value={trace.q} />
+        <Separator className="my-2" />
+        <LanguageSection
+          className="text-[#66D9EF]"
+          lang={trace.targetLang}
+          value={trace.a}
+        />
       </CardContent>
     </Card>
   );

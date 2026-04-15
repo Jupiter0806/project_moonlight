@@ -30,6 +30,17 @@ export const wordsRatelimit = new Ratelimit({
 });
 
 /**
+ * Speech endpoint: GoogleSpeech API - keep limits tight.
+ * 60 requests per minute per user/IP.
+ */
+export const speechRatelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(20, "1 m"),
+  prefix: "rl:speech",
+  analytics: true,
+});
+
+/**
  * Auth session endpoint: IP-keyed only (no session exists yet at sign-in).
  * 10 requests per minute per IP — tight to deter credential stuffing.
  */

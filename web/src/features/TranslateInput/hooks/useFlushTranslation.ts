@@ -1,11 +1,17 @@
 "use client";
 
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { upsertTraces } from "@/store/slices/entitiesSlice";
 import { prependEntries } from "@/store/slices/urtSlice";
-import { sourceTextAtom, translationResultAtom } from "../atom/translateAtoms";
+import {
+  sourceLanguageAtom,
+  sourceTextAtom,
+  targetLanguageAtom,
+  translationResultAtom,
+} from "../atom/translateAtoms";
 import { selectActiveUserId } from "@/store/slices/sessionSlice";
+import { LanguageKey } from "@/lib/languages";
 
 /**
  * Returns a flush function that:
@@ -18,10 +24,12 @@ import { selectActiveUserId } from "@/store/slices/sessionSlice";
  * should wait for the translation to complete before flushing.
  */
 export function useFlushTranslation(): () => void {
-  const sourceText = useAtomValue(sourceTextAtom);
-  const translationResult = useAtomValue(translationResultAtom);
-  const setSourceText = useSetAtom(sourceTextAtom);
-  const setTranslationResult = useSetAtom(translationResultAtom);
+  const [sourceText, setSourceText] = useAtom(sourceTextAtom);
+  const [translationResult, setTranslationResult] = useAtom(
+    translationResultAtom,
+  );
+  const sourceLang = useAtomValue(sourceLanguageAtom);
+  const targetLang = useAtomValue(targetLanguageAtom);
   const dispatch = useAppDispatch();
   const userId = useAppSelector(selectActiveUserId);
 
@@ -40,6 +48,8 @@ export function useFlushTranslation(): () => void {
           user: userId,
           reflection: "",
           type: "translation",
+          sourceLang: sourceLang.key as LanguageKey,
+          targetLang: targetLang.key as LanguageKey,
         },
       ]),
     );

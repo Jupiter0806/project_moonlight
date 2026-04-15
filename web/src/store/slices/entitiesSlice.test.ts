@@ -22,20 +22,26 @@ import {
   type FetchTimelineResult,
 } from "@/store/thunks/fetchTimelineThunk";
 import type { RootState } from "@/store/store";
-import type { Trace } from "@/types/Trace";
+import type { Trace, QATrace, TranslationTrace } from "@/types/Trace";
 import type { Reflection } from "@/types/Reflection";
 import type { User } from "@/types/User";
 
-const makeTrace = (id: string, overrides: Partial<Trace> = {}): Trace => ({
+const makeQATrace = (
+  id: string,
+  overrides: Partial<QATrace> = {},
+): QATrace => ({
   id,
   created_at: 0,
   q: "question",
   a: "answer",
   user: "user-1",
   reflection: "reflection-1",
-  type: "qna",
+  type: "qa",
   ...overrides,
 });
+
+const makeTrace = (id: string, overrides: Partial<QATrace> = {}): Trace =>
+  makeQATrace(id, overrides);
 
 const makeReflection = (
   id: string,
