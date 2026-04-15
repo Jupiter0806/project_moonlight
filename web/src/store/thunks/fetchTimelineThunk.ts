@@ -79,6 +79,8 @@ export const MOCK_DB: Partial<Record<URTTimeline, TimelineApiResponse>> = {
         user: "user-1",
         reflection: "reflection-1",
         type: "translation",
+        sourceLang: "en",
+        targetLang: "zh-CN",
       },
       {
         id: "trace-2",
@@ -88,6 +90,8 @@ export const MOCK_DB: Partial<Record<URTTimeline, TimelineApiResponse>> = {
         user: "user-2",
         reflection: "reflection-1",
         type: "translation",
+        sourceLang: "en",
+        targetLang: "zh-CN",
       },
     ],
     reflections: [

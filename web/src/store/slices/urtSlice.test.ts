@@ -19,7 +19,7 @@ import type { RootState } from "@/store/store";
 const makeEntry = (id: string): URTEntry => ({
   type: "trace",
   entryId: id,
-  content: { id, displayType: "trace" },
+  content: { id, displayType: "qa-trace" },
 });
 
 const makeResult = (
