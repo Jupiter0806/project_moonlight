@@ -78,6 +78,109 @@ describe("traceService", () => {
       expect(result.entries).toHaveLength(1);
       expect(result.entries[0]?.q).toBe("What?");
     });
+
+    it("uses cursor and returns next cursor when more traces exist", async () => {
+      mockGetReflectionForUser.mockResolvedValue({
+        id: "ref-1",
+        owner_id: "user-1",
+        label: "Test",
+        trace_ids: ["trace-1", "trace-2", "trace-3"],
+        created_at: Date.now(),
+      });
+
+      const cursorDoc = { exists: true };
+      const startAfter = jest.fn().mockReturnThis();
+      const docs = [
+        {
+          id: "trace-1",
+          data: () => ({
+            id: "trace-1",
+            reflection_id: "ref-1",
+            owner_id: "user-1",
+            q: "Q1",
+            a: "A1",
+            created_time: 1000,
+          }),
+        },
+        {
+          id: "trace-2",
+          data: () => ({
+            id: "trace-2",
+            reflection_id: "ref-1",
+            owner_id: "user-1",
+            q: "Q2",
+            a: "A2",
+            created_time: 2000,
+          }),
+        },
+        {
+          id: "trace-3",
+          data: () => ({
+            id: "trace-3",
+            reflection_id: "ref-1",
+            owner_id: "user-1",
+            q: "Q3",
+            a: "A3",
+            created_time: 3000,
+          }),
+        },
+      ];
+      const get = jest.fn().mockResolvedValue({ docs });
+      const docGet = jest.fn().mockResolvedValue(cursorDoc);
+
+      (mockDb.collection as jest.Mock).mockImplementation((name: string) => {
+        if (name === "traces") {
+          return {
+            where: jest.fn().mockReturnThis(),
+            orderBy: jest.fn().mockReturnThis(),
+            limit: jest.fn().mockReturnThis(),
+            startAfter,
+            get,
+            doc: jest.fn(() => ({ get: docGet })),
+          };
+        }
+        return {
+          doc: jest.fn(() => ({ get: docGet })),
+        };
+      });
+
+      const cursor = Buffer.from("trace-cursor", "utf8").toString("base64url");
+      const result = await getTraces("user-1", "ref-1", 2, cursor);
+
+      expect(result).not.toBeNull();
+      if (!result) throw new Error("result should not be null");
+      expect(startAfter).toHaveBeenCalledWith(cursorDoc);
+      expect(result.entries).toHaveLength(2);
+      expect(result.pagination.cursor).toBe(
+        Buffer.from("trace-2", "utf8").toString("base64url"),
+      );
+    });
+
+    it("does not apply startAfter when cursor doc is missing", async () => {
+      mockGetReflectionForUser.mockResolvedValue({
+        id: "ref-1",
+        owner_id: "user-1",
+        label: "Test",
+        trace_ids: [],
+        created_at: Date.now(),
+      });
+
+      const startAfter = jest.fn().mockReturnThis();
+      const docGet = jest.fn().mockResolvedValue({ exists: false });
+      (mockDb.collection as jest.Mock).mockImplementation(() => ({
+        where: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        startAfter,
+        get: jest.fn().mockResolvedValue({ docs: [] }),
+        doc: jest.fn(() => ({ get: docGet })),
+      }));
+
+      const cursor = Buffer.from("missing-trace", "utf8").toString("base64url");
+      await getTraces("user-1", "ref-1", 10, cursor);
+
+      expect(startAfter).not.toHaveBeenCalled();
+    });
   });
 
   describe("createTrace", () => {
