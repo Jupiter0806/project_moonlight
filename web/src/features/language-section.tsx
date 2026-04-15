@@ -2,6 +2,7 @@ import { getLanguageName, LanguageKey } from "@/lib/languages";
 import { cn } from "@/lib/utils";
 import { WithClassName } from "@/types/withClassName";
 import { SpeechThis } from "./speech-this";
+import { DictionaryThis } from "./dictionary-this";
 
 export function LanguageSection({
   lang,
@@ -19,8 +20,7 @@ export function LanguageSection({
       </div>
       <div className="flex gap-2">
         <SpeechThis text={value} language={lang} />
-
-        <div>dictionary</div>
+        <DictionaryThis text={value} language={lang} />
       </div>
     </div>
   );

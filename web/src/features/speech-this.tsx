@@ -29,6 +29,7 @@ export function SpeechThis({ text, language }: SpeechThisProps) {
         }),
     enabled: false, // Don't run automatically
     staleTime: Infinity,
+    retry: false,
   });
 
   const playAudio = useCallback((audioContent: string) => {
