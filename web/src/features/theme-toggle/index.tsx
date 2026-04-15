@@ -3,7 +3,7 @@
 import { IoMoonOutline as Moon, IoSunnyOutline as Sun } from "react-icons/io5";
 import { useTheme } from "next-themes";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button-as-div";
 import {
   DropdownMenu,
   DropdownMenuContent,
