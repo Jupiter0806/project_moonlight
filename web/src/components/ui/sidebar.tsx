@@ -7,7 +7,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button-as-div";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -23,8 +23,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { SidebarLeftIcon } from "@hugeicons/core-free-icons";
 import { IoMenu } from "react-icons/io5";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
@@ -262,8 +260,6 @@ function SidebarTrigger({
 
   return (
     <Button
-      nativeButton={false}
-      render={(props) => <div {...props} />}
       data-sidebar="trigger"
       data-slot="sidebar-trigger"
       variant="outline"

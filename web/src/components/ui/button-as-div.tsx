@@ -1,3 +1,13 @@
+/**
+ * Why this is needed - to resolve hydration mismatch issue
+ * If a ButtonPrimitive was added into another chadcn component (e.g. DropdownMenuItem)
+ * server prerender will return a button element within a button which is not allowed,
+ * and client side will correct it.
+ *
+ * Why passing from props
+ * When server prerendering, parent's props won't be passed and processed
+ */
+
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
 
@@ -40,7 +50,7 @@ const buttonVariants = cva(
 
 type ButtonProps = ButtonPrimitive.Props & VariantProps<typeof buttonVariants>;
 
-function Button({
+function ButtonAsDiv({
   className,
   variant = "default",
   size = "default",
@@ -50,9 +60,11 @@ function Button({
     <ButtonPrimitive
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      nativeButton={false}
+      render={(props) => <div {...props} />}
       {...props}
     />
   );
 }
 
-export { Button, buttonVariants };
+export { ButtonAsDiv as Button, buttonVariants, ButtonAsDiv };
