@@ -21,14 +21,14 @@ describe("sendMessageAction", () => {
   it("appends message and clears retry state on success", async () => {
     vi.spyOn(Math, "random").mockReturnValue(0.1);
     const formData = new FormData();
-    formData.set("message", "Hello Moonlight");
+    formData.set("message", "Test message");
 
     const promise = sendMessageAction(initialState, formData);
     await vi.advanceTimersByTimeAsync(1000);
     const result = await promise;
 
     expect(result.messages).toHaveLength(2);
-    expect(result.messages[1]?.text).toBe("Hello Moonlight");
+    expect(result.messages[1]?.text).toBe("Test message");
     expect(result.error).toBeNull();
     expect(result.lastAttempt).toBeNull();
     expect(result.attemptCount).toBe(0);
