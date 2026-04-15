@@ -10,3 +10,7 @@ export const LANGUAGES = [
 ] as const satisfies Language[];
 
 export type LanguageKey = (typeof LANGUAGES)[number]["key"];
+
+export function getLanguageName(key: LanguageKey): string {
+  return LANGUAGES.find((l) => l.key === key)!.name;
+}
