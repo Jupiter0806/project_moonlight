@@ -135,7 +135,7 @@ describe("urtSlice", () => {
         setFetchStatus({
           timeline: "camphorTraces",
           cursor: "cursor-1",
-          status: "loaded",
+          status: "done",
         }),
       );
       state = urtReducer(
@@ -146,7 +146,7 @@ describe("urtSlice", () => {
           status: "loading",
         }),
       );
-      expect(state.camphorTraces.fetchStatus["cursor-1"]).toBe("loaded");
+      expect(state.camphorTraces.fetchStatus["cursor-1"]).toBe("done");
     });
 
     it("does not affect other timelines", () => {
@@ -198,7 +198,7 @@ describe("urtSlice", () => {
         setFetchStatus({
           timeline: "camphorTraces",
           cursor: "initial",
-          status: "loaded",
+          status: "done",
         }),
       );
       state = urtReducer(state, resetTimeline("camphorTraces"));

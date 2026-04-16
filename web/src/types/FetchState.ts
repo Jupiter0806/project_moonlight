@@ -1,1 +1,1 @@
-export type FetchState = "none" | "loading" | "loaded";
+export type FetchState = "none" | "loading" | "done" | "error";

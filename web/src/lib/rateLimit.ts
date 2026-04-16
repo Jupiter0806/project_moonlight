@@ -31,12 +31,23 @@ export const wordsRatelimit = new Ratelimit({
 
 /**
  * Speech endpoint: GoogleSpeech API - keep limits tight.
- * 60 requests per minute per user/IP.
+ * 20 requests per minute per user/IP.
  */
 export const speechRatelimit = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(20, "1 m"),
   prefix: "rl:speech",
+  analytics: true,
+});
+
+/**
+ * QA endpoint: Gemini API - keep limits tight.
+ * 20 requests per minute per user/IP.
+ */
+export const qaRatelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(20, "1 m"),
+  prefix: "rl:qa",
   analytics: true,
 });
 
