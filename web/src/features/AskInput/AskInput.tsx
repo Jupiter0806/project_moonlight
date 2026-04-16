@@ -5,6 +5,8 @@ import { Input } from "@/components/Input/Input";
 import { useAtom } from "jotai";
 import { askInputAtom } from "./atom/askInputAtoms";
 import { askAction, type AskActionState } from "./actions";
+import { MobileSubmitButton } from "@/components/MobileSubmitButton/MobileSubmitButton";
+import { useFlushQa } from "./hooks/useFlushQa";
 
 const initialState: AskActionState = {
   messages: [],
@@ -21,9 +23,12 @@ export function AskInput() {
     FormData
   >(askAction, initialState);
 
+  const flushQa = useFlushQa();
+
   const handleSubmit = async (formData: FormData) => {
     if (!value.trim()) return;
     await formAction(formData);
+    flushQa();
     setValue("");
     formRef.current?.reset();
   };
@@ -46,6 +51,11 @@ export function AskInput() {
         disabled={isPending}
       />
       {state.error && <p className="text-sm text-red-500">{state.error}</p>}
+      <MobileSubmitButton
+        className="float-right mt-2"
+        disabled={!value.trim()}
+        onClick={() => formRef.current?.requestSubmit()}
+      />
     </form>
   );
 }

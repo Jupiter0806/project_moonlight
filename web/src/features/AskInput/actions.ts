@@ -1,5 +1,7 @@
 "use server";
 
+import { fetchAnswer } from "@/lib/qa-service";
+
 export interface AskMessage {
   id: string | number;
   role: "user" | "assistant";
@@ -20,10 +22,8 @@ export async function askAction(
   if (!question?.trim()) return state;
 
   try {
-    // TODO: replace with real API call to POST /api/answer
-    await new Promise((res) => setTimeout(res, 800));
-
-    const answer = `(Dummy answer to: "${question}")`;
+    // const answer = await fetchAnswer(question);
+    const answer = "This is a placeholder answer.";
 
     return {
       messages: [
