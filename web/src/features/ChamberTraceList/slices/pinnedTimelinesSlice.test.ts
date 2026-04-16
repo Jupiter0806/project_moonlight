@@ -52,13 +52,13 @@ describe("pinnedTimelinesSlice", () => {
       expect(state.fetchState).toBe("loading");
     });
 
-    it('sets fetchState to "loaded"', () => {
-      const state = pinnedTimelinesReducer(undefined, setFetchState("loaded"));
-      expect(state.fetchState).toBe("loaded");
+    it('sets fetchState to "done"', () => {
+      const state = pinnedTimelinesReducer(undefined, setFetchState("done"));
+      expect(state.fetchState).toBe("done");
     });
 
     it('resets fetchState back to "none"', () => {
-      const prev = pinnedTimelinesReducer(undefined, setFetchState("loaded"));
+      const prev = pinnedTimelinesReducer(undefined, setFetchState("done"));
       const state = pinnedTimelinesReducer(prev, setFetchState("none"));
       expect(state.fetchState).toBe("none");
     });
@@ -104,12 +104,12 @@ describe("pinnedTimelinesSlice", () => {
     });
 
     it("does not affect fetchState", () => {
-      const prev = pinnedTimelinesReducer(undefined, setFetchState("loaded"));
+      const prev = pinnedTimelinesReducer(undefined, setFetchState("done"));
       const state = pinnedTimelinesReducer(
         prev,
         setSelectedTimeline("camphor"),
       );
-      expect(state.fetchState).toBe("loaded");
+      expect(state.fetchState).toBe("done");
     });
   });
 
