@@ -60,9 +60,9 @@ export function IconButton({
       disabled={loading || props.disabled}
       className={cn(
         iconSize === "sm"
-          ? "[&_svg]:h-4! [&_svg]:w-4!"
+          ? "[&_svg]:h-5! [&_svg]:w-5!"
           : iconSize === "lg"
-            ? "[&_svg]:h-8! [&_svg]:w-8!"
+            ? "[&_svg]:h-7! [&_svg]:w-7!"
             : "[&_svg]:h-6! [&_svg]:w-6!",
         className,
       )}
