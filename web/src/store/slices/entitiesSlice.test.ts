@@ -213,13 +213,13 @@ describe("entitiesSlice", () => {
     it("does not overwrite other trace fetchStatus entries", () => {
       let state = entitiesReducer(
         undefined,
-        setTraceFetchStatus({ id: "t1", status: "loaded" }),
+        setTraceFetchStatus({ id: "t1", status: "done" }),
       );
       state = entitiesReducer(
         state,
         setTraceFetchStatus({ id: "t2", status: "loading" }),
       );
-      expect(state.traces.fetchStatus["t1"]).toBe("loaded");
+      expect(state.traces.fetchStatus["t1"]).toBe("done");
     });
 
     it("does not affect the reflections fetchStatus", () => {
@@ -235,9 +235,9 @@ describe("entitiesSlice", () => {
     it("sets fetchStatus for a reflection id", () => {
       const state = entitiesReducer(
         undefined,
-        setReflectionFetchStatus({ id: "r1", status: "loaded" }),
+        setReflectionFetchStatus({ id: "r1", status: "done" }),
       );
-      expect(state.reflections.fetchStatus["r1"]).toBe("loaded");
+      expect(state.reflections.fetchStatus["r1"]).toBe("done");
     });
   });
 
@@ -375,10 +375,10 @@ describe("entitiesSlice", () => {
         const root = toRoot(
           entitiesReducer(
             undefined,
-            setTraceFetchStatus({ id: "t1", status: "loaded" }),
+            setTraceFetchStatus({ id: "t1", status: "done" }),
           ),
         );
-        expect(selectTraceFetchStatus("t1")(root)).toBe("loaded");
+        expect(selectTraceFetchStatus("t1")(root)).toBe("done");
       });
     });
 

@@ -275,7 +275,7 @@ describe("urtSlice", () => {
         ]);
       });
 
-      it("marks fetchStatus as 'loaded' for the cursor", () => {
+      it("marks fetchStatus as 'done' for the cursor", () => {
         const payload = makeResult({
           response: { entries: [], traces: [], reflections: [], users: [] },
         });
@@ -283,7 +283,7 @@ describe("urtSlice", () => {
           undefined,
           fetchTimelineThunk.fulfilled(payload, "r1", baseArg),
         );
-        expect(state.camphorTraces.fetchStatus["initial"]).toBe("loaded");
+        expect(state.camphorTraces.fetchStatus["initial"]).toBe("done");
       });
 
       it("updates lastFetchTimestamp but not lastTopFetchTimestamp", () => {
