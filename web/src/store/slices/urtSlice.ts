@@ -112,7 +112,7 @@ export const urtSlice = createSlice({
         } = action.payload;
         const now = Date.now();
 
-        state[timeline].fetchStatus[cursor] = "loaded";
+        state[timeline].fetchStatus[cursor] = "done";
 
         if (direction === "top") {
           state[timeline].entries.unshift(...response.entries);
@@ -151,7 +151,7 @@ export const urtSlice = createSlice({
           const response = action.payload;
           const now = Date.now();
 
-          state[timeline].fetchStatus[cursor] = "loaded";
+          state[timeline].fetchStatus[cursor] = "done";
 
           if (direction === "top") {
             state[timeline].entries.unshift(...response.entries);
