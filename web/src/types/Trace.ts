@@ -2,7 +2,7 @@ import { LanguageKey } from "@/lib/languages";
 
 interface BaseTrace {
   id: string;
-  created_at: number;
+  createdAt: number;
   q: string;
   // need to adapt translation and qa answer type differences
   a: string;

@@ -13,7 +13,7 @@ export type URTTimeline =
   | "moonlightTraces";
 
 export interface URTEntry {
-  type: "timelineCursor" | "trace" | "reflection";
+  type: "timeline-cursor" | "trace" | "reflection";
   entryId: string;
   content: {
     id: string;
@@ -73,7 +73,7 @@ export const MOCK_DB: Partial<Record<URTTimeline, TimelineApiResponse>> = {
     traces: [
       {
         id: "trace-1",
-        created_at: 1712649600000,
+        createdAt: 1712649600000,
         q: "What is wabi-sabi?",
         a: "Finding beauty in imperfection.",
         user: "user-1",
@@ -84,7 +84,7 @@ export const MOCK_DB: Partial<Record<URTTimeline, TimelineApiResponse>> = {
       },
       {
         id: "trace-2",
-        created_at: 1712649700000,
+        createdAt: 1712649700000,
         q: "侘び寂びとは？",
         a: "不完全さに美を見出すこと。",
         user: "user-2",
@@ -97,7 +97,7 @@ export const MOCK_DB: Partial<Record<URTTimeline, TimelineApiResponse>> = {
     reflections: [
       {
         id: "reflection-1",
-        created_at: 1712649500000,
+        createdAt: 1712649500000,
         description: "A thread on wabi-sabi",
         user: "user-1",
         entities: { traces: [] },

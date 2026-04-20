@@ -31,7 +31,7 @@ const makeQATrace = (
   overrides: Partial<QATrace> = {},
 ): QATrace => ({
   id,
-  created_at: 0,
+  createdAt: 0,
   q: "question",
   a: "answer",
   user: "user-1",
@@ -48,7 +48,7 @@ const makeReflection = (
   overrides: Partial<Reflection> = {},
 ): Reflection => ({
   id,
-  created_at: 0,
+  createdAt: 0,
   description: "desc",
   user: "user-1",
   entities: { traces: [] },

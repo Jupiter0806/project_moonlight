@@ -2,7 +2,7 @@ import { Trace } from "./Trace";
 
 export interface Reflection {
   id: string;
-  created_at: number;
+  createdAt: number;
   entities: {
     traces: Trace[];
   };

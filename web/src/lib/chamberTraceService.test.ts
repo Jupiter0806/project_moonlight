@@ -4,7 +4,7 @@ import type { TranslationTrace } from "@/types/Trace";
 
 const trace: TranslationTrace = {
   id: "trace-1",
-  created_at: 1712649700000,
+  createdAt: 1712649700000,
   q: "Hello",
   a: "你好",
   user: "user-1",
