@@ -8,7 +8,7 @@ import {
   setTraceFetchStatus,
   upsertTraces,
 } from "@/store/slices/entitiesSlice";
-import { prependEntries } from "@/store/slices/urtSlice";
+import { appendEntries } from "@/store/slices/urtSlice";
 import {
   sourceLanguageAtom,
   sourceTextAtom,
@@ -64,7 +64,7 @@ export function useFlushTranslation(): () => void {
     dispatch(upsertTraces([trace]));
 
     dispatch(
-      prependEntries({
+      appendEntries({
         timeline: "chamberTraces",
         entries: [
           {

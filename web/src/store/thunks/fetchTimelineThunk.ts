@@ -30,6 +30,8 @@ export interface TimelineApiResponse {
   traces: Trace[];
   reflections: Reflection[];
   users: User[];
+  topCursor?: string;
+  bottomCursor?: string;
   nextCursor?: string;
   newReflectionsBar?: {
     count: number;
@@ -41,12 +43,12 @@ export interface FetchTimelineArg {
   timeline: URTTimeline;
   /** Pagination cursor; omit for the initial page ("initial" is used as the key). */
   cursor?: string;
-  direction: "top" | "new";
+  direction: "top" | "bottom" | "new";
 }
 
 export interface FetchTimelineResult {
   timeline: URTTimeline;
-  direction: "top" | "new";
+  direction: "top" | "bottom" | "new";
   cursor?: string;
   response: TimelineApiResponse;
 }

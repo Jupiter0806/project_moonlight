@@ -7,6 +7,73 @@ import {
   type UpsertChamberTraceBody,
   upsertTraceInUserChamber,
 } from "@/server/chamber/upsertChamberTrace";
+import { listChamberTraces } from "@/server/chamber/listChamberTraces";
+
+function withRateLimitHeaders(limit: number, remaining: number, reset: number) {
+  return {
+    "X-RateLimit-Limit": String(limit),
+    "X-RateLimit-Remaining": String(remaining),
+    "X-RateLimit-Reset": String(reset),
+    "Retry-After": String(Math.ceil((reset - Date.now()) / 1000)),
+  };
+}
+
+async function authenticate(request: NextRequest): Promise<string | null> {
+  const sessionCookie = request.cookies.get("__session")?.value;
+  if (!sessionCookie) return null;
+
+  try {
+    const decoded = await getAdminAuth().verifySessionCookie(sessionCookie);
+    return decoded.uid;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * GET /api/chamber/traces
+ * Returns chamber traces with bidirectional cursor pagination.
+ * - direction=top: fetch older traces before cursor
+ * - direction=bottom: fetch newer traces after cursor
+ */
+export async function GET(request: NextRequest) {
+  const { success, limit, remaining, reset } =
+    await chamberTraceRatelimit.limit(await getRequestKey(request));
+  if (!success) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      {
+        status: 429,
+        headers: withRateLimitHeaders(limit, remaining, reset),
+      },
+    );
+  }
+
+  const uid = await authenticate(request);
+  if (!uid) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const directionParam = request.nextUrl.searchParams.get("direction");
+  const direction = directionParam === "top" ? "top" : "bottom";
+  const cursor = request.nextUrl.searchParams.get("cursor") ?? undefined;
+  const rawLimit = Number(request.nextUrl.searchParams.get("limit") ?? 20);
+  const limitValue = Number.isFinite(rawLimit) ? rawLimit : 20;
+  const pageSize = Math.max(1, Math.min(50, Math.trunc(limitValue)));
+
+  try {
+    const response = await listChamberTraces(getAdminFirestore(), {
+      uid,
+      direction,
+      cursor,
+      limit: pageSize,
+    });
+    return NextResponse.json(response);
+  } catch (error) {
+    console.error("Failed to list chamber traces", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
+}
 
 /**
  * POST /api/chamber/traces
@@ -20,27 +87,13 @@ export async function POST(request: NextRequest) {
       { error: "Too many requests" },
       {
         status: 429,
-        headers: {
-          "X-RateLimit-Limit": String(limit),
-          "X-RateLimit-Remaining": String(remaining),
-          "X-RateLimit-Reset": String(reset),
-          "Retry-After": String(Math.ceil((reset - Date.now()) / 1000)),
-        },
+        headers: withRateLimitHeaders(limit, remaining, reset),
       },
     );
   }
 
-  const sessionCookie = request.cookies.get("__session")?.value;
-
-  if (!sessionCookie) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  let uid: string;
-  try {
-    const decoded = await getAdminAuth().verifySessionCookie(sessionCookie);
-    uid = decoded.uid;
-  } catch {
+  const uid = await authenticate(request);
+  if (!uid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
