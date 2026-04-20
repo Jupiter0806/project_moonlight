@@ -51,6 +51,9 @@ export const entitiesSlice = createSlice({
     ) => {
       state.traces.errors[action.payload.id] = action.payload.error;
     },
+    clearTraceError: (state, action: PayloadAction<{ id: string }>) => {
+      delete state.traces.errors[action.payload.id];
+    },
     setReflectionError: (
       state,
       action: PayloadAction<{ id: string; error: string }>,
@@ -101,6 +104,7 @@ export const {
   upsertReflections,
   upsertUsers,
   setTraceError,
+  clearTraceError,
   setReflectionError,
   setTraceFetchStatus,
   setReflectionFetchStatus,

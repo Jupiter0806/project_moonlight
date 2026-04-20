@@ -61,3 +61,14 @@ export const authRatelimit = new Ratelimit({
   prefix: "rl:auth",
   analytics: true,
 });
+
+/**
+ * Chamber trace writes: user-generated writes can spike (rapid submit/retry).
+ * 30 requests per minute per user/IP keeps UX smooth while limiting abuse.
+ */
+export const chamberTraceRatelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(30, "1 m"),
+  prefix: "rl:chamber-trace",
+  analytics: true,
+});
