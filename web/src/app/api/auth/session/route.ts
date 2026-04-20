@@ -1,7 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getAdminAuth } from "@/lib/firebaseAdmin";
+import { getAdminAuth, getAdminFirestore } from "@/lib/firebaseAdmin";
 import { authRatelimit } from "@/lib/rateLimit";
 import { getIpKey } from "@/lib/getRequestKey";
+import {
+  sanitizeClientContext,
+  upsertUserProfileFromToken,
+} from "@/server/auth/userProfileSync";
+import { type DecodedIdToken } from "firebase-admin/auth";
 
 // 5 days — maximum allowed by Firebase for session cookies
 const SESSION_MAX_AGE = 60 * 60 * 24 * 5;
@@ -10,7 +15,10 @@ const SESSION_MAX_AGE = 60 * 60 * 24 * 5;
  * POST /api/auth/session
  *
  * Called by the client immediately after Firebase sign-in.
- * Body: { idToken: string }
+ * Body: {
+ *   idToken: string,
+ *   clientContext?: { locale?: string; timeZone?: string }
+ * }
  *
  * 1. Verifies the Firebase ID token with the Admin SDK (server-side, cryptographic check)
  * 2. Mints a long-lived Firebase session cookie (up to 5 days)
@@ -35,25 +43,42 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const body = (await request.json()) as { idToken?: string };
+  const body = (await request.json()) as {
+    idToken?: string;
+    clientContext?: unknown;
+  };
   const idToken = body.idToken;
+  const clientContext = sanitizeClientContext(body.clientContext);
 
   if (!idToken) {
     return NextResponse.json({ error: "idToken is required" }, { status: 400 });
   }
 
-  let sessionCookie: string;
+  let decodedToken: DecodedIdToken;
   try {
     // Verify the ID token first — rejects tampered/expired tokens
-    await getAdminAuth().verifyIdToken(idToken);
-    // Mint a proper session cookie valid for SESSION_MAX_AGE seconds
-    sessionCookie = await getAdminAuth().createSessionCookie(idToken, {
-      expiresIn: SESSION_MAX_AGE * 1000, // Firebase expects milliseconds
-    });
+    decodedToken = await getAdminAuth().verifyIdToken(idToken);
   } catch (error) {
     console.debug("error", error);
     return NextResponse.json({ error: "Invalid ID token" }, { status: 401 });
   }
+
+  try {
+    // Keep identity sync server-authoritative by deriving profile fields from token claims.
+    await upsertUserProfileFromToken(
+      getAdminFirestore(),
+      decodedToken,
+      clientContext,
+    );
+  } catch (error) {
+    console.debug("error", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
+
+  // Mint a proper session cookie valid for SESSION_MAX_AGE seconds
+  const sessionCookie = await getAdminAuth().createSessionCookie(idToken, {
+    expiresIn: SESSION_MAX_AGE * 1000, // Firebase expects milliseconds
+  });
 
   const response = NextResponse.json({ status: "ok" });
   response.cookies.set("__session", sessionCookie, {
