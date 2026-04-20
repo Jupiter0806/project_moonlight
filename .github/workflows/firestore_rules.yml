@@ -1,0 +1,115 @@
+name: Firestore Rules
+
+on:
+  pull_request:
+    paths:
+      - "web/firestore.rules"
+      - "web/firebase.json"
+      - ".github/workflows/firestore_rules.yml"
+  push:
+    branches:
+      - dev
+      - main
+    paths:
+      - "web/firestore.rules"
+      - "web/firebase.json"
+      - ".github/workflows/firestore_rules.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: firestore-rules-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate rules syntax
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: "web/.nvmrc"
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools@latest
+
+      - name: Validate Firestore rules
+        run: firebase deploy --only firestore:rules --project demo-moonlight --config firebase.json --dry-run --non-interactive
+
+  deploy-dev:
+    name: Deploy rules to Firebase dev
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: firebase dev
+    defaults:
+      run:
+        working-directory: ./web
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: "web/.nvmrc"
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools@latest
+
+      - name: Configure service account key
+        env:
+          FIREBASE_SERVICE_ACCOUNT_KEY_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}
+        run: |
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_KEY_BASE64" | base64 --decode > "$RUNNER_TEMP/firebase-service-account.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-service-account.json" >> "$GITHUB_ENV"
+
+      - name: Deploy Firestore rules (dev)
+        env:
+          FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+        run: firebase deploy --only firestore:rules --project "$FIREBASE_PROJECT_ID" --config firebase.json --non-interactive
+
+  deploy-prod:
+    name: Deploy rules to Firebase prod
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: firebase prod
+    defaults:
+      run:
+        working-directory: ./web
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: "web/.nvmrc"
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools@latest
+
+      - name: Configure service account key
+        env:
+          FIREBASE_SERVICE_ACCOUNT_KEY_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}
+        run: |
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_KEY_BASE64" | base64 --decode > "$RUNNER_TEMP/firebase-service-account.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-service-account.json" >> "$GITHUB_ENV"
+
+      - name: Deploy Firestore rules (prod)
+        env:
+          FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+        run: firebase deploy --only firestore:rules --project "$FIREBASE_PROJECT_ID" --config firebase.json --non-interactive
