@@ -3,7 +3,7 @@ import type {
   TimelineApiResponse,
   URTEntry,
 } from "@/store/thunks/fetchTimelineThunk";
-import type { TranslationTrace } from "@/types/Trace";
+import type { Trace } from "@/types/Trace";
 
 export interface TraceCursor {
   createdAt: number;
@@ -42,7 +42,7 @@ export function decodeCursor(cursor: string): TraceCursor | null {
   }
 }
 
-function mapEntry(trace: TranslationTrace): URTEntry {
+function mapEntry(trace: Trace): URTEntry {
   return {
     type: "trace",
     entryId: `entry-${trace.id}`,
@@ -88,7 +88,7 @@ export async function listChamberTraces(
   }
 
   const snapshot = await query.get();
-  const traces = snapshot.docs.map((doc) => doc.data() as TranslationTrace);
+  const traces = snapshot.docs.map((doc) => doc.data() as Trace);
 
   const entries = traces.map(mapEntry);
 

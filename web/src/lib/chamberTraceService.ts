@@ -1,12 +1,15 @@
-import type { TranslationTrace } from "@/types/Trace";
+import type { Trace } from "@/types/Trace";
 
 interface UpsertChamberTraceResponse {
   status: "ok";
   traceId: string;
+
+  // only returned for QA traces when answer is generated synchronously by the API;
+  answer?: string;
 }
 
 export async function upsertChamberTrace(
-  trace: TranslationTrace,
+  trace: Trace,
 ): Promise<UpsertChamberTraceResponse> {
   const res = await fetch("/api/chamber/traces", {
     method: "POST",
