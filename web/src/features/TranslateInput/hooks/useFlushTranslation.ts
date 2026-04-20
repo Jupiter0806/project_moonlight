@@ -2,7 +2,12 @@
 
 import { useAtom, useAtomValue } from "jotai";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { upsertTraces } from "@/store/slices/entitiesSlice";
+import {
+  clearTraceError,
+  setTraceError,
+  setTraceFetchStatus,
+  upsertTraces,
+} from "@/store/slices/entitiesSlice";
 import { prependEntries } from "@/store/slices/urtSlice";
 import {
   sourceLanguageAtom,
@@ -10,8 +15,13 @@ import {
   targetLanguageAtom,
   translationResultAtom,
 } from "../atom/translateAtoms";
-import { selectActiveUserId } from "@/store/slices/sessionSlice";
+import {
+  selectActiveUserId,
+  selectIsLoggedIn,
+} from "@/store/slices/sessionSlice";
 import { LanguageKey } from "@/lib/languages";
+import type { TranslationTrace } from "@/types/Trace";
+import { upsertChamberTrace } from "@/lib/chamberTraceService";
 
 /**
  * Returns a flush function that:
@@ -32,27 +42,26 @@ export function useFlushTranslation(): () => void {
   const targetLang = useAtomValue(targetLanguageAtom);
   const dispatch = useAppDispatch();
   const userId = useAppSelector(selectActiveUserId);
+  const isLoggedIn = useAppSelector(selectIsLoggedIn);
 
   return () => {
     if (!sourceText.trim() || !translationResult.trim()) return;
 
     const id = crypto.randomUUID();
 
-    dispatch(
-      upsertTraces([
-        {
-          id,
-          created_at: Date.now(),
-          q: sourceText,
-          a: translationResult,
-          user: userId,
-          reflection: "",
-          type: "translation",
-          sourceLang: sourceLang.key as LanguageKey,
-          targetLang: targetLang.key as LanguageKey,
-        },
-      ]),
-    );
+    const trace: TranslationTrace = {
+      id,
+      created_at: Date.now(),
+      q: sourceText,
+      a: translationResult,
+      user: userId,
+      reflection: "",
+      type: "translation",
+      sourceLang: sourceLang.key as LanguageKey,
+      targetLang: targetLang.key as LanguageKey,
+    };
+
+    dispatch(upsertTraces([trace]));
 
     dispatch(
       prependEntries({
@@ -66,6 +75,35 @@ export function useFlushTranslation(): () => void {
         ],
       }),
     );
+
+    if (!isLoggedIn) {
+      dispatch(setTraceFetchStatus({ id, status: "error" }));
+      dispatch(
+        setTraceError({
+          id,
+          error: "Sign in to sync traces to your chamber.",
+        }),
+      );
+    } else {
+      dispatch(clearTraceError({ id }));
+      dispatch(setTraceFetchStatus({ id, status: "loading" }));
+
+      void upsertChamberTrace(trace)
+        .then(() => {
+          dispatch(setTraceFetchStatus({ id, status: "done" }));
+          dispatch(clearTraceError({ id }));
+        })
+        .catch((error) => {
+          dispatch(setTraceFetchStatus({ id, status: "error" }));
+          dispatch(
+            setTraceError({
+              id,
+              error:
+                error instanceof Error ? error.message : "Failed to sync trace",
+            }),
+          );
+        });
+    }
 
     setSourceText("");
     setTranslationResult("");
