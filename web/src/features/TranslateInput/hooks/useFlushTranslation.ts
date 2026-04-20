@@ -51,7 +51,7 @@ export function useFlushTranslation(): () => void {
 
     const trace: TranslationTrace = {
       id,
-      created_at: Date.now(),
+      createdAt: Date.now(),
       q: sourceText,
       a: translationResult,
       user: userId,

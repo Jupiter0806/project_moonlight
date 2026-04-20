@@ -8,7 +8,7 @@
  */
 
 import { Trace } from "../Trace";
-// import { useGetTimelineQuery } from "@/store/api/timelineApi";
+import { useGetTimelineQuery } from "@/store/api/timelineApi";
 import { useAppSelector } from "@/store/hooks";
 import { selectURTEntries } from "@/store/slices/urtSlice";
 
@@ -31,7 +31,7 @@ export function ChamberTraceList() {
 function useTraceList() {
   // RTK Query: handles fetching, caching, and deduplication automatically.
   // On fulfilled, urtSlice + entitiesSlice both update via extraReducers/matchers.
-  // useGetTimelineQuery({ timeline: "camphorTraces", direction: "new" });
+  useGetTimelineQuery({ timeline: "chamberTraces", direction: "new" });
 
   return useAppSelector(selectURTEntries("chamberTraces"));
 }

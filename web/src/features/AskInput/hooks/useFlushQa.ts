@@ -23,7 +23,7 @@ export function useFlushQa() {
       upsertTraces([
         {
           id,
-          created_at: Date.now(),
+          createdAt: Date.now(),
           q: value,
           a: "",
           answerRequired: true,
