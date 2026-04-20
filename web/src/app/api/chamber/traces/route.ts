@@ -3,11 +3,13 @@ import { getAdminAuth, getAdminFirestore } from "@/lib/firebaseAdmin";
 import { chamberTraceRatelimit } from "@/lib/rateLimit";
 import { getRequestKey } from "@/lib/getRequestKey";
 import {
+  getTraceInUserChamber,
   isTranslationTrace,
   type UpsertChamberTraceBody,
   upsertTraceInUserChamber,
 } from "@/server/chamber/upsertChamberTrace";
 import { listChamberTraces } from "@/server/chamber/listChamberTraces";
+import { fetchAnswer } from "@/server/chamber/fetchAnswer";
 
 function withRateLimitHeaders(limit: number, remaining: number, reset: number) {
   return {
@@ -115,12 +117,52 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const db = getAdminFirestore();
+
+  // Idempotency guard: if this trace already exists, return existing answer (for QA)
+  // and avoid duplicate model calls / writes on retries.
+  const existingTrace = await getTraceInUserChamber(db, uid, trace.id);
+  if (existingTrace) {
+    const existingResponse: {
+      status: string;
+      traceId: string;
+      answer?: string;
+    } = {
+      status: "ok",
+      traceId: existingTrace.id,
+    };
+    if (existingTrace.type === "qa" && existingTrace.a) {
+      existingResponse.answer = existingTrace.a;
+    }
+    return NextResponse.json(existingResponse);
+  }
+
+  if (trace.type === "qa" && !trace.a) {
+    try {
+      trace.a = await fetchAnswer(trace.q);
+    } catch (error) {
+      console.error("Failed to fetch answer for QA trace", error);
+      return NextResponse.json(
+        { error: "Failed to fetch answer for QA trace" },
+        { status: 500 },
+      );
+    }
+  }
+
   try {
-    await upsertTraceInUserChamber(getAdminFirestore(), uid, trace);
+    await upsertTraceInUserChamber(db, uid, trace);
   } catch (error) {
     console.error("Failed to upsert chamber trace", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ status: "ok", traceId: trace.id });
+  const response: { status: string; traceId: string; answer?: string } = {
+    status: "ok",
+    traceId: trace.id,
+  };
+  if (trace.type === "qa") {
+    response.answer = trace.a;
+  }
+
+  return NextResponse.json(response);
 }

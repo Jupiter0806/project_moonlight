@@ -13,7 +13,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useAnswer } from "./hooks/useAnswer";
 import { QATrace as QATraceType } from "@/types/Trace";
 import { AiAnswerDisplay } from "../ai-answer-display";
 
@@ -24,8 +23,6 @@ export function QATrace({ traceId, className }: CommonTraceProps) {
 
   const fetchStatus = useAppSelector(selectTraceFetchStatus(traceId));
   const fetchError = useAppSelector(selectTraceError(traceId));
-
-  useAnswer(trace);
 
   if (!trace) return null;
 

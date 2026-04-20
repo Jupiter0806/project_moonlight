@@ -12,10 +12,6 @@ interface BaseTrace {
 
 export interface QATrace extends BaseTrace {
   type: "qa";
-  // to tell qa trace fetch answer
-  // should only be used for traces created by AskInput;
-  // otherwise, should be undefined
-  answerRequired?: boolean;
 }
 
 export interface TranslationTrace extends BaseTrace {

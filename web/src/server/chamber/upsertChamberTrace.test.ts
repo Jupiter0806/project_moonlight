@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { TranslationTrace } from "@/types/Trace";
 import {
+  getTraceInUserChamber,
   isTranslationTrace,
   upsertTraceInUserChamber,
 } from "@/server/chamber/upsertChamberTrace";
@@ -22,11 +23,21 @@ describe("isTranslationTrace", () => {
     expect(isTranslationTrace(trace)).toBe(true);
   });
 
-  it("rejects malformed payload", () => {
+  it("accepts a valid qa trace shape", () => {
     expect(
       isTranslationTrace({
         ...trace,
         type: "qa",
+        a: "",
+      }),
+    ).toBe(true);
+  });
+
+  it("rejects malformed payload", () => {
+    expect(
+      isTranslationTrace({
+        ...trace,
+        createdAt: "not-a-number",
       }),
     ).toBe(false);
   });
@@ -58,5 +69,44 @@ describe("upsertTraceInUserChamber", () => {
     expect(tracesCollection).toHaveBeenCalledWith("traces");
     expect(traceDoc).toHaveBeenCalledWith("trace-1");
     expect(traceSet).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("getTraceInUserChamber", () => {
+  it("returns null when trace does not exist", async () => {
+    const get = vi.fn().mockResolvedValue({ exists: false });
+    const docByTrace = vi.fn().mockReturnValue({ get });
+    const tracesCollection = vi.fn().mockReturnValue({ doc: docByTrace });
+    const chamberDoc = vi
+      .fn()
+      .mockReturnValue({ collection: tracesCollection });
+    const collection = vi.fn().mockReturnValue({ doc: chamberDoc });
+    const db = { collection } as unknown as Parameters<
+      typeof getTraceInUserChamber
+    >[0];
+
+    await expect(getTraceInUserChamber(db, "user-1", "trace-1")).resolves.toBe(
+      null,
+    );
+  });
+
+  it("returns existing trace when found", async () => {
+    const get = vi.fn().mockResolvedValue({
+      exists: true,
+      data: () => trace,
+    });
+    const docByTrace = vi.fn().mockReturnValue({ get });
+    const tracesCollection = vi.fn().mockReturnValue({ doc: docByTrace });
+    const chamberDoc = vi
+      .fn()
+      .mockReturnValue({ collection: tracesCollection });
+    const collection = vi.fn().mockReturnValue({ doc: chamberDoc });
+    const db = { collection } as unknown as Parameters<
+      typeof getTraceInUserChamber
+    >[0];
+
+    await expect(
+      getTraceInUserChamber(db, "user-1", "trace-1"),
+    ).resolves.toEqual(trace);
   });
 });
