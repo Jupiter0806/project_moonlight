@@ -35,6 +35,14 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+function getClientContext() {
+  if (typeof Intl === "undefined") return {};
+  return {
+    locale: Intl.DateTimeFormat().resolvedOptions().locale,
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -71,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await fetch("/api/auth/session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idToken }),
+      body: JSON.stringify({ idToken, clientContext: getClientContext() }),
     });
   }
 
@@ -87,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await fetch("/api/auth/session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idToken }),
+      body: JSON.stringify({ idToken, clientContext: getClientContext() }),
     });
   }
 
