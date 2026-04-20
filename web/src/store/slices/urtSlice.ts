@@ -34,7 +34,6 @@ interface URT {
 interface URTState {
   camphorReflections: URT;
   camphorTraces: URT;
-  /** Local-only timeline for translation traces flushed from ChamberInput. */
   chamberTraces: URT;
   moonlightReflections: URT;
   moonlightTraces: URT;

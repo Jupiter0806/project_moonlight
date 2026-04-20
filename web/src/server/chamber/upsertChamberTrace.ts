@@ -11,7 +11,7 @@ export function isTranslationTrace(value: unknown): value is TranslationTrace {
   const trace = value as Record<string, unknown>;
   return (
     typeof trace.id === "string" &&
-    typeof trace.created_at === "number" &&
+    typeof trace.createdAt === "number" &&
     typeof trace.q === "string" &&
     typeof trace.a === "string" &&
     typeof trace.user === "string" &&

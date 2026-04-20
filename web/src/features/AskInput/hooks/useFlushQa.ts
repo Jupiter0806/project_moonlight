@@ -6,7 +6,7 @@ import {
   upsertTraces,
   setTraceFetchStatus,
 } from "@/store/slices/entitiesSlice";
-import { prependEntries } from "@/store/slices/urtSlice";
+import { appendEntries } from "@/store/slices/urtSlice";
 
 export function useFlushQa() {
   const [value, setValue] = useAtom(askInputAtom);
@@ -37,7 +37,7 @@ export function useFlushQa() {
     dispatch(setTraceFetchStatus({ id, status: "none" }));
 
     dispatch(
-      prependEntries({
+      appendEntries({
         timeline: "chamberTraces",
         entries: [
           {

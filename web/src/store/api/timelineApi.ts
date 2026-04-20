@@ -13,10 +13,49 @@ export const timelineApi = createApi({
   endpoints: (builder) => ({
     getTimeline: builder.query<TimelineApiResponse, FetchTimelineArg>({
       queryFn: async ({ timeline, cursor, direction }) => {
-        // Simulate network latency
-        await new Promise<void>((r) => setTimeout(r, 400));
-
         console.debug("timeline", { timeline, cursor, direction });
+
+        if (timeline === "chamberTraces") {
+          const qs = new URLSearchParams({
+            direction: direction === "top" ? "top" : "bottom",
+            limit: "20",
+          });
+          if (cursor) qs.set("cursor", cursor);
+
+          const path = `/api/chamber/traces?${qs.toString()}`;
+          const url =
+            typeof window !== "undefined"
+              ? // why
+                new URL(path, window.location.origin).toString()
+              : `http://localhost${path}`;
+
+          const res = await fetch(url);
+          if (!res.ok) {
+            const contentType = res.headers.get("content-type");
+            let errorMessage = `Failed to fetch timeline (${res.status})`;
+
+            if (contentType?.includes("application/json")) {
+              try {
+                const data = (await res.json()) as { error?: string };
+                errorMessage = data.error || errorMessage;
+              } catch {
+                // Ignore JSON parse failures so the HTTP status remains visible.
+              }
+            }
+
+            return {
+              error: {
+                status: "CUSTOM_ERROR" as const,
+                error: errorMessage,
+              },
+            };
+          }
+
+          return { data: (await res.json()) as TimelineApiResponse };
+        }
+
+        // Simulate network latency for mock timelines.
+        await new Promise<void>((r) => setTimeout(r, 400));
 
         const mock = MOCK_DB[timeline as URTTimeline];
         if (!mock) {
