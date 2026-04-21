@@ -42,6 +42,11 @@ export const entitiesSlice = createSlice({
     upsertReflections: (state, action: PayloadAction<Reflection[]>) => {
       reflectionsAdapter.upsertMany(state.reflections, action.payload);
     },
+    removeReflection: (state, action: PayloadAction<{ id: string }>) => {
+      reflectionsAdapter.removeOne(state.reflections, action.payload.id);
+      delete state.reflections.errors[action.payload.id];
+      delete state.reflections.fetchStatus[action.payload.id];
+    },
     upsertUsers: (state, action: PayloadAction<User[]>) => {
       usersAdapter.upsertMany(state.users, action.payload);
     },
@@ -102,6 +107,7 @@ export const entitiesSlice = createSlice({
 export const {
   upsertTraces,
   upsertReflections,
+  removeReflection,
   upsertUsers,
   setTraceError,
   clearTraceError,

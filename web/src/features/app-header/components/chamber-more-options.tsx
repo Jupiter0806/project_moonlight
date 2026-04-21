@@ -12,13 +12,15 @@ import {
 import { useAtom } from "jotai";
 import { BsTranslate } from "react-icons/bs";
 import { HiOutlineSparkles } from "react-icons/hi2";
+import { useFlushChamberTraces } from "../hooks/useFlushChamberTraces";
 
 export function ChamberMoreOptions() {
   const [currInput, setCurrInput] = useAtom(currentChamberInputAtom);
+  const flushTraces = useFlushChamberTraces();
 
   return (
     <DropdownMenuContent align="end">
-      <DropdownMenuItem>
+      <DropdownMenuItem onClick={() => flushTraces()}>
         New Kinen
         <span className="sr-only">new kinen</span>
       </DropdownMenuItem>

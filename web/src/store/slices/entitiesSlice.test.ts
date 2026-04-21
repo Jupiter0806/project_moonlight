@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import entitiesReducer, {
   upsertTraces,
   upsertReflections,
+  removeReflection,
   upsertUsers,
   setTraceError,
   setReflectionError,
@@ -22,7 +23,7 @@ import {
   type FetchTimelineResult,
 } from "@/store/thunks/fetchTimelineThunk";
 import type { RootState } from "@/store/store";
-import type { Trace, QATrace, TranslationTrace } from "@/types/Trace";
+import type { Trace, QATrace } from "@/types/Trace";
 import type { Reflection } from "@/types/Reflection";
 import type { User } from "@/types/User";
 
@@ -49,7 +50,7 @@ const makeReflection = (
 ): Reflection => ({
   id,
   createdAt: 0,
-  description: "desc",
+  summary: "desc",
   user: "user-1",
   entities: { traces: [] },
   ...overrides,
@@ -146,10 +147,38 @@ describe("entitiesSlice", () => {
       let state = entitiesReducer(undefined, upsertReflections([r1]));
       state = entitiesReducer(
         state,
-        upsertReflections([{ ...r1, description: "updated" }]),
+        upsertReflections([{ ...r1, summary: "updated" }]),
       );
       expect(state.reflections.ids).toHaveLength(1);
-      expect(state.reflections.entities["r1"]?.description).toBe("updated");
+      expect(state.reflections.entities["r1"]?.summary).toBe("updated");
+    });
+  });
+
+  describe("removeReflection", () => {
+    it("removes reflection entity by id", () => {
+      const r1 = makeReflection("r1");
+      let state = entitiesReducer(undefined, upsertReflections([r1]));
+
+      state = entitiesReducer(state, removeReflection({ id: "r1" }));
+
+      expect(state.reflections.entities["r1"]).toBeUndefined();
+      expect(state.reflections.ids).toEqual([]);
+    });
+
+    it("clears reflection fetch metadata for the removed id", () => {
+      let state = entitiesReducer(
+        undefined,
+        setReflectionError({ id: "r1", error: "failed" }),
+      );
+      state = entitiesReducer(
+        state,
+        setReflectionFetchStatus({ id: "r1", status: "loading" }),
+      );
+
+      state = entitiesReducer(state, removeReflection({ id: "r1" }));
+
+      expect(state.reflections.errors["r1"]).toBeUndefined();
+      expect(state.reflections.fetchStatus["r1"]).toBeUndefined();
     });
   });
 

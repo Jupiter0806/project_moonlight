@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import urtReducer, {
   appendEntries,
   prependEntries,
+  replaceEntryByContentId,
+  removeEntryByContentId,
   setFetchStatus,
   updateNewReflectionsBar,
   resetTimeline,
@@ -113,6 +115,85 @@ describe("urtSlice", () => {
         }),
       );
       expect(state.camphorReflections.entries).toEqual([]);
+    });
+  });
+
+  describe("replaceEntryByContentId", () => {
+    it("replaces the matched entry in-place", () => {
+      const e1 = {
+        type: "reflection" as const,
+        entryId: "entry-temp",
+        content: { id: "temp-reflection", displayType: "reflection" as const },
+      };
+      const e2 = {
+        type: "reflection" as const,
+        entryId: "entry-existing",
+        content: {
+          id: "existing-reflection",
+          displayType: "reflection" as const,
+        },
+      };
+
+      let state = urtReducer(
+        undefined,
+        appendEntries({ timeline: "camphorReflections", entries: [e1, e2] }),
+      );
+
+      state = urtReducer(
+        state,
+        replaceEntryByContentId({
+          timeline: "camphorReflections",
+          fromContentId: "temp-reflection",
+          entry: {
+            type: "reflection",
+            entryId: "entry-server",
+            content: { id: "server-reflection", displayType: "reflection" },
+          },
+        }),
+      );
+
+      expect(state.camphorReflections.entries[0]?.content.id).toBe(
+        "server-reflection",
+      );
+      expect(state.camphorReflections.entries[1]?.content.id).toBe(
+        "existing-reflection",
+      );
+    });
+  });
+
+  describe("removeEntryByContentId", () => {
+    it("removes only the targeted entry", () => {
+      const e1 = {
+        type: "reflection" as const,
+        entryId: "entry-temp",
+        content: { id: "temp-reflection", displayType: "reflection" as const },
+      };
+      const e2 = {
+        type: "reflection" as const,
+        entryId: "entry-existing",
+        content: {
+          id: "existing-reflection",
+          displayType: "reflection" as const,
+        },
+      };
+
+      let state = urtReducer(
+        undefined,
+        appendEntries({ timeline: "camphorReflections", entries: [e1, e2] }),
+      );
+
+      state = urtReducer(
+        state,
+        removeEntryByContentId({
+          timeline: "camphorReflections",
+          contentId: "temp-reflection",
+        }),
+      );
+
+      expect(state.camphorReflections.entries).toHaveLength(1);
+      expect(state.camphorReflections.entries[0]?.content.id).toBe(
+        "existing-reflection",
+      );
     });
   });
 

@@ -72,6 +72,35 @@ export const urtSlice = createSlice({
     ) => {
       state[action.payload.timeline].entries.unshift(...action.payload.entries);
     },
+    replaceEntryByContentId: (
+      state,
+      action: PayloadAction<{
+        timeline: URTTimeline;
+        fromContentId: string;
+        entry: URTEntry;
+      }>,
+    ) => {
+      const { timeline, fromContentId, entry } = action.payload;
+      const entries = state[timeline].entries;
+      const index = entries.findIndex(
+        (item) => item.content.id === fromContentId,
+      );
+
+      if (index >= 0) {
+        entries[index] = entry;
+      } else {
+        entries.unshift(entry);
+      }
+    },
+    removeEntryByContentId: (
+      state,
+      action: PayloadAction<{ timeline: URTTimeline; contentId: string }>,
+    ) => {
+      const { timeline, contentId } = action.payload;
+      state[timeline].entries = state[timeline].entries.filter(
+        (entry) => entry.content.id !== contentId,
+      );
+    },
     setFetchStatus: (
       state,
       action: PayloadAction<{
@@ -178,6 +207,8 @@ export const urtSlice = createSlice({
 export const {
   appendEntries,
   prependEntries,
+  replaceEntryByContentId,
+  removeEntryByContentId,
   setFetchStatus,
   updateNewReflectionsBar,
   resetTimeline,

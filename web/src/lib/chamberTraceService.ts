@@ -35,3 +35,40 @@ export async function upsertChamberTrace(
 
   return (await res.json()) as UpsertChamberTraceResponse;
 }
+
+export async function flushChamberTraces(): Promise<{
+  status: "ok";
+  reflectionId: string;
+  traceIds: string[];
+  summary: string;
+  summaryGenerated: boolean;
+}> {
+  const res = await fetch("/api/chamber/traces/flush", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!res.ok) {
+    const contentType = res.headers.get("content-type");
+    let message = "Failed to flush chamber traces";
+
+    if (contentType?.includes("application/json")) {
+      try {
+        const data = (await res.json()) as { error?: string };
+        message = data.error || message;
+      } catch {
+        // Ignore JSON parse failures so the original HTTP error is preserved.
+      }
+    }
+
+    throw new Error(message);
+  }
+
+  return (await res.json()) as {
+    status: "ok";
+    reflectionId: string;
+    traceIds: string[];
+    summary: string;
+    summaryGenerated: boolean;
+  };
+}
