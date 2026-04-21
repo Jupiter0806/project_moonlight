@@ -10,13 +10,22 @@
 import { Trace } from "../Trace";
 import { useGetTimelineQuery } from "@/store/api/timelineApi";
 import { useAppSelector } from "@/store/hooks";
-import { selectURTEntries } from "@/store/slices/urtSlice";
+import {
+  selectURTEntries,
+  selectURTFetchStatus,
+} from "@/store/slices/urtSlice";
 
 export function ChamberTraceList() {
   const traces = useTraceList();
+  const fetchStatus = useAppSelector(selectURTFetchStatus("chamberTraces"));
 
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto">
+      {fetchStatus === "loading" && (
+        <div className="flex items-center justify-center">
+          <p className="text-sm">Loading traces...</p>
+        </div>
+      )}
       {traces.map((trace) => (
         <Trace
           key={trace.entryId}

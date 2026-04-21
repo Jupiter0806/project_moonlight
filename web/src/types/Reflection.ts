@@ -6,6 +6,6 @@ export interface Reflection {
   entities: {
     traces: Trace[];
   };
-  description: string;
+  summary: string;
   user: string;
 }
