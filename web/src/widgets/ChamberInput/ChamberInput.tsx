@@ -1,8 +1,7 @@
 "use client";
 
-import { useAtom } from "jotai";
-import { ChamberInputControlBar } from "@/features/ChamberInputControlBar/ChamberInputControlBar";
-import { modelAtom } from "@/features/ChamberInputControlBar/atom/chamberInputControlBarAtoms";
+import { useAtom, useAtomValue } from "jotai";
+import { currentChamberInputAtom } from "@/atoms/chamber-input-atoms";
 import dynamic from "next/dynamic";
 
 const TranslateInput = dynamic(
@@ -17,12 +16,11 @@ const AskInput = dynamic(() => import("@/features/AskInput/AskInput"), {
 });
 
 export function ChamberInput() {
-  const [model] = useAtom(modelAtom);
+  const currInput = useAtomValue(currentChamberInputAtom);
 
   return (
     <div className="bg-card flex flex-col gap-3 rounded-3xl p-6">
-      {model === "asking" ? <AskInput /> : <TranslateInput />}
-      <ChamberInputControlBar />
+      {currInput === "asking" ? <AskInput /> : <TranslateInput />}
     </div>
   );
 }
