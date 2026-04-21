@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button-as-div";
 import { cn } from "@/lib/utils";
 import type { VariantProps } from "class-variance-authority";
 import type { Button as ButtonPrimitive } from "@base-ui/react/button";
