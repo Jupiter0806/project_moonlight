@@ -17,11 +17,7 @@ export interface URTEntry {
   entryId: string;
   content: {
     id: string;
-    displayType:
-      | "reflection"
-      | "translationReflection"
-      | "qa-trace"
-      | "translation-trace";
+    displayType: "reflection" | "qa-trace" | "translation-trace";
   };
 }
 
