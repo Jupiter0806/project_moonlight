@@ -5,6 +5,7 @@ import type {
   URTTimeline,
 } from "@/store/thunks/fetchTimelineThunk";
 import { MOCK_DB } from "@/store/thunks/fetchTimelineThunk";
+import { getChamberTraces } from "@/lib/chamberTraceService";
 
 export const timelineApi = createApi({
   reducerPath: "timelineApi",
@@ -16,42 +17,23 @@ export const timelineApi = createApi({
         console.debug("timeline", { timeline, cursor, direction });
 
         if (timeline === "chamberTraces") {
-          const qs = new URLSearchParams({
-            direction: direction === "top" ? "top" : "bottom",
-            limit: "20",
-          });
-          if (cursor) qs.set("cursor", cursor);
-
-          const path = `/api/chamber/traces?${qs.toString()}`;
-          const url =
-            typeof window !== "undefined"
-              ? // why
-                new URL(path, window.location.origin).toString()
-              : `http://localhost${path}`;
-
-          const res = await fetch(url);
-          if (!res.ok) {
-            const contentType = res.headers.get("content-type");
-            let errorMessage = `Failed to fetch timeline (${res.status})`;
-
-            if (contentType?.includes("application/json")) {
-              try {
-                const data = (await res.json()) as { error?: string };
-                errorMessage = data.error || errorMessage;
-              } catch {
-                // Ignore JSON parse failures so the HTTP status remains visible.
-              }
-            }
-
+          try {
+            const data = await getChamberTraces(direction, cursor);
+            // todo
+            // a proper typing required to separate the API response from the RTK Query wrapper's expected return type
+            return { data: data as unknown as TimelineApiResponse };
+          } catch (error) {
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : "An unknown error occurred while fetching chamber traces.";
             return {
               error: {
-                status: "CUSTOM_ERROR" as const,
+                status: "FETCH_ERROR" as const,
                 error: errorMessage,
               },
             };
           }
-
-          return { data: (await res.json()) as TimelineApiResponse };
         }
 
         // Simulate network latency for mock timelines.
