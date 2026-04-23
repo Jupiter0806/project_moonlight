@@ -1,6 +1,9 @@
+import { HiOutlineSparkles } from "react-icons/hi2";
+import { RiTreeLine } from "react-icons/ri";
+
 export const routes = [
-  { path: "/", name: "Chamber" },
-  { path: "/camphor", name: "Camphor" },
+  { path: "/", name: "Chamber", Icon: RiTreeLine },
+  { path: "/camphor", name: "Camphor", Icon: HiOutlineSparkles },
 ];
 
 export function getRouteName(path: string) {

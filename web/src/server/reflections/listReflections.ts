@@ -12,7 +12,7 @@ import type { Reflection } from "@/types/Reflection";
 
 function mapEntry(reflection: Reflection): URTEntry {
   return {
-    type: "trace",
+    type: "reflection",
     entryId: `entry-${reflection.id}`,
     content: {
       id: reflection.id,

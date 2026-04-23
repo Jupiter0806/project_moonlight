@@ -1,0 +1,30 @@
+"use client";
+
+import { useGetTimelineQuery } from "@/store/api/timelineApi";
+import { useAppSelector } from "@/store/hooks";
+import {
+  selectURTEntries,
+  selectURTFetchStatus,
+} from "@/store/slices/urtSlice";
+import { ReflectionList } from "../reflections/relfection-list";
+
+export function CamphorReflectionList() {
+  const entries = useCamphorReflectionEntries();
+  const isLoading =
+    useAppSelector(selectURTFetchStatus("camphorReflections")) === "loading";
+
+  return (
+    <ReflectionList
+      ids={entries.map((entry) => entry.content.id)}
+      isLoading={isLoading}
+    />
+  );
+}
+
+function useCamphorReflectionEntries() {
+  // RTK Query: handles fetching, caching, and deduplication automatically.
+  // On fulfilled, urtSlice + entitiesSlice both update via extraReducers/matchers.
+  useGetTimelineQuery({ timeline: "camphorReflections", direction: "bottom" });
+
+  return useAppSelector(selectURTEntries("camphorReflections"));
+}
