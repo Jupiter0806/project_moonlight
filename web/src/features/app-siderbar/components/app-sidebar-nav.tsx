@@ -11,8 +11,6 @@ import {
 } from "@/components/ui/sidebar";
 import { routes } from "@/lib/routes";
 import Link from "next/link";
-import { HiOutlineSparkles } from "react-icons/hi2";
-import { RiTreeLine } from "react-icons/ri";
 
 export function AppSidebarNav() {
   const { setOpenMobile } = useSidebar();
@@ -25,7 +23,7 @@ export function AppSidebarNav() {
           {routes.map((route) => (
             <SidebarMenuItem key={route.path}>
               <SidebarMenuButton>
-                <HiOutlineSparkles />
+                <route.Icon />
                 <Link href={route.path} onClick={() => setOpenMobile(false)}>
                   {route.name}
                 </Link>
