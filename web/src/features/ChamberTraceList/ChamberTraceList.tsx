@@ -1,5 +1,6 @@
 "use client";
 
+import { List } from "@/components/list";
 /**
  *
  * - TODO: map over answers from state/atoms and render each answer card
@@ -20,12 +21,7 @@ export function ChamberTraceList() {
   const fetchStatus = useAppSelector(selectURTFetchStatus("chamberTraces"));
 
   return (
-    <div className="flex h-full flex-col gap-4 overflow-y-auto">
-      {fetchStatus === "loading" && (
-        <div className="flex items-center justify-center">
-          <p className="text-sm">Loading traces...</p>
-        </div>
-      )}
+    <List isLoading={fetchStatus === "loading"}>
       {traces.map((trace) => (
         <Trace
           key={trace.entryId}
@@ -33,7 +29,7 @@ export function ChamberTraceList() {
           displayType={trace.content.displayType}
         />
       ))}
-    </div>
+    </List>
   );
 }
 
