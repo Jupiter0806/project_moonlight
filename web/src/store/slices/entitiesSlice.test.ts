@@ -51,7 +51,7 @@ const makeReflection = (
   id,
   createdAt: 0,
   summary: "desc",
-  user: "user-1",
+  uid: "user-1",
   entities: { traces: [] },
   ...overrides,
 });

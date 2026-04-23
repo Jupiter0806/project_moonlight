@@ -7,5 +7,5 @@ export interface Reflection {
     traces: Trace[];
   };
   summary: string;
-  user: string;
+  uid: string;
 }

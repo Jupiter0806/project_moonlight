@@ -59,7 +59,7 @@ export function useFlushChamberTraces() {
       id: tempReflectionId,
       createdAt: Date.now(),
       summary: "",
-      user: previousTraces[0]?.user ?? "",
+      uid: previousTraces[0]?.user ?? "",
       entities: {
         traces: optimisticTraces,
       },
@@ -104,7 +104,7 @@ export function useFlushChamberTraces() {
         id: result.reflectionId,
         createdAt: optimisticReflection.createdAt,
         summary: result.summary,
-        user: optimisticReflection.user,
+        uid: optimisticReflection.uid,
         entities: {
           traces: reconciledTraces,
         },
