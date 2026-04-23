@@ -10,27 +10,11 @@ import {
 } from "@/server/chamber/upsertChamberTrace";
 import { listChamberTraces } from "@/server/chamber/listChamberTraces";
 import { fetchAnswer } from "@/server/chamber/fetchAnswer";
-
-function withRateLimitHeaders(limit: number, remaining: number, reset: number) {
-  return {
-    "X-RateLimit-Limit": String(limit),
-    "X-RateLimit-Remaining": String(remaining),
-    "X-RateLimit-Reset": String(reset),
-    "Retry-After": String(Math.ceil((reset - Date.now()) / 1000)),
-  };
-}
-
-async function authenticate(request: NextRequest): Promise<string | null> {
-  const sessionCookie = request.cookies.get("__session")?.value;
-  if (!sessionCookie) return null;
-
-  try {
-    const decoded = await getAdminAuth().verifySessionCookie(sessionCookie);
-    return decoded.uid;
-  } catch {
-    return null;
-  }
-}
+import {
+  authenticate,
+  parsePagination,
+  withRateLimitHeaders,
+} from "@/lib/apis-helpers";
 
 /**
  * GET /api/chamber/traces
@@ -56,12 +40,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const directionParam = request.nextUrl.searchParams.get("direction");
-  const direction = directionParam === "top" ? "top" : "bottom";
-  const cursor = request.nextUrl.searchParams.get("cursor") ?? undefined;
-  const rawLimit = Number(request.nextUrl.searchParams.get("limit") ?? 20);
-  const limitValue = Number.isFinite(rawLimit) ? rawLimit : 20;
-  const pageSize = Math.max(1, Math.min(50, Math.trunc(limitValue)));
+  const { direction, cursor, pageSize } = parsePagination(
+    request.nextUrl.searchParams,
+  );
 
   try {
     const response = await listChamberTraces(getAdminFirestore(), {
