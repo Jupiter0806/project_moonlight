@@ -31,7 +31,9 @@ export async function listChamberTraces(
     .doc(params.uid)
     .collection("traces");
 
-  const query = buildPaginationQuery(chamberTraceRef, params);
+  const query = buildPaginationQuery(chamberTraceRef, params, {
+    bottomLatest: true,
+  });
 
   const snapshot = await query.get();
   const traces = snapshot.docs.map((doc) => doc.data() as Trace);
@@ -50,6 +52,7 @@ export async function listChamberTraces(
   const { topCursor, bottomCursor } = await buildPaginationCursor(
     chamberTraceRef,
     traces,
+    { bottomLatest: true },
   );
 
   return {
