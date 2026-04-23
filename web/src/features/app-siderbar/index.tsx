@@ -1,14 +1,8 @@
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarGroup } from "@/components/ui/sidebar";
 import { AppSidebarHeader } from "./components/app-sidebar-header";
 import { AppSidebarFooter } from "./components/app-sidebar-footer";
+import { AppSidebarNav } from "./components/app-sidebar-nav";
+import { useAtom } from "jotai";
 
 export function AppSidebar() {
   return (
@@ -16,8 +10,7 @@ export function AppSidebar() {
       <AppSidebarHeader />
 
       <SidebarContent>
-        <SidebarGroup />
-        <SidebarGroup />
+        <AppSidebarNav />
       </SidebarContent>
 
       <AppSidebarFooter />
