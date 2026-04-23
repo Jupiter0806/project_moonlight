@@ -1,4 +1,4 @@
-import { TranslateTrace } from "@/features/Trace/translate-trace";
+import { TranslateTrace } from "@/features/traces/translate-trace";
 import { URTEntry } from "@/store/thunks/fetchTimelineThunk";
 import type { WithClassName } from "@/types/withClassName";
 import { QATrace } from "./qa-trace";
