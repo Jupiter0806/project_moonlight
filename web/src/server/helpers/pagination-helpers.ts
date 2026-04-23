@@ -27,15 +27,20 @@ export function decodeCursor(cursor: string): PageCursor | null {
 
 export function buildPaginationBaseQuery<T>(
   ref: FirebaseFirestore.CollectionReference<T>,
+  // for chamber traces, bottom is latest by default
+  options?: { bottomLatest?: boolean },
 ) {
-  return ref.orderBy("createdAt", "asc").orderBy("id", "asc");
+  const sortDirection = options?.bottomLatest ? "desc" : "asc";
+  return ref.orderBy("createdAt", sortDirection).orderBy("id", sortDirection);
 }
 
 export function buildPaginationQuery<T>(
   ref: FirebaseFirestore.CollectionReference<T>,
   params: ListParams,
+  // for chamber traces, bottom is latest by default
+  options?: { bottomLatest?: boolean },
 ) {
-  const baseQuery = buildPaginationBaseQuery(ref);
+  const baseQuery = buildPaginationBaseQuery(ref, options);
 
   const decodedCursor = params.cursor ? decodeCursor(params.cursor) : null;
 
@@ -63,7 +68,11 @@ export function buildPaginationQuery<T>(
 export async function buildPaginationCursor<
   R,
   T extends { createdAt: number; id: string },
->(ref: FirebaseFirestore.CollectionReference<R>, docs: T[]) {
+>(
+  ref: FirebaseFirestore.CollectionReference<R>,
+  docs: T[], // for chamber traces, bottom is latest by default
+  options?: { bottomLatest?: boolean },
+) {
   if (docs.length === 0)
     return {
       topCursor: undefined,
@@ -73,7 +82,7 @@ export async function buildPaginationCursor<
   const first = docs[0];
   const last = docs[docs.length - 1];
 
-  const baseQuery = buildPaginationBaseQuery(ref);
+  const baseQuery = buildPaginationBaseQuery(ref, options);
 
   const olderCheck = await baseQuery
     .endBefore(first.createdAt, first.id)
