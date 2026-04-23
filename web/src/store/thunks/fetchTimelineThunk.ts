@@ -97,7 +97,7 @@ export const MOCK_DB: Partial<Record<URTTimeline, TimelineApiResponse>> = {
         id: "reflection-1",
         createdAt: 1712649500000,
         summary: "A thread on wabi-sabi",
-        user: "user-1",
+        uid: "user-1",
         entities: { traces: [] },
       },
     ],

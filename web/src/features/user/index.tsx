@@ -1,10 +1,5 @@
 "use client";
 
-import { useAppSelector } from "@/store/hooks";
-import { selectUserId } from "@/store/slices/sessionSlice";
-
-export function User() {
-  const userId = useAppSelector(selectUserId);
-
-  return <span>{userId}</span>;
+export function User({ uid }: { uid: string }) {
+  return <span>{uid}</span>;
 }

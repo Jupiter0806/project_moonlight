@@ -5,22 +5,19 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { useAppSelector } from "@/store/hooks";
-import {
-  selectReflectionById,
-  selectUserById,
-} from "@/store/slices/entitiesSlice";
+import { selectReflectionById } from "@/store/slices/entitiesSlice";
+import { User } from "../user";
 
 export function Reflection({ id }: { id: string }) {
   const reflection = useAppSelector((state) => selectReflectionById(state, id));
-  const user = useAppSelector((state) =>
-    selectUserById(state, reflection?.user ?? ""),
-  );
 
   if (!reflection) return null;
 
   return (
     <Card size="sm">
-      <CardHeader>{user?.email}</CardHeader>
+      <CardHeader>
+        <User uid={reflection.uid} />
+      </CardHeader>
       <CardContent>
         <CardDescription>{reflection.summary}</CardDescription>
       </CardContent>
