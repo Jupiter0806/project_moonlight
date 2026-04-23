@@ -1,12 +1,16 @@
-import { useRoute } from "@/hooks/use-route";
+import { usePathname } from "next/navigation";
 import { ChamberMoreOptions } from "./chamber-more-options";
 
 export function MoreOptions() {
-  const route = useRoute();
+  const pathname = usePathname();
 
-  switch (route) {
-    case "home":
+  switch (pathname) {
+    case "/":
       return <ChamberMoreOptions />;
+
+    case "/camphor":
+      // return <CamphorMoreOptions />;
+      return null;
   }
 
   return null;
