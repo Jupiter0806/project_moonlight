@@ -8,29 +8,19 @@ import { List } from "@/components/list";
  * - TODO: preserve scroll position when the keyboard opens/closes
  */
 
-import { Trace } from "../Trace";
 import { useGetTimelineQuery } from "@/store/api/timelineApi";
 import { useAppSelector } from "@/store/hooks";
 import {
   selectURTEntries,
   selectURTFetchStatus,
 } from "@/store/slices/urtSlice";
+import { TraceList } from "../traces/trace-list";
 
 export function ChamberTraceList() {
   const traces = useTraceList();
   const fetchStatus = useAppSelector(selectURTFetchStatus("chamberTraces"));
 
-  return (
-    <List isLoading={fetchStatus === "loading"}>
-      {traces.map((trace) => (
-        <Trace
-          key={trace.entryId}
-          traceId={trace.content.id}
-          displayType={trace.content.displayType}
-        />
-      ))}
-    </List>
-  );
+  return <TraceList entries={traces} isLoading={fetchStatus === "loading"} />;
 }
 
 function useTraceList() {
