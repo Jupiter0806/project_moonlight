@@ -1,7 +1,7 @@
-import { TranslateTrace } from "@/features/traces/translate-trace";
 import { URTEntry } from "@/store/thunks/fetchTimelineThunk";
 import type { WithClassName } from "@/types/withClassName";
 import { QATrace } from "./qa-trace";
+import { TranslateTrace } from "./translate-trace";
 
 interface TraceProps extends WithClassName {
   traceId: string;

@@ -3,9 +3,7 @@ import { Trace } from "./Trace";
 export interface Reflection {
   id: string;
   createdAt: number;
-  entities: {
-    traces: Trace[];
-  };
+  traceIds: string[];
   summary: string;
   uid: string;
 }
