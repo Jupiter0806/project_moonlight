@@ -60,9 +60,7 @@ export function useFlushChamberTraces() {
       createdAt: Date.now(),
       summary: "",
       uid: previousTraces[0]?.user ?? "",
-      entities: {
-        traces: optimisticTraces,
-      },
+      traceIds: optimisticTraces.map((trace) => trace.id),
     };
 
     isFlushingRef.current = true;
@@ -105,9 +103,7 @@ export function useFlushChamberTraces() {
         createdAt: optimisticReflection.createdAt,
         summary: result.summary,
         uid: optimisticReflection.uid,
-        entities: {
-          traces: reconciledTraces,
-        },
+        traceIds: reconciledTraces.map((trace) => trace.id),
       };
 
       dispatch(upsertTraces(reconciledTraces));

@@ -52,7 +52,7 @@ const makeReflection = (
   createdAt: 0,
   summary: "desc",
   uid: "user-1",
-  entities: { traces: [] },
+  traceIds: [],
   ...overrides,
 });
 

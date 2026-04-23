@@ -8,8 +8,9 @@ import {
   buildPaginationCursor,
   buildPaginationQuery,
 } from "../helpers/pagination-helpers";
-import type { Reflection } from "@/types/Reflection";
 import { Trace } from "@/types/Trace";
+import { Reflection } from "@/types/Reflection";
+import { FetchState } from "@/types/FetchState";
 
 function mapEntry(trace: Trace): URTEntry {
   return {
@@ -22,20 +23,34 @@ function mapEntry(trace: Trace): URTEntry {
   };
 }
 
+// this is WRONG
+// after relfection fetched, traceIds is fetched
 export async function listReflectionTraces(
   db: Firestore,
   params: ListParams & { reflectionId: string },
 ): Promise<TimelineApiResponse> {
-  const traceRef = db
-    .collection("reflections")
-    .doc(params.reflectionId)
-    .collection("traces");
+  const traceRef = db.collection("reflections").doc(params.reflectionId);
 
-  const query = buildPaginationQuery(traceRef, params);
+  const reflection = (await traceRef
+    .get()
+    .then((doc) => doc.data())) as Reflection;
 
-  const snapshot = await query.get();
+  const traceRefs = reflection.traceIds.map((id) =>
+    db.collection("traces").doc(id),
+  );
+  const snapshots = await db.getAll(...traceRefs);
 
-  const traces = snapshot.docs.map((doc) => doc.data() as Trace);
+  const fetchStatus: Record<string, FetchState> = {};
+
+  const traces = snapshots
+    .map((doc) => doc.data() as Trace)
+    .filter((doc) => {
+      const exists = Boolean(doc);
+      if (!exists) {
+        fetchStatus[doc.id] = "error";
+      }
+      return exists;
+    });
 
   const entries = traces.map(mapEntry);
 
@@ -48,11 +63,6 @@ export async function listReflectionTraces(
     };
   }
 
-  const { topCursor, bottomCursor } = await buildPaginationCursor(
-    traceRef,
-    traces,
-  );
-
   return {
     entries,
     traces,
@@ -60,7 +70,8 @@ export async function listReflectionTraces(
     // requires timeline-specific response types (discriminated union)
     reflections: [],
     users: [],
-    topCursor,
-    bottomCursor,
+    topCursor: undefined,
+    bottomCursor: undefined,
+    fetchStatus,
   };
 }

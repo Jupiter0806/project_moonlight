@@ -3,6 +3,7 @@ import type { Trace } from "@/types/Trace";
 import type { Reflection } from "@/types/Reflection";
 import type { User } from "@/types/User";
 import type { URTInstruction } from "@/types/URTInstruction";
+import { FetchState } from "@/types/FetchState";
 
 // Exported here to avoid circular imports between urtSlice ↔ entitiesSlice ↔ store.
 export type URTTimeline =
@@ -33,6 +34,7 @@ export interface TimelineApiResponse {
     count: number;
     instructions: URTInstruction[];
   };
+  fetchStatus?: Record<string, FetchState>;
 }
 
 export interface FetchTimelineArg {
@@ -98,7 +100,7 @@ export const MOCK_DB: Partial<Record<URTTimeline, TimelineApiResponse>> = {
         createdAt: 1712649500000,
         summary: "A thread on wabi-sabi",
         uid: "user-1",
-        entities: { traces: [] },
+        traceIds: ["trace-1", "trace-2"],
       },
     ],
     users: [
