@@ -6,6 +6,7 @@ import type {
 } from "@/store/thunks/fetchTimelineThunk";
 import { MOCK_DB } from "@/store/thunks/fetchTimelineThunk";
 import { getChamberTraces } from "@/lib/chamberTraceService";
+import { getReflections } from "@/lib/reflections-services";
 
 export const timelineApi = createApi({
   reducerPath: "timelineApi",
@@ -16,24 +17,31 @@ export const timelineApi = createApi({
       queryFn: async ({ timeline, cursor, direction }) => {
         console.debug("timeline", { timeline, cursor, direction });
 
-        if (timeline === "chamberTraces") {
-          try {
+        try {
+          if (timeline === "chamberTraces") {
             const data = await getChamberTraces(direction, cursor);
             // todo
             // a proper typing required to separate the API response from the RTK Query wrapper's expected return type
             return { data: data as unknown as TimelineApiResponse };
-          } catch (error) {
-            const errorMessage =
-              error instanceof Error
-                ? error.message
-                : "An unknown error occurred while fetching chamber traces.";
+          } else if (timeline === "camphorReflections") {
+            const data = await getReflections(direction, cursor);
+            // todo
+            // a proper typing required to separate the API response from the RTK Query wrapper's expected return type
             return {
-              error: {
-                status: "FETCH_ERROR" as const,
-                error: errorMessage,
-              },
+              data: data as unknown as TimelineApiResponse,
             };
           }
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred while fetching chamber traces.";
+          return {
+            error: {
+              status: "FETCH_ERROR" as const,
+              error: errorMessage,
+            },
+          };
         }
 
         // Simulate network latency for mock timelines.
