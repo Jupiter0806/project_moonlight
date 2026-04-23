@@ -3,61 +3,58 @@ import type {
   TimelineApiResponse,
   URTEntry,
 } from "@/store/thunks/fetchTimelineThunk";
-import type { Trace } from "@/types/Trace";
 import type { ListParams } from "../types/pagination.types";
 import {
   buildPaginationCursor,
   buildPaginationQuery,
 } from "../helpers/pagination-helpers";
+import type { Reflection } from "@/types/Reflection";
 
-function mapEntry(trace: Trace): URTEntry {
+function mapEntry(reflection: Reflection): URTEntry {
   return {
     type: "trace",
-    entryId: `entry-${trace.id}`,
+    entryId: `entry-${reflection.id}`,
     content: {
-      id: trace.id,
-      displayType:
-        trace.type === "translation" ? "translation-trace" : "qa-trace",
+      id: reflection.id,
+      displayType: "reflection",
     },
   };
 }
 
-export async function listChamberTraces(
+export async function listReflections(
   db: Firestore,
   params: ListParams,
 ): Promise<TimelineApiResponse> {
-  const chamberTraceRef = db
-    .collection("chambers")
-    .doc(params.uid)
-    .collection("traces");
+  const reflectionRef = db.collection("reflections");
 
-  const query = buildPaginationQuery(chamberTraceRef, params);
+  const query = buildPaginationQuery(reflectionRef, params);
 
   const snapshot = await query.get();
-  const traces = snapshot.docs.map((doc) => doc.data() as Trace);
 
-  const entries = traces.map(mapEntry);
+  const reflections = snapshot.docs.map((doc) => doc.data() as Reflection);
 
-  if (traces.length === 0) {
+  const entries = reflections.map(mapEntry);
+
+  if (reflections.length === 0) {
     return {
       entries,
-      traces,
-      reflections: [],
+      traces: [],
+      reflections,
       users: [],
     };
   }
 
   const { topCursor, bottomCursor } = await buildPaginationCursor(
-    chamberTraceRef,
-    traces,
+    reflectionRef,
+    reflections,
   );
 
   return {
     entries,
-    traces,
+    reflections,
     // todo
     // requires timeline-specific response types (discriminated union)
-    reflections: [],
+    traces: [],
     users: [],
     topCursor,
     bottomCursor,
