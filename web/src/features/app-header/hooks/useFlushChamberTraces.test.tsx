@@ -83,7 +83,7 @@ describe("useFlushChamberTraces", () => {
           createdAt: Date.now() - 1_000,
           summary: "existing",
           uid: "user-1",
-          entities: { traces: [] },
+          traceIds: [],
         },
       ]),
     );
@@ -217,7 +217,7 @@ describe("useFlushChamberTraces", () => {
           createdAt: Date.now() - 1_000,
           summary: "existing",
           uid: "user-1",
-          entities: { traces: [] },
+          traceIds: [],
         },
       ]),
     );

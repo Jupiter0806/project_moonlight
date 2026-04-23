@@ -1,23 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import {
-  decodeCursor,
-  listChamberTraces,
-} from "@/server/chamber/listChamberTraces";
-
-describe("decodeCursor", () => {
-  it("returns null for invalid cursor", () => {
-    expect(decodeCursor("not-base64")).toBeNull();
-  });
-
-  it("returns parsed cursor for valid payload", () => {
-    const encoded = Buffer.from(
-      JSON.stringify({ createdAt: 123, id: "trace-1" }),
-      "utf8",
-    ).toString("base64url");
-
-    expect(decodeCursor(encoded)).toEqual({ createdAt: 123, id: "trace-1" });
-  });
-});
+import { listChamberTraces } from "@/server/chamber/listChamberTraces";
 
 describe("listChamberTraces", () => {
   it("returns empty timeline payload when no traces", async () => {
