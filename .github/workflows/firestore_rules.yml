@@ -43,8 +43,17 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools@latest
 
-      - name: Validate Firestore rules
-        run: firebase deploy --only firestore:rules --project demo-moonlight --config firebase.json --dry-run --non-interactive
+      - name: Configure service account key
+        env:
+          FIREBASE_SERVICE_ACCOUNT_KEY_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}
+        run: |
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_KEY_BASE64" | base64 --decode > "$RUNNER_TEMP/firebase-service-account.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-service-account.json" >> "$GITHUB_ENV"
+
+      - name: Deploy Firestore rules (dev)
+        env:
+          FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+        run: firebase deploy --only firestore:rules --project "$FIREBASE_PROJECT_ID" --config firebase.json --dry-run --non-interactive
 
   deploy-dev:
     name: Deploy rules to Firebase dev
