@@ -190,8 +190,8 @@ describe("AuthContext", () => {
             body: JSON.stringify({
               idToken: "token-for-uid-sign-in",
               clientContext: {
-                locale: "en-US",
-                timeZone: "Australia/Melbourne",
+                locale: Intl.DateTimeFormat().resolvedOptions().locale,
+                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
               },
             }),
           }),
@@ -234,8 +234,8 @@ describe("AuthContext", () => {
             body: JSON.stringify({
               idToken: "token-for-uid-register",
               clientContext: {
-                locale: "en-US",
-                timeZone: "Australia/Melbourne",
+                locale: Intl.DateTimeFormat().resolvedOptions().locale,
+                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
               },
             }),
           }),
