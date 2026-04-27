@@ -35,7 +35,7 @@ export function QATrace({ traceId, className }: CommonTraceProps) {
         <CardDescription>
           {trace.a && <AiAnswerDisplay answer={trace.a} />}
         </CardDescription>
-        {fetchStatus !== "done" && (
+        {fetchStatus === "loading" && (
           <p className="text-sm text-gray-500">{fetchStatus}</p>
         )}
         {fetchStatus === "error" && (
