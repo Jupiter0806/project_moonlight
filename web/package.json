@@ -78,5 +78,8 @@
     "tailwindcss": "^4",
     "typescript": "^6",
     "vitest": "^4.1.5"
+  },
+  "peerDependencies": {
+    "protobufjs": "^7.5.5"
   }
 }
