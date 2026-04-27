@@ -83,3 +83,14 @@ export const reflectionsRatelimit = new Ratelimit({
   prefix: "rl:reflections",
   analytics: true,
 });
+
+/**
+ * Reflections writes: user-generated writes can spike (rapid submit/retry).
+ * 30 requests per minute per user/IP keeps UX smooth while limiting abuse.
+ */
+export const moonlightRatelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(30, "1 m"),
+  prefix: "rl:moonlight",
+  analytics: true,
+});
