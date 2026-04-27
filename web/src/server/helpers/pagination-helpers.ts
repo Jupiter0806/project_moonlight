@@ -30,7 +30,7 @@ export function buildPaginationBaseQuery<T>(
   // for chamber traces, bottom is latest by default
   options?: { bottomLatest?: boolean },
 ) {
-  const sortDirection = options?.bottomLatest ? "desc" : "asc";
+  const sortDirection = options?.bottomLatest ? "asc" : "desc";
   return ref.orderBy("createdAt", sortDirection).orderBy("id", sortDirection);
 }
 
