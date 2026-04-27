@@ -10,7 +10,7 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == uid;
     }
 
-    function isChamberOwner(chamberId) {
+    function isChamberOwner(uid) {
       return isSignedIn()
         && request.auth.uid == uid;
     }
