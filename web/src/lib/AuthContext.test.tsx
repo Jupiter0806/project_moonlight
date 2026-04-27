@@ -187,7 +187,13 @@ describe("AuthContext", () => {
           "/api/auth/session",
           expect.objectContaining({
             method: "POST",
-            body: JSON.stringify({ idToken: "token-for-uid-sign-in" }),
+            body: JSON.stringify({
+              idToken: "token-for-uid-sign-in",
+              clientContext: {
+                locale: "en-US",
+                timeZone: "Australia/Melbourne",
+              },
+            }),
           }),
         ),
       );
@@ -225,7 +231,13 @@ describe("AuthContext", () => {
           "/api/auth/session",
           expect.objectContaining({
             method: "POST",
-            body: JSON.stringify({ idToken: "token-for-uid-register" }),
+            body: JSON.stringify({
+              idToken: "token-for-uid-register",
+              clientContext: {
+                locale: "en-US",
+                timeZone: "Australia/Melbourne",
+              },
+            }),
           }),
         ),
       );
