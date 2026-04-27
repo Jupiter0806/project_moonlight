@@ -7,6 +7,7 @@ import type {
 import { MOCK_DB } from "@/store/thunks/fetchTimelineThunk";
 import { getChamberTraces } from "@/lib/chamberTraceService";
 import { getReflections } from "@/lib/reflections-services";
+import { getTodayReflections } from "@/lib/moonlight-services";
 
 export const timelineApi = createApi({
   reducerPath: "timelineApi",
@@ -25,6 +26,13 @@ export const timelineApi = createApi({
             return { data: data as unknown as TimelineApiResponse };
           } else if (timeline === "camphorReflections") {
             const data = await getReflections(direction, cursor);
+            // todo
+            // a proper typing required to separate the API response from the RTK Query wrapper's expected return type
+            return {
+              data: data as unknown as TimelineApiResponse,
+            };
+          } else if (timeline === "moonlightReflections") {
+            const data = await getTodayReflections(direction, cursor);
             // todo
             // a proper typing required to separate the API response from the RTK Query wrapper's expected return type
             return {
