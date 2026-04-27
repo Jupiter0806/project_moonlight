@@ -9,7 +9,7 @@ import type { URTEntry } from "@/store/thunks/fetchTimelineThunk";
 // the actual trace entity. Mocking Trace keeps these tests focused solely on
 // ChamberTraceList's responsibilities: reading chamberTraces entries and wiring
 // props correctly.
-vi.mock("@/features/Trace", () => ({
+vi.mock("@/features/traces/trace", () => ({
   Trace: ({
     traceId,
     displayType,
