@@ -1,7 +1,7 @@
 const QA_API_BASE =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
 
-const QA_TIMEOUT_MS = 12_000;
+const QA_TIMEOUT_MS = 60_000;
 
 interface GeminiResponse {
   candidates: {
