@@ -25,6 +25,8 @@ permissions:
 
 jobs:
   validate:
+    environment:
+      name: firebase dev
     name: Validate rules syntax
     runs-on: ubuntu-latest
     defaults:
@@ -58,7 +60,8 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
     needs: validate
     runs-on: ubuntu-latest
-    environment: firebase dev
+    environment:
+      name: firebase dev
     defaults:
       run:
         working-directory: ./web
@@ -92,7 +95,8 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: validate
     runs-on: ubuntu-latest
-    environment: firebase prod
+    environment:
+      name: firebase prod
     defaults:
       run:
         working-directory: ./web
