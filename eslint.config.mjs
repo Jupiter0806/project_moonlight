@@ -5,24 +5,26 @@ import nextTs from "eslint-config-next/typescript";
 // issue with this plugin: it complains "Cannot resolve default tailwindcss config path. Please manually set the config option."
 // not sure it's because of beta version of eslint-plugin-tailwindcss or something else. will investigate later.
 // but it seems to work fine if we just ignore the error, so let's do that for now.
-import tailwind from "eslint-plugin-tailwindcss";
+// import tailwind from "eslint-plugin-tailwindcss";
+
+// might add eslint-plugin-better-tailwindcs
 
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  ...tailwind.configs["flat/recommended"],
-  {
-    settings: {
-      tailwindcss: {
-        cssFiles: ["./src/app/globals.css"],
-        // eslint-plugin-tailwindcss beta doesn't parse Tailwind v4 @theme inline blocks,
-        // so custom color tokens must be whitelisted explicitly.
-        whitelist: [
-          "(bg|text|border|hover:bg|hover:text)-(surface|foreground|muted|background|border)(-(elevated|hover|strong))?",
-        ],
-      },
-    },
-  },
+  // {
+  //   extends: [tailwind.configs.recommended],
+  //   settings: {
+  //     tailwindcss: {
+  //       cssFiles: ["./src/app/globals.css"],
+  //       // eslint-plugin-tailwindcss beta doesn't parse Tailwind v4 @theme inline blocks,
+  //       // so custom color tokens must be whitelisted explicitly.
+  //       whitelist: [
+  //         "(bg|text|border|hover:bg|hover:text)-(surface|foreground|muted|background|border)(-(elevated|hover|strong))?",
+  //       ],
+  //     },
+  //   },
+  // },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

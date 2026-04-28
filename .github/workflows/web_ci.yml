@@ -7,19 +7,12 @@ on:
   # Run on all PRs — catches issues on feat→feat and feat→releases/* merges too.
   # Branch filtering is intentionally omitted; the paths filter below is the real gate.
   pull_request:
-    # Run only when files change (or when the workflow itself changes)
-    paths:
-      - "./**"
-      - ".github/workflows/web_ci.yml"
 
   # Run on push to main or dev — post-merge safety net (catches squash-merge drift)
   push:
     branches:
       - main
       - dev
-    paths:
-      - "./**"
-      - ".github/workflows/web_ci.yml"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
