@@ -10,7 +10,7 @@ export function AppHeaderPlaceholder() {
 
 export function AppHeader() {
   return (
-    <div className="bg-background fixed z-10 flex w-full max-w-xl items-center justify-between">
+    <div className="bg-background fixed z-10 flex w-full max-w-5xl items-center justify-between">
       <LeftActions />
       <HeaderTitle />
       <HeaderRightActionButtons />

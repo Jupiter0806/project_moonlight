@@ -11,7 +11,7 @@ export function Page(props: PropsWithChildren & WithClassName) {
   return (
     <div
       className={cn(
-        "bg-background mx-auto flex h-dvh w-full max-w-xl flex-col",
+        "bg-background mx-auto flex h-dvh w-full max-w-5xl flex-col",
         props.className,
       )}
     >
