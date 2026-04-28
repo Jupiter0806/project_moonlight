@@ -4,12 +4,8 @@
 
 ROOT=$(git rev-parse --show-toplevel)
 
-if git diff --name-only @{upstream}...HEAD 2>/dev/null | grep -q "^web/"; then
-  echo "→ Type-checking web/"
-  (cd "$ROOT/web" && pnpm exec tsc --noEmit)
+if git diff --name-only @{upstream}...HEAD 2>/dev/null; then
+  echo "→ Type-checking"
+  (cd "$ROOT" && pnpm exec tsc --noEmit)
 fi
 
-if git diff --name-only @{upstream}...HEAD 2>/dev/null | grep -q "^server/"; then
-  echo "→ Type-checking server/"
-  (cd "$ROOT/server" && pnpm exec tsc --noEmit)
-fi

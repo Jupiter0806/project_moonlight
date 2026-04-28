@@ -1,13 +1,91 @@
 {
+  "name": "project-moonlight",
+  "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
+    "dev": "next dev",
+    "dev:local": "NEXT_PUBLIC_USE_FIREBASE_EMULATOR=true USE_FIREBASE_EMULATOR=true FIREBASE_AUTH_EMULATOR_HOST=localhost:9099 FIRESTORE_EMULATOR_HOST=localhost:8080 next dev",
+    "emulators:start": "firebase emulators:start",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "prepare": "husky"
   },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "src/**/*.css": [
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.4.1",
+    "@hugeicons/core-free-icons": "^4.1.1",
+    "@hugeicons/react": "^1.1.6",
+    "@reduxjs/toolkit": "^2.11.2",
+    "@tanstack/react-query": "^5.100.5",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.37.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "firebase": "^12.12.1",
+    "firebase-admin": "^13.8.0",
+    "jotai": "^2.19.1",
+    "next": "16.2.4",
+    "next-themes": "^0.4.6",
+    "react": "19.2.5",
+    "react-dom": "19.2.5",
+    "react-icons": "^5.6.0",
+    "react-markdown": "^10.1.0",
+    "react-redux": "^9.2.0",
+    "redux": "^5.0.1",
+    "remark-gfm": "^4.0.1",
+    "shadcn": "^4.5.0",
+    "tailwind-merge": "^3.5.0",
+    "tw-animate-css": "^1.4.0",
+    "vaul": "^1.1.2"
+  },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^25",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.0.1",
+    "@vitest/coverage-v8": "^4.1.5",
+    "babel-plugin-react-compiler": "1.0.0",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "16.2.4",
+    "eslint-plugin-tailwindcss": "4.0.0-beta.0",
+    "firebase-tools": "^15.15.0",
+    "jsdom": "^29.0.2",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.3",
+    "prettier-plugin-tailwindcss": "^0.7.3",
+    "tailwindcss": "^4",
+    "typescript": "^6",
+    "vitest": "^4.1.5",
     "@commitlint/cli": "^19",
     "@commitlint/config-conventional": "^19",
     "@secretlint/secretlint-rule-preset-recommend": "^11.4.1",
     "husky": "^9",
     "secretlint": "^11.4.1"
+  },
+  "peerDependencies": {
+    "protobufjs": "^7.5.5"
   }
 }
