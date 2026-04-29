@@ -104,8 +104,8 @@ export const MOCK_DB: Partial<Record<URTTimeline, TimelineApiResponse>> = {
       },
     ],
     users: [
-      { id: "user-1", name: "Alice", email: "alice@example.com" },
-      { id: "user-2", name: "Bob", email: "bob@example.com" },
+      { id: "user-1", displayName: "Alice", email: "alice@example.com" },
+      { id: "user-2", displayName: "Bob", email: "bob@example.com" },
     ],
     nextCursor: "cursor-page-2",
     newReflectionsBar: { count: 3, instructions: [] },
