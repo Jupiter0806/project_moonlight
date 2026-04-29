@@ -6,12 +6,12 @@ export interface ClientContext {
   timeZone?: string;
 }
 
-export interface UserProfileDoc {
+export interface UserUpdateProfileDoc {
   uid: string;
   email: string | null;
   emailVerified: boolean;
-  displayName: string | null;
-  photoURL: string | null;
+  displayName?: string | null;
+  photoURL?: string | null;
   providerIds: string[];
   clientContext: ClientContext;
   authUpdatedAt: FirebaseFirestore.FieldValue;
@@ -20,7 +20,7 @@ export interface UserProfileDoc {
   createdAt: FirebaseFirestore.FieldValue;
 }
 
-type UserInfo = Pick<UserProfileDoc, "displayName" | "photoURL">;
+type UserInfo = Pick<UserUpdateProfileDoc, "displayName" | "photoURL">;
 
 export function sanitizeClientContext(input: unknown): ClientContext {
   if (!input || typeof input !== "object") return {};
@@ -59,8 +59,8 @@ export function sanitizeUserInfo(input: unknown): UserInfo {
 export function buildUserProfileDoc(
   decodedToken: DecodedIdToken,
   clientContext: ClientContext,
-  userInfo: UserInfo,
-): UserProfileDoc {
+  userInfo?: UserInfo,
+): UserUpdateProfileDoc {
   const firebaseClaim =
     decodedToken.firebase && typeof decodedToken.firebase === "object"
       ? (decodedToken.firebase as Record<string, unknown>)
@@ -73,15 +73,15 @@ export function buildUserProfileDoc(
 
   const providerIds = identities ? Object.keys(identities) : [];
 
-  return {
+  const payload: UserUpdateProfileDoc = {
     uid: decodedToken.uid,
     email: decodedToken.email ?? null,
     emailVerified: Boolean(decodedToken.email_verified),
     displayName:
-      userInfo.displayName ||
+      userInfo?.displayName ||
       (typeof decodedToken.name === "string" ? decodedToken.name : null),
     photoURL:
-      userInfo.photoURL ||
+      userInfo?.photoURL ||
       (typeof decodedToken.picture === "string" ? decodedToken.picture : null),
     providerIds,
     clientContext,
@@ -90,18 +90,25 @@ export function buildUserProfileDoc(
     updatedAt: FieldValue.serverTimestamp(),
     createdAt: FieldValue.serverTimestamp(),
   };
+
+  if (userInfo === undefined) {
+    delete payload.displayName;
+    delete payload.photoURL;
+  }
+
+  return payload;
 }
 
 export async function upsertUserProfileFromToken(
   db: Firestore,
   decodedToken: DecodedIdToken,
   clientContext: ClientContext,
-  userInfo: UserInfo,
+  userInfo?: UserInfo,
 ): Promise<void> {
   const payload = buildUserProfileDoc(decodedToken, clientContext, userInfo);
 
   await db
     .collection("users")
     .doc(decodedToken.uid)
-    .set(payload, { merge: true });
+    .set(payload, { mergeFields: Object.keys(payload) });
 }
