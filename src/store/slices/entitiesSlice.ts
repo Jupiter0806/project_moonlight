@@ -130,8 +130,13 @@ export const {
   (state: RootState) => state.entities.reflections,
 );
 
-export const { selectAll: selectAllUsers, selectById: selectUserById } =
-  usersAdapter.getSelectors((state: RootState) => state.entities.users);
+const userSelectors = usersAdapter.getSelectors(
+  (state: RootState) => state.entities.users,
+);
+export const selectAllUsers = (state: RootState) =>
+  userSelectors.selectAll(state);
+export const selectUserById = (id: string) => (state: RootState) =>
+  userSelectors.selectById(state, id);
 
 export const selectTraceFetchStatus = (id: string) => (state: RootState) =>
   state.entities.traces.fetchStatus[id] ?? "none";

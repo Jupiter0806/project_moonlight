@@ -12,6 +12,7 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
+  updateProfile,
   type User,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -20,6 +21,7 @@ import {
   clearUser as clearSessionUser,
 } from "@/store/slices/sessionSlice";
 import { useAppDispatch } from "@/store/hooks";
+import { upsertUsers } from "@/store/slices/entitiesSlice";
 
 interface UserInfo {
   displayName: string;
@@ -85,6 +87,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
     );
 
+    await updateProfile(credential.user, {
+      displayName: userInfo.displayName,
+      photoURL: userInfo.photoURL,
+    });
+
     // Call 2: exchange the short-lived Firebase ID token (1 hr) for a long-lived
     // HttpOnly session cookie (5 days) issued by our own server.
     // The Admin SDK verifies the token cryptographically before minting the cookie.
@@ -98,6 +105,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clientContext: getClientContext(),
       }),
     });
+
+    const users = await fetch("/api/users?userIds=" + credential.user.uid).then(
+      (res) => res.json(),
+    );
+    dispatch(upsertUsers(users));
   }
 
   async function handleSignIn(email: string, password: string) {
@@ -114,6 +126,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ idToken, clientContext: getClientContext() }),
     });
+
+    const users = await fetch("/api/users?userIds=" + credential.user.uid).then(
+      (res) => res.json(),
+    );
+    dispatch(upsertUsers(users));
   }
 
   async function handleSignOut() {
