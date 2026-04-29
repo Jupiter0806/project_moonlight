@@ -10,11 +10,6 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-console.debug(
-  "Initializing Firebase SDK in emulator mode",
-  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-);
-
 // Prevent re-initialising on hot reload
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 

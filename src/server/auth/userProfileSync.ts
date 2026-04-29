@@ -20,6 +20,8 @@ export interface UserProfileDoc {
   createdAt: FirebaseFirestore.FieldValue;
 }
 
+type UserInfo = Pick<UserProfileDoc, "displayName" | "photoURL">;
+
 export function sanitizeClientContext(input: unknown): ClientContext {
   if (!input || typeof input !== "object") return {};
 
@@ -36,9 +38,28 @@ export function sanitizeClientContext(input: unknown): ClientContext {
   return { locale, timeZone };
 }
 
+export function sanitizeUserInfo(input: unknown): UserInfo {
+  if (!input || typeof input !== "object")
+    return { displayName: "", photoURL: null };
+
+  const candidate = input as Record<string, unknown>;
+  const displayName =
+    typeof candidate.displayName === "string" &&
+    candidate.displayName.length <= 32
+      ? candidate.displayName
+      : "";
+  const photoURL =
+    typeof candidate.photoURL === "string" && candidate.photoURL.length <= 256
+      ? candidate.photoURL
+      : null;
+
+  return { displayName, photoURL };
+}
+
 export function buildUserProfileDoc(
   decodedToken: DecodedIdToken,
   clientContext: ClientContext,
+  userInfo: UserInfo,
 ): UserProfileDoc {
   const firebaseClaim =
     decodedToken.firebase && typeof decodedToken.firebase === "object"
@@ -57,9 +78,11 @@ export function buildUserProfileDoc(
     email: decodedToken.email ?? null,
     emailVerified: Boolean(decodedToken.email_verified),
     displayName:
-      typeof decodedToken.name === "string" ? decodedToken.name : null,
+      userInfo.displayName ||
+      (typeof decodedToken.name === "string" ? decodedToken.name : null),
     photoURL:
-      typeof decodedToken.picture === "string" ? decodedToken.picture : null,
+      userInfo.photoURL ||
+      (typeof decodedToken.picture === "string" ? decodedToken.picture : null),
     providerIds,
     clientContext,
     authUpdatedAt: FieldValue.serverTimestamp(),
@@ -73,8 +96,9 @@ export async function upsertUserProfileFromToken(
   db: Firestore,
   decodedToken: DecodedIdToken,
   clientContext: ClientContext,
+  userInfo: UserInfo,
 ): Promise<void> {
-  const payload = buildUserProfileDoc(decodedToken, clientContext);
+  const payload = buildUserProfileDoc(decodedToken, clientContext, userInfo);
 
   await db
     .collection("users")

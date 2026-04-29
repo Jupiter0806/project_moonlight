@@ -21,12 +21,21 @@ import {
 } from "@/store/slices/sessionSlice";
 import { useAppDispatch } from "@/store/hooks";
 
+interface UserInfo {
+  displayName: string;
+  photoURL?: string;
+}
+
 interface AuthContextValue {
   user: User | null;
   /** True while the initial auth state is being resolved. */
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    userInfo: UserInfo,
+  ) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -59,11 +68,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
     return unsubscribe;
-  }, []);
+  }, [dispatch]);
 
   // Google's recommended two-call pattern for Firebase session cookies:
   // https://firebase.google.com/docs/auth/admin/manage-sessions
-  async function handleRegister(email: string, password: string) {
+  async function handleRegister(
+    email: string,
+    password: string,
+    userInfo: UserInfo,
+  ) {
     // Call 1: credentials go directly from the browser to Firebase Auth servers (Google).
     // Our server never sees the raw password.
     const credential = await createUserWithEmailAndPassword(
@@ -79,7 +92,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await fetch("/api/auth/session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idToken, clientContext: getClientContext() }),
+      body: JSON.stringify({
+        idToken,
+        userInfo,
+        clientContext: getClientContext(),
+      }),
     });
   }
 

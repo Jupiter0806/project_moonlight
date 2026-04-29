@@ -4,6 +4,7 @@ import { authRatelimit } from "@/lib/rateLimit";
 import { getIpKey } from "@/lib/getRequestKey";
 import {
   sanitizeClientContext,
+  sanitizeUserInfo,
   upsertUserProfileFromToken,
 } from "@/server/auth/userProfileSync";
 import { type DecodedIdToken } from "firebase-admin/auth";
@@ -17,7 +18,8 @@ const SESSION_MAX_AGE = 60 * 60 * 24 * 5;
  * Called by the client immediately after Firebase sign-in.
  * Body: {
  *   idToken: string,
- *   clientContext?: { locale?: string; timeZone?: string }
+ *   clientContext?: { locale?: string; timeZone?: string },
+ *   userInfo?: { username: string; avatar?: string };
  * }
  *
  * 1. Verifies the Firebase ID token with the Admin SDK (server-side, cryptographic check)
@@ -46,9 +48,11 @@ export async function POST(request: NextRequest) {
   const body = (await request.json()) as {
     idToken?: string;
     clientContext?: unknown;
+    userInfo?: { username: string; avatar?: string };
   };
   const idToken = body.idToken;
   const clientContext = sanitizeClientContext(body.clientContext);
+  const userInfo = sanitizeUserInfo(body.userInfo);
 
   if (!idToken) {
     return NextResponse.json({ error: "idToken is required" }, { status: 400 });
@@ -69,6 +73,7 @@ export async function POST(request: NextRequest) {
       getAdminFirestore(),
       decodedToken,
       clientContext,
+      userInfo,
     );
   } catch (error) {
     console.debug("error", error);
