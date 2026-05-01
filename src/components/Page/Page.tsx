@@ -1,0 +1,21 @@
+import { WithClassName } from "@/types/withClassName";
+import { PropsWithChildren } from "react";
+import { cn } from "@/lib/utils";
+
+export function Page(props: PropsWithChildren & WithClassName) {
+  /*
+   * Root container: full viewport height, column flex.
+   * On mobile, `dvh` units ensure the layout responds to the browser chrome
+   * (address bar appearing/disappearing) correctly.
+   */
+  return (
+    <div
+      className={cn(
+        "bg-background mx-auto flex h-dvh w-full max-w-5xl flex-col",
+        props.className,
+      )}
+    >
+      {props.children}
+    </div>
+  );
+}

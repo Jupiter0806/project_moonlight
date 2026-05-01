@@ -1,0 +1,70 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isChamberOwner(uid) {
+      return isSignedIn()
+        && request.auth.uid == uid;
+    }
+
+    function isReflectionOwner() {
+      return isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // Users can read their own profile.
+    // Identity fields are server-owned and should be written via Admin SDK only.
+    // Clients may update only their own app-level preferences block.
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+
+      allow create, update: if isOwner(uid)
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          'profile',
+          'updatedAt'
+        ]);
+
+      allow delete: if false;
+    }
+
+    // A chamber is private and belongs to exactly one user.
+    // It stores only current-session traces.
+    match /chambers/{uid} {
+      allow read: if isChamberOwner(uid);
+
+      allow create: if isSignedIn()
+        && request.resource.data.ownerUserId == request.auth.uid;
+
+      allow update, delete: if isChamberOwner(uid);
+
+      match /traces/{traceId} {
+        allow read: if isChamberOwner(uid);
+
+        allow create: if isChamberOwner(uid)
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.uid == uid;
+
+        allow update, delete: if isChamberOwner(uid)
+          && resource.data.userId == request.auth.uid;
+      }
+    }
+
+    // Reflections are created after a chamber flush and persisted globally.
+    // In this phase, reflections remain private to their owner.
+    match /reflections/{reflectionId} {
+      allow read: if isReflectionOwner();
+
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid;
+
+      allow update, delete: if isReflectionOwner();
+    }
+  }
+}

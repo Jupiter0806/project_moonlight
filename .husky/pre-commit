@@ -11,12 +11,8 @@ if [ -n "$STAGED_FILES" ]; then
   echo "$STAGED_FILES" | xargs pnpm exec secretlint
 fi
 
-if git diff --cached --name-only | grep -q "^web/"; then
-  echo "→ Running lint-staged in web/"
-  (cd "$ROOT/web" && pnpm exec lint-staged)
+if git diff --cached --name-only; then
+  echo "→ Running lint-staged"
+  (cd "$ROOT" && pnpm exec lint-staged)
 fi
 
-if git diff --cached --name-only | grep -q "^server/"; then
-  echo "→ Running lint-staged in server/"
-  (cd "$ROOT/server" && pnpm exec lint-staged)
-fi

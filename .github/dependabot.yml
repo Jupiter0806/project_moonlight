@@ -15,6 +15,12 @@ updates:
     schedule:
       interval: weekly
     target-branch: dev
+    ignore:
+      # ESLint 10 breaks eslint-plugin-react and eslint-plugin-tailwindcss.
+      # Also eslint-config-next dependency eslint
+      # Stay on v9 until plugins are compatible.
+      - dependency-name: eslint
+        update-types: ["version-update:semver-major"]
     groups:
       dev-dependencies:
         dependency-type: development
