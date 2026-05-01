@@ -58,7 +58,7 @@ const makeReflection = (
 
 const makeUser = (id: string): User => ({
   id,
-  name: "Test User",
+  displayName: "Test User",
   email: "test@example.com",
 });
 
