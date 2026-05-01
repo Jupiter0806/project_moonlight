@@ -30,8 +30,8 @@ const config: UserConfig = {
     "subject-case": [0],
     // Max header length: 100 chars (GitHub truncates at 72, but 100 is practical)
     "header-max-length": [2, "always", 100],
-    // Body lines max 100 chars
-    "body-max-line-length": [2, "always", 100],
+    // Body lines max 100 chars (disabled to allow auto-appended URLs from tooling)
+    "body-max-line-length": [0],
   },
 };
 

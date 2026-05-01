@@ -10,6 +10,7 @@ import { selectReflectionById } from "@/store/slices/entitiesSlice";
 import { User } from "../user";
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import { useDescriptionMaxHeight } from "./hooks/useRowHeight";
 
 const ReflectionTracesDrawer = dynamic(
   () => import("./reflection-traces-drawer"),
@@ -17,6 +18,7 @@ const ReflectionTracesDrawer = dynamic(
 
 export function Reflection({ id }: { id: string }) {
   const [open, setDrawerOpen] = useState(false);
+  const descriptionMaxHeight = useDescriptionMaxHeight();
 
   const reflection = useAppSelector((state) => selectReflectionById(state, id));
 
@@ -28,7 +30,12 @@ export function Reflection({ id }: { id: string }) {
         <User uid={reflection.uid} />
       </CardHeader>
       <CardContent>
-        <CardDescription>{reflection.summary}</CardDescription>
+        <CardDescription
+          className="overflow-hidden"
+          style={{ maxHeight: descriptionMaxHeight }}
+        >
+          {reflection.summary}
+        </CardDescription>
       </CardContent>
       <CardFooter>
         <p className="text-muted-foreground text-xs">
