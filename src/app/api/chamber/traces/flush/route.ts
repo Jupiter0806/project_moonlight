@@ -1,32 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getAdminAuth, getAdminFirestore } from "@/lib/firebaseAdmin";
+import { getAdminFirestore } from "@/lib/firebaseAdmin";
 import { chamberTraceRatelimit } from "@/lib/rateLimit";
 import { getRequestKey } from "@/lib/getRequestKey";
 import {
   FlushChamberTracesError,
   flushChamberTraces,
 } from "@/server/chamber/flush-chamber-traces";
-
-function withRateLimitHeaders(limit: number, remaining: number, reset: number) {
-  return {
-    "X-RateLimit-Limit": String(limit),
-    "X-RateLimit-Remaining": String(remaining),
-    "X-RateLimit-Reset": String(reset),
-    "Retry-After": String(Math.ceil((reset - Date.now()) / 1000)),
-  };
-}
-
-async function authenticate(request: NextRequest): Promise<string | null> {
-  const sessionCookie = request.cookies.get("__session")?.value;
-  if (!sessionCookie) return null;
-
-  try {
-    const decoded = await getAdminAuth().verifySessionCookie(sessionCookie);
-    return decoded.uid;
-  } catch {
-    return null;
-  }
-}
+import { authenticate, withRateLimitHeaders } from "@/lib/apis-helpers";
 
 /**
  * POST /api/chamber/traces/flush

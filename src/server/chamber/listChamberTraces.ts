@@ -9,6 +9,7 @@ import {
   buildPaginationCursor,
   buildPaginationQuery,
 } from "../helpers/pagination-helpers";
+import { serializeFirestoreValue } from "@/server/helpers/firestore-serialization";
 
 function mapEntry(trace: Trace): URTEntry {
   return {
@@ -36,7 +37,8 @@ export async function listChamberTraces(
   });
 
   const snapshot = await query.get();
-  const traces = snapshot.docs.map((doc) => doc.data() as Trace);
+  const rawTraces = snapshot.docs.map((doc) => doc.data() as Trace);
+  const traces = rawTraces.map((trace) => serializeFirestoreValue(trace));
 
   const entries = traces.map(mapEntry);
 
@@ -51,7 +53,7 @@ export async function listChamberTraces(
 
   const { topCursor, bottomCursor } = await buildPaginationCursor(
     chamberTraceRef,
-    traces,
+    rawTraces,
     { bottomLatest: true },
   );
 

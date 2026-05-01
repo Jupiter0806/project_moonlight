@@ -1,10 +1,9 @@
 import { TimelineApiResponse } from "@/store/thunks/fetchTimelineThunk";
-import { Reflection } from "@/types/Reflection";
 
 export async function getReflections(
   direction: "top" | "bottom" | "new",
   cursor?: string,
-): Promise<Reflection[]> {
+): Promise<TimelineApiResponse> {
   const qs = new URLSearchParams({
     direction: direction === "top" ? "top" : "bottom",
     limit: "20",

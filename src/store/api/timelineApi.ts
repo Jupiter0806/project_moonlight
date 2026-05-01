@@ -29,7 +29,7 @@ export const timelineApi = createApi({
             // todo
             // a proper typing required to separate the API response from the RTK Query wrapper's expected return type
             return {
-              data: data as unknown as TimelineApiResponse,
+              data,
             };
           } else if (timeline === "moonlightReflections") {
             const data = await getTodayReflections(direction, cursor);
@@ -76,4 +76,4 @@ export const timelineApi = createApi({
   }),
 });
 
-export const { useGetTimelineQuery } = timelineApi;
+export const { useGetTimelineQuery, useLazyGetTimelineQuery } = timelineApi;

@@ -5,7 +5,7 @@ export function Camphor() {
   return (
     <div className="flex h-full w-full flex-col">
       <AppHeaderPlaceholder />
-      <div className="flex-1 p-4">
+      <div className="min-h-0 flex-1 p-4">
         <CamphorReflectionList />
       </div>
     </div>

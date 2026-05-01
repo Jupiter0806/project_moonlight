@@ -1,5 +1,17 @@
+import type { Timestamp } from "firebase-admin/firestore";
+
+export interface SerializedFirestoreTimestamp {
+  _seconds: number;
+  _nanoseconds: number;
+}
+
 export interface PageCursor {
-  createdAt: number;
+  createdAt: SerializedFirestoreTimestamp;
+  id: string;
+}
+
+export interface DecodedPageCursor {
+  createdAt: Timestamp;
   id: string;
 }
 

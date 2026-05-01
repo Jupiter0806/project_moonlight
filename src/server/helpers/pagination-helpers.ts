@@ -1,26 +1,44 @@
-import { ListParams, PageCursor } from "../types/pagination.types";
+import { Timestamp } from "firebase-admin/firestore";
+import { serializeFirestoreTimestamp } from "@/server/helpers/firestore-serialization";
+import {
+  DecodedPageCursor,
+  ListParams,
+  PageCursor,
+} from "../types/pagination.types";
 
 export function encodeCursor(cursor: PageCursor): string {
   return Buffer.from(JSON.stringify(cursor), "utf8").toString("base64url");
 }
 
-export function decodeCursor(cursor: string): PageCursor | null {
+export function decodeCursor(cursor: string): DecodedPageCursor | null {
   try {
     const parsed = JSON.parse(
       Buffer.from(cursor, "base64url").toString("utf8"),
     ) as Partial<PageCursor>;
 
     if (
-      typeof parsed.createdAt !== "number" ||
-      !Number.isFinite(parsed.createdAt) ||
+      !parsed.createdAt ||
+      typeof parsed.createdAt !== "object" ||
+      typeof parsed.createdAt._seconds !== "number" ||
+      !Number.isFinite(parsed.createdAt._seconds) ||
+      typeof parsed.createdAt._nanoseconds !== "number" ||
+      !Number.isFinite(parsed.createdAt._nanoseconds) ||
       typeof parsed.id !== "string" ||
       !parsed.id
     ) {
+      console.warn("-- Invalid pagination cursor shape --", { cursor, parsed });
       return null;
     }
 
-    return { createdAt: parsed.createdAt, id: parsed.id };
-  } catch {
+    return {
+      createdAt: new Timestamp(
+        parsed.createdAt._seconds,
+        parsed.createdAt._nanoseconds,
+      ),
+      id: parsed.id,
+    };
+  } catch (error) {
+    console.warn("-- Failed to decode pagination cursor --", { cursor, error });
     return null;
   }
 }
@@ -57,7 +75,7 @@ export function buildPaginationQuery<T>(
     }
   } else if (params.direction === "bottom") {
     // Initial fetch returns the latest N traces while preserving ascending order.
-    query = baseQuery.limitToLast(params.limit);
+    query = baseQuery.limit(params.limit);
   } else {
     query = baseQuery.limitToLast(params.limit);
   }
@@ -65,13 +83,28 @@ export function buildPaginationQuery<T>(
   return query;
 }
 
+/**
+ * Builds opaque pagination cursors for a page of docs.
+ *
+ * `topCursor`    — points to the first doc in the page; only generated when
+ *                  there are older docs above it (i.e. not returned when the
+ *                  caller is already fetching the top / oldest page, or when
+ *                  `direction === "bottom"`).
+ *
+ * `bottomCursor` — points to the last doc in the page; only generated when
+ *                  there are newer docs below it (i.e. not returned when the
+ *                  caller is already fetching the bottom / latest page, or when
+ *                  `direction === "top"`).
+ *
+ * Either cursor being `undefined` signals "no more pages in that direction".
+ */
 export async function buildPaginationCursor<
   R,
-  T extends { createdAt: number; id: string },
+  T extends { createdAt: unknown; id: string },
 >(
   ref: FirebaseFirestore.CollectionReference<R>,
-  docs: T[], // for chamber traces, bottom is latest by default
-  options?: { bottomLatest?: boolean },
+  docs: T[],
+  options?: { bottomLatest?: boolean; direction?: ListParams["direction"] },
 ) {
   if (docs.length === 0)
     return {
@@ -84,21 +117,35 @@ export async function buildPaginationCursor<
 
   const baseQuery = buildPaginationBaseQuery(ref, options);
 
-  const olderCheck = await baseQuery
-    .endBefore(first.createdAt, first.id)
-    .limitToLast(1)
-    .get();
-  const newerCheck = await baseQuery
-    .startAfter(last.createdAt, last.id)
-    .limit(1)
-    .get();
+  const olderCheck =
+    options?.direction === "bottom"
+      ? undefined
+      : await baseQuery
+          .endBefore(first.createdAt, first.id)
+          .limitToLast(1)
+          .get();
+  const newerCheck =
+    options?.direction === "top"
+      ? undefined
+      : await baseQuery.startAfter(last.createdAt, last.id).limit(1).get();
 
   return {
-    topCursor: olderCheck.empty
-      ? undefined
-      : encodeCursor({ createdAt: first.createdAt, id: first.id }),
-    bottomCursor: newerCheck.empty
-      ? undefined
-      : encodeCursor({ createdAt: last.createdAt, id: last.id }),
+    topCursor:
+      olderCheck === undefined || olderCheck.empty
+        ? undefined
+        : encodeCursor({
+            createdAt: serializeFirestoreTimestamp(
+              first.createdAt,
+              "createdAt",
+            ),
+            id: first.id,
+          }),
+    bottomCursor:
+      newerCheck === undefined || newerCheck.empty
+        ? undefined
+        : encodeCursor({
+            createdAt: serializeFirestoreTimestamp(last.createdAt, "createdAt"),
+            id: last.id,
+          }),
   };
 }

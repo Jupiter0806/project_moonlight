@@ -6,7 +6,7 @@ import {
   selectURTEntries,
   selectURTFetchStatus,
 } from "@/store/slices/urtSlice";
-import { ReflectionList } from "../reflections/relfection-list";
+import { ReflectionList } from "../reflections/reflection-list";
 
 export function MoonlightReflectionList() {
   const entries = useCamphorReflectionEntries();
