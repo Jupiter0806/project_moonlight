@@ -7,6 +7,7 @@ import type { ListParams } from "../types/pagination.types";
 import { Trace } from "@/types/Trace";
 import { Reflection } from "@/types/Reflection";
 import { FetchState } from "@/types/FetchState";
+import { serializeFirestoreValue } from "@/server/helpers/firestore-serialization";
 
 function mapEntry(trace: Trace): URTEntry {
   return {
@@ -29,7 +30,7 @@ export async function listReflectionTraces(
 
   const reflection = (await traceRef
     .get()
-    .then((doc) => doc.data())) as Reflection;
+    .then((doc) => serializeFirestoreValue(doc.data()))) as Reflection;
 
   const traceRefs = reflection.traceIds.map((id) =>
     db.collection("traces").doc(id),
@@ -39,7 +40,7 @@ export async function listReflectionTraces(
   const fetchStatus: Record<string, FetchState> = {};
 
   const traces = snapshots
-    .map((doc) => doc.data() as Trace)
+    .map((doc) => serializeFirestoreValue(doc.data() as Trace))
     .filter((doc) => {
       const exists = Boolean(doc);
       if (!exists) {

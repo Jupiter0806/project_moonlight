@@ -1,5 +1,6 @@
 import { FieldValue, type Firestore } from "firebase-admin/firestore";
 import type { Trace } from "@/types/Trace";
+import { serializeFirestoreValue } from "@/server/helpers/firestore-serialization";
 
 export interface UpsertChamberTraceBody {
   trace?: unknown;
@@ -77,5 +78,5 @@ export async function getTraceInUserChamber(
     .get();
 
   if (!doc.exists) return null;
-  return doc.data() as Trace;
+  return serializeFirestoreValue(doc.data() as Trace);
 }

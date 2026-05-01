@@ -2,6 +2,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
 } from "@/components/ui/card";
 import { useAppSelector } from "@/store/hooks";
@@ -29,6 +30,11 @@ export function Reflection({ id }: { id: string }) {
       <CardContent>
         <CardDescription>{reflection.summary}</CardDescription>
       </CardContent>
+      <CardFooter>
+        <p className="text-muted-foreground text-xs">
+          {new Date(reflection.createdAt).toLocaleString()}
+        </p>
+      </CardFooter>
       {open && (
         <ReflectionTracesDrawer
           reflection={reflection}

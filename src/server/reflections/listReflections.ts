@@ -9,6 +9,7 @@ import {
   buildPaginationQuery,
 } from "../helpers/pagination-helpers";
 import type { Reflection } from "@/types/Reflection";
+import { serializeFirestoreValue } from "@/server/helpers/firestore-serialization";
 
 function mapEntry(reflection: Reflection): URTEntry {
   return {
@@ -31,7 +32,10 @@ export async function listReflections(
 
   const snapshot = await query.get();
 
-  const reflections = snapshot.docs.map((doc) => doc.data() as Reflection);
+  const rawReflections = snapshot.docs.map((doc) => doc.data() as Reflection);
+  const reflections = rawReflections.map((reflection) =>
+    serializeFirestoreValue(reflection),
+  );
 
   const entries = reflections.map(mapEntry);
 
@@ -46,7 +50,8 @@ export async function listReflections(
 
   const { topCursor, bottomCursor } = await buildPaginationCursor(
     reflectionRef,
-    reflections,
+    rawReflections,
+    { direction: params.direction },
   );
 
   return {

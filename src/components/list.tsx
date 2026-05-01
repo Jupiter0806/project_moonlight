@@ -3,8 +3,7 @@ import { WithClassName } from "@/types/withClassName";
 import { PropsWithChildren } from "react";
 
 /**
- *
- * should handle virtual list
+ * This is fixed List, VirtualList is implemented separately.
  */
 
 interface ListProps extends PropsWithChildren, WithClassName {

@@ -153,3 +153,35 @@
     @apply font-sans;
   }
 }
+
+@media (pointer: fine) {
+  .auto-hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .auto-hide-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background: transparent;
+  }
+
+  .auto-hide-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .auto-hide-scrollbar::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 9999px;
+  }
+
+  .auto-hide-scrollbar:is(:hover, :focus-within, [data-scrolling="true"]) {
+    scrollbar-color: oklch(0.58 0 0 / 0.6) transparent;
+  }
+
+  .auto-hide-scrollbar:is(:hover, :focus-within, [data-scrolling="true"])
+    ::-webkit-scrollbar-thumb {
+    background: oklch(0.58 0 0 / 0.6);
+  }
+}
