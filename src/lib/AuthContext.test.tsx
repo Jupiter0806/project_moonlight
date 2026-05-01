@@ -33,6 +33,7 @@ vi.mock("firebase/auth", () => ({
   signInWithEmailAndPassword: vi.fn(),
   createUserWithEmailAndPassword: vi.fn(),
   signOut: vi.fn(),
+  updateProfile: vi.fn(),
 }));
 
 import {
@@ -55,7 +56,13 @@ function AuthConsumer() {
       <span data-testid="uid">{user?.uid ?? "null"}</span>
       <span data-testid="loading">{String(loading)}</span>
       <button onClick={() => signIn("a@b.com", "secret")}>sign-in</button>
-      <button onClick={() => register("a@b.com", "secret")}>register</button>
+      <button
+        onClick={() =>
+          register("a@b.com", "secret", { displayName: "Test User" })
+        }
+      >
+        register
+      </button>
       <button onClick={() => signOut()}>sign-out</button>
     </div>
   );
@@ -75,7 +82,12 @@ beforeEach(() => {
   vi.clearAllMocks();
   onAuthStateChangedCallback = null;
   // Reset global fetch mock
-  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
+  vi.stubGlobal(
+    "fetch",
+    vi
+      .fn()
+      .mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue([]) }),
+  );
 });
 
 // ── Tests ───────────────────────────────────────────────────────────────────
@@ -198,6 +210,19 @@ describe("AuthContext", () => {
         ),
       );
     });
+
+    it("fetches the signed-in user profile from /api/users", async () => {
+      const user = makeFirebaseUser("uid-sign-in");
+      (signInWithEmailAndPassword as Mock).mockResolvedValue({ user });
+      renderAuth();
+      act(() => onAuthStateChangedCallback!(null));
+
+      fireEvent.click(screen.getByText("sign-in"));
+
+      await waitFor(() =>
+        expect(fetch).toHaveBeenCalledWith("/api/users?userIds=uid-sign-in"),
+      );
+    });
   });
 
   describe("Req 3 — register", () => {
@@ -233,13 +258,28 @@ describe("AuthContext", () => {
             method: "POST",
             body: JSON.stringify({
               idToken: "token-for-uid-register",
+              userInfo: { displayName: "Test User" },
               clientContext: {
                 locale: Intl.DateTimeFormat().resolvedOptions().locale,
                 timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
               },
             }),
+            headers: { "Content-Type": "application/json" },
           }),
         ),
+      );
+    });
+
+    it("fetches the registered user profile from /api/users", async () => {
+      const user = makeFirebaseUser("uid-register");
+      (createUserWithEmailAndPassword as Mock).mockResolvedValue({ user });
+      renderAuth();
+      act(() => onAuthStateChangedCallback!(null));
+
+      fireEvent.click(screen.getByText("register"));
+
+      await waitFor(() =>
+        expect(fetch).toHaveBeenCalledWith("/api/users?userIds=uid-register"),
       );
     });
   });

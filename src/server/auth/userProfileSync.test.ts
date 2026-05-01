@@ -59,7 +59,6 @@ describe("buildUserProfileDoc", () => {
     expect(result.uid).toBe("uid-123");
     expect(result.email).toBe("alice@example.com");
     expect(result.emailVerified).toBe(true);
-    expect(result.displayName).toBe("Alice");
     expect(result.providerIds).toEqual(["email", "google.com"]);
     expect(result.clientContext).toEqual({
       locale: "en-US",
@@ -86,6 +85,18 @@ describe("upsertUserProfileFromToken", () => {
     expect(collection).toHaveBeenCalledWith("users");
     expect(doc).toHaveBeenCalledWith("uid-123");
     expect(set).toHaveBeenCalledTimes(1);
-    expect(set).toHaveBeenCalledWith(expect.any(Object), { merge: true });
+    expect(set).toHaveBeenCalledWith(expect.any(Object), {
+      mergeFields: [
+        "uid",
+        "email",
+        "emailVerified",
+        "providerIds",
+        "clientContext",
+        "authUpdatedAt",
+        "lastLoginAt",
+        "updatedAt",
+        "createdAt",
+      ],
+    });
   });
 });
