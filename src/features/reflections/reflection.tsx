@@ -10,7 +10,10 @@ import { selectReflectionById } from "@/store/slices/entitiesSlice";
 import { User } from "../user";
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import { useDescriptionMaxHeight } from "./hooks/useRowHeight";
+import {
+  useDescriptionHeight,
+  useDescriptionLineClamp,
+} from "./hooks/useRowHeight";
 
 const ReflectionTracesDrawer = dynamic(
   () => import("./reflection-traces-drawer"),
@@ -18,7 +21,8 @@ const ReflectionTracesDrawer = dynamic(
 
 export function Reflection({ id }: { id: string }) {
   const [open, setDrawerOpen] = useState(false);
-  const descriptionMaxHeight = useDescriptionMaxHeight();
+  const descriptionLineClamp = useDescriptionLineClamp();
+  const descriptionHeight = useDescriptionHeight();
 
   const reflection = useAppSelector((state) => selectReflectionById(state, id));
 
@@ -31,8 +35,13 @@ export function Reflection({ id }: { id: string }) {
       </CardHeader>
       <CardContent>
         <CardDescription
-          className="overflow-hidden"
-          style={{ maxHeight: descriptionMaxHeight }}
+          style={{
+            display: "-webkit-box",
+            WebkitLineClamp: descriptionLineClamp,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            height: descriptionHeight,
+          }}
         >
           {reflection.summary}
         </CardDescription>
