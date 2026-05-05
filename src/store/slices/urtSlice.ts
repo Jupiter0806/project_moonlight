@@ -3,12 +3,9 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/store/store";
 import type { FetchState } from "@/types/FetchState";
 import type { URTInstruction } from "@/types/URTInstruction";
-import {
-  fetchTimelineThunk,
-  type URTTimeline,
-  type URTEntry,
-} from "@/store/thunks/fetchTimelineThunk";
+import { fetchTimelineThunk } from "@/store/thunks/fetchTimelineThunk";
 import { timelineApi } from "@/store/api/timelineApi";
+import type { URTEntry, URTEntryCursor, URTTimeline } from "../types";
 
 interface URT {
   entries: URTEntry[];
@@ -56,6 +53,48 @@ const initialState: URTState = {
   moonlightTraces: emptyURT(),
 };
 
+export function buildCursorEntry(
+  position: "top" | "bottom",
+  cursor: string,
+): URTEntryCursor {
+  return {
+    type: "timeline-cursor",
+    entryId: `cursor-${position}-${cursor}`,
+    content: { cursorType: position, value: cursor },
+  };
+}
+
+/**
+ * Upserts a cursor boundary entry at a stable position in the entries array.
+ *
+ * Stable entryIds ("cursor-top" / "cursor-bottom") mean the entry is
+ * replaced in-place when the cursor advances, rather than accumulating one
+ * entry per page. cursor=null removes the entry if present.
+ */
+function upsertCursorEntry(
+  entries: URTEntry[],
+  position: "top" | "bottom",
+  cursor: string | null | undefined,
+) {
+  const newEntry = buildCursorEntry(position, cursor ?? "none");
+  const entryId = newEntry.entryId;
+
+  const existingIndex = entries.findIndex((e) => e.entryId === entryId);
+
+  if (!cursor) {
+    if (existingIndex >= 0) entries.splice(existingIndex, 1);
+    return;
+  }
+
+  if (existingIndex >= 0) {
+    entries[existingIndex] = newEntry;
+  } else if (position === "bottom") {
+    entries.push(newEntry);
+  } else {
+    entries.unshift(newEntry);
+  }
+}
+
 export const urtSlice = createSlice({
   name: "urt",
   initialState,
@@ -83,7 +122,9 @@ export const urtSlice = createSlice({
       const { timeline, fromContentId, entry } = action.payload;
       const entries = state[timeline].entries;
       const index = entries.findIndex(
-        (item) => item.content.id === fromContentId,
+        (item) =>
+          (item.type === "trace" || item.type === "reflection") &&
+          item.content.id === fromContentId,
       );
 
       if (index >= 0) {
@@ -98,7 +139,9 @@ export const urtSlice = createSlice({
     ) => {
       const { timeline, contentId } = action.payload;
       state[timeline].entries = state[timeline].entries.filter(
-        (entry) => entry.content.id !== contentId,
+        (entry) =>
+          (entry.type === "trace" || entry.type === "reflection") &&
+          entry.content.id !== contentId,
       );
     },
     setFetchStatus: (
@@ -121,6 +164,23 @@ export const urtSlice = createSlice({
     ) => {
       state[action.payload.timeline].newReflectionsBar = action.payload.bar;
     },
+    appendNewEntriesBar: (
+      state,
+      action: PayloadAction<{
+        timeline: URTTimeline;
+        bar: URT["newReflectionsBar"];
+      }>,
+    ) => {
+      state[action.payload.timeline].newReflectionsBar = {
+        count:
+          state[action.payload.timeline].newReflectionsBar.count +
+          action.payload.bar.count,
+        instructions: [
+          ...state[action.payload.timeline].newReflectionsBar.instructions,
+          ...action.payload.bar.instructions,
+        ],
+      };
+    },
     resetTimeline: (state, action: PayloadAction<URTTimeline>) => {
       state[action.payload] = emptyURT();
     },
@@ -142,11 +202,44 @@ export const urtSlice = createSlice({
 
         state[timeline].fetchStatus[cursor] = "done";
 
+        const isChamberUpdatesOnly =
+          timeline === "chamberTraces" && direction === "new";
+
+        if (isChamberUpdatesOnly) {
+          state[timeline].lastFetchTimestamp = now;
+          if (response.newReflectionsBar) {
+            state[timeline].newReflectionsBar = {
+              count:
+                state[timeline].newReflectionsBar.count +
+                response.newReflectionsBar.count,
+              instructions: [
+                ...state[timeline].newReflectionsBar.instructions,
+                ...response.newReflectionsBar.instructions,
+              ],
+            };
+          }
+          return;
+        }
+
         if (direction === "top") {
           state[timeline].entries.unshift(...response.entries);
+          if (timeline === "chamberTraces") {
+            upsertCursorEntry(
+              state[timeline].entries,
+              "top",
+              response.topCursor,
+            );
+          }
           state[timeline].lastTopFetchTimestamp = now;
         } else {
           state[timeline].entries.push(...response.entries);
+          if (timeline === "chamberTraces") {
+            upsertCursorEntry(
+              state[timeline].entries,
+              "bottom",
+              response.bottomCursor,
+            );
+          }
           state[timeline].lastFetchTimestamp = now;
         }
 
@@ -181,17 +274,80 @@ export const urtSlice = createSlice({
 
           state[timeline].fetchStatus[cursor] = "done";
 
+          const isChamberUpdatesOnly =
+            timeline === "chamberTraces" && direction === "new";
+
+          if (isChamberUpdatesOnly) {
+            state[timeline].lastFetchTimestamp = now;
+            if (response.newReflectionsBar) {
+              state[timeline].newReflectionsBar = {
+                count:
+                  state[timeline].newReflectionsBar.count +
+                  response.newReflectionsBar.count,
+                instructions: [
+                  ...state[timeline].newReflectionsBar.instructions,
+                  ...response.newReflectionsBar.instructions,
+                ],
+              };
+            }
+            return;
+          }
+
           if (direction === "top") {
             state[timeline].entries.unshift(...response.entries);
+            if (timeline === "chamberTraces") {
+              upsertCursorEntry(
+                state[timeline].entries,
+                "top",
+                response.topCursor,
+              );
+            }
             state[timeline].lastTopFetchTimestamp = now;
           } else {
             state[timeline].entries.push(...response.entries);
+            if (timeline === "chamberTraces") {
+              upsertCursorEntry(
+                state[timeline].entries,
+                "bottom",
+                response.bottomCursor,
+              );
+            }
             state[timeline].lastFetchTimestamp = now;
           }
 
           if (response.newReflectionsBar) {
             state[timeline].newReflectionsBar = response.newReflectionsBar;
           }
+        },
+      )
+      .addMatcher(
+        timelineApi.endpoints.getChamberUpdates.matchFulfilled,
+        (state, action) => {
+          const response = action.payload;
+          state.chamberTraces.lastFetchTimestamp = Date.now();
+
+          // Always advance the boundary cursor (echo-back on empty = no-op advance)
+          upsertCursorEntry(
+            state.chamberTraces.entries,
+            "bottom",
+            response.bottomCursor,
+          );
+
+          const count =
+            response.newReflectionsBar?.count ?? response.entries.length;
+          const instructions = response.newReflectionsBar?.instructions ?? [];
+
+          if (count === 0 && instructions.length === 0) {
+            return;
+          }
+
+          state.chamberTraces.newReflectionsBar = {
+            count: state.chamberTraces.newReflectionsBar.count + count,
+            instructions: [
+              ...state.chamberTraces.newReflectionsBar.instructions,
+              ...instructions,
+            ],
+          };
         },
       )
       .addMatcher(
@@ -211,6 +367,7 @@ export const {
   removeEntryByContentId,
   setFetchStatus,
   updateNewReflectionsBar,
+  appendNewEntriesBar,
   resetTimeline,
 } = urtSlice.actions;
 
@@ -228,5 +385,19 @@ export const selectURTFetchStatus =
 export const selectNewReflectionsBar =
   (timeline: URTTimeline) => (state: RootState) =>
     state.urt[timeline].newReflectionsBar;
+
+/**
+ * Returns the updates boundary cursor for chamber traces.
+ * This is the last cursor with "bottom" entry — pointing to the latest trace
+ * the client has seen. The updates long-poll uses this as its starting point.
+ * null means no initial fetch has completed yet.
+ */
+export const selectChamberUpdatesCursor = (
+  state: RootState,
+): URTEntryCursor | null =>
+  state.urt.chamberTraces.entries.findLast(
+    (e): e is URTEntryCursor =>
+      e.type === "timeline-cursor" && e.content.cursorType === "bottom",
+  ) ?? null;
 
 export default urtSlice.reducer;

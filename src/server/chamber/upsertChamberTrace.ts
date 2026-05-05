@@ -1,6 +1,9 @@
 import { FieldValue, type Firestore } from "firebase-admin/firestore";
 import type { Trace } from "@/types/Trace";
-import { serializeFirestoreValue } from "@/server/helpers/firestore-serialization";
+import {
+  millisToFirestoreTimestamp,
+  serializeFirestoreValue,
+} from "@/server/helpers/firestore-serialization";
 
 export interface UpsertChamberTraceBody {
   trace?: unknown;
@@ -60,6 +63,7 @@ export async function upsertTraceInUserChamber(
         uid,
         chamberId: uid,
         syncedAt: FieldValue.serverTimestamp(),
+        createdAt: millisToFirestoreTimestamp(trace.createdAt, "createdAt"),
       },
       { merge: true },
     );

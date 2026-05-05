@@ -1,55 +1,10 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { Trace } from "@/types/Trace";
-import type { Reflection } from "@/types/Reflection";
-import type { User } from "@/types/User";
-import type { URTInstruction } from "@/types/URTInstruction";
-import { FetchState } from "@/types/FetchState";
-
-// Exported here to avoid circular imports between urtSlice ↔ entitiesSlice ↔ store.
-export type URTTimeline =
-  | "camphorReflections"
-  | "camphorTraces"
-  | "chamberTraces"
-  | "moonlightReflections"
-  | "moonlightTraces";
-
-export interface URTEntry {
-  type: "timeline-cursor" | "trace" | "reflection";
-  entryId: string;
-  content: {
-    id: string;
-    displayType: "reflection" | "qa-trace" | "translation-trace";
-  };
-}
-
-export interface TimelineApiResponse {
-  entries: URTEntry[];
-  traces: Trace[];
-  reflections: Reflection[];
-  users: User[];
-  topCursor?: string;
-  bottomCursor?: string;
-  nextCursor?: string;
-  newReflectionsBar?: {
-    count: number;
-    instructions: URTInstruction[];
-  };
-  fetchStatus?: Record<string, FetchState>;
-}
-
-export interface FetchTimelineArg {
-  timeline: URTTimeline;
-  /** Pagination cursor; omit for the initial page ("initial" is used as the key). */
-  cursor?: string;
-  direction: "top" | "bottom" | "new";
-}
-
-export interface FetchTimelineResult {
-  timeline: URTTimeline;
-  direction: "top" | "bottom" | "new";
-  cursor?: string;
-  response: TimelineApiResponse;
-}
+import {
+  URTTimeline,
+  TimelineApiResponse,
+  FetchTimelineResult,
+  FetchTimelineArg,
+} from "../types";
 
 // ---------------------------------------------------------------------------
 // Mock data — simulates what a real API would return for camphorTraces.

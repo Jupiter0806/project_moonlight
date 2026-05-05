@@ -1,13 +1,13 @@
 import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react";
-import type {
-  FetchTimelineArg,
-  TimelineApiResponse,
-  URTTimeline,
-} from "@/store/thunks/fetchTimelineThunk";
 import { MOCK_DB } from "@/store/thunks/fetchTimelineThunk";
-import { getChamberTraces } from "@/lib/chamberTraceService";
+import { getChamberTraces, getChamberUpdates } from "@/lib/chamberTraceService";
 import { getReflections } from "@/lib/reflections-services";
 import { getTodayReflections } from "@/lib/moonlight-services";
+import type {
+  TimelineApiResponse,
+  FetchTimelineArg,
+  URTTimeline,
+} from "../types";
 
 export const timelineApi = createApi({
   reducerPath: "timelineApi",
@@ -21,20 +21,14 @@ export const timelineApi = createApi({
         try {
           if (timeline === "chamberTraces") {
             const data = await getChamberTraces(direction, cursor);
-            // todo
-            // a proper typing required to separate the API response from the RTK Query wrapper's expected return type
-            return { data: data as unknown as TimelineApiResponse };
+            return { data };
           } else if (timeline === "camphorReflections") {
             const data = await getReflections(direction, cursor);
-            // todo
-            // a proper typing required to separate the API response from the RTK Query wrapper's expected return type
             return {
               data,
             };
           } else if (timeline === "moonlightReflections") {
             const data = await getTodayReflections(direction, cursor);
-            // todo
-            // a proper typing required to separate the API response from the RTK Query wrapper's expected return type
             return {
               data: data as unknown as TimelineApiResponse,
             };
@@ -73,7 +67,33 @@ export const timelineApi = createApi({
         return { data: mock };
       },
     }),
+    getChamberUpdates: builder.query<
+      TimelineApiResponse,
+      { cursor?: string; waitMs?: number }
+    >({
+      queryFn: async ({ cursor, waitMs = 8000 }, queryApi) => {
+        try {
+          const data = await getChamberUpdates(cursor, waitMs, queryApi.signal);
+          return { data };
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred while fetching chamber updates.";
+          return {
+            error: {
+              status: "FETCH_ERROR" as const,
+              error: errorMessage,
+            },
+          };
+        }
+      },
+    }),
   }),
 });
 
-export const { useGetTimelineQuery, useLazyGetTimelineQuery } = timelineApi;
+export const {
+  useGetTimelineQuery,
+  useLazyGetTimelineQuery,
+  useLazyGetChamberUpdatesQuery,
+} = timelineApi;

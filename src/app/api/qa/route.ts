@@ -35,6 +35,8 @@ export interface QAApiResponse {
   answers: string[];
 }
 
+// todo: stream response from Gemini API and forward to client
+//  in real-time instead of waiting for the whole answer to be generated. This will require some changes on the client side as well to handle streaming responses.
 export async function POST(request: NextRequest) {
   const key = await getRequestKey(request);
   const { success, limit, remaining, reset } = await qaRatelimit.limit(key);

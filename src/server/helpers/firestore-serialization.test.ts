@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Timestamp } from "firebase-admin/firestore";
 import {
+  millisToFirestoreTimestamp,
   serializeFirestoreTimestamp,
   serializeFirestoreValue,
   toFirestoreTimestamp,
@@ -63,5 +64,12 @@ describe("firestore-serialization", () => {
         "createdAt",
       ).toMillis(),
     ).toBe(1712345678901);
+  });
+
+  it("converts epoch milliseconds to Firestore server Timestamp", () => {
+    const timestamp = millisToFirestoreTimestamp(1712345678901, "createdAt");
+
+    expect(timestamp).toBeInstanceOf(Timestamp);
+    expect(timestamp.toMillis()).toBe(1712345678901);
   });
 });

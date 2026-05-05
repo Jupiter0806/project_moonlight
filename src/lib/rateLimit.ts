@@ -74,6 +74,17 @@ export const chamberTraceRatelimit = new Ratelimit({
 });
 
 /**
+ * Chamber trace updates: user-generated updates can spike (rapid submit/retry).
+ * 30 requests per minute per user/IP keeps UX smooth while limiting abuse.
+ */
+export const chamberTraceUpdatesRatelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(30, "1 m"),
+  prefix: "rl:chamber-trace-updates",
+  analytics: true,
+});
+
+/**
  * Reflections writes: user-generated writes can spike (rapid submit/retry).
  * 30 requests per minute per user/IP keeps UX smooth while limiting abuse.
  */
