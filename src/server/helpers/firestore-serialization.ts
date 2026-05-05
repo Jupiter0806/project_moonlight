@@ -72,6 +72,29 @@ export function toFirestoreTimestamp(
   );
 }
 
+export function millisToFirestoreTimestamp(
+  value: number,
+  fieldName = "timestamp",
+): Timestamp {
+  if (!Number.isFinite(value)) {
+    throw new Error(
+      `Expected ${fieldName} to be a finite epoch milliseconds number`,
+    );
+  }
+
+  return Timestamp.fromMillis(value);
+}
+
+/**
+ * Converts any accepted timestamp input into a JSON-safe cursor payload.
+ *
+ * Why this still exists even with `millisToFirestoreTimestamp`:
+ * - `millisToFirestoreTimestamp` is for producing a Firestore `Timestamp`
+ *   instance (typically for server writes and query boundaries).
+ * - This serializer is for API payloads where we must preserve Firestore
+ *   precision in plain JSON (`_seconds`/`_nanoseconds`) instead of relying on
+ *   `number` milliseconds or class instances.
+ */
 export function serializeFirestoreTimestamp(
   value: unknown,
   fieldName = "timestamp",

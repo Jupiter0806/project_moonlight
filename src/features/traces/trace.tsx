@@ -1,11 +1,11 @@
-import { URTEntry } from "@/store/thunks/fetchTimelineThunk";
 import type { WithClassName } from "@/types/withClassName";
 import { QATrace } from "./qa-trace";
 import { TranslateTrace } from "./translate-trace";
+import type { URTEntryUI } from "@/store/types";
 
 interface TraceProps extends WithClassName {
   traceId: string;
-  displayType: URTEntry["content"]["displayType"];
+  displayType: URTEntryUI["content"]["displayType"];
 }
 
 export function Trace({ traceId, displayType, className }: TraceProps) {

@@ -1,15 +1,12 @@
 import type { Firestore } from "firebase-admin/firestore";
-import type {
-  TimelineApiResponse,
-  URTEntry,
-} from "@/store/thunks/fetchTimelineThunk";
 import type { Trace } from "@/types/Trace";
 import type { ListParams } from "../types/pagination.types";
 import {
-  buildPaginationCursor,
-  buildPaginationQuery,
-} from "../helpers/pagination-helpers";
+  buildPaginationQueryV2,
+  buildPaginationCursorV2,
+} from "../helpers/pagination-helpers-v2";
 import { serializeFirestoreValue } from "@/server/helpers/firestore-serialization";
+import type { URTEntry, TimelineApiResponse } from "@/store/types";
 
 function mapEntry(trace: Trace): URTEntry {
   return {
@@ -32,7 +29,7 @@ export async function listChamberTraces(
     .doc(params.uid)
     .collection("traces");
 
-  const query = buildPaginationQuery(chamberTraceRef, params, {
+  const query = buildPaginationQueryV2(chamberTraceRef, params, {
     bottomLatest: true,
   });
 
@@ -42,20 +39,10 @@ export async function listChamberTraces(
 
   const entries = traces.map(mapEntry);
 
-  if (traces.length === 0) {
-    return {
-      entries,
-      traces,
-      reflections: [],
-      users: [],
-    };
-  }
-
-  const { topCursor, bottomCursor } = await buildPaginationCursor(
-    chamberTraceRef,
-    rawTraces,
-    { bottomLatest: true },
-  );
+  const { topCursor, bottomCursor, hasMoreTop, hasMoreBottom } =
+    await buildPaginationCursorV2(chamberTraceRef, rawTraces, {
+      bottomLatest: true,
+    });
 
   return {
     entries,
@@ -64,7 +51,9 @@ export async function listChamberTraces(
     // requires timeline-specific response types (discriminated union)
     reflections: [],
     users: [],
-    topCursor,
-    bottomCursor,
+    topCursor: topCursor ?? undefined,
+    bottomCursor: bottomCursor ?? undefined,
+    hasMoreTop,
+    hasMoreBottom,
   };
 }

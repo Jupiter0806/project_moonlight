@@ -1,10 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getAdminAuth, getAdminFirestore } from "@/lib/firebaseAdmin";
+import { getAdminFirestore } from "@/lib/firebaseAdmin";
 import { chamberTraceRatelimit } from "@/lib/rateLimit";
 import { getRequestKey } from "@/lib/getRequestKey";
 import {
   getTraceInUserChamber,
-  isTranslationTrace,
+  isTranslationTrace as isTrace,
   type UpsertChamberTraceBody,
   upsertTraceInUserChamber,
 } from "@/server/chamber/upsertChamberTrace";
@@ -15,6 +15,7 @@ import {
   parsePagination,
   withRateLimitHeaders,
 } from "@/lib/apis-helpers";
+import { buildCursor } from "@/server/helpers/pagination-helpers-v2";
 
 /**
  * GET /api/chamber/traces
@@ -82,7 +83,7 @@ export async function POST(request: NextRequest) {
 
   const body = (await request.json()) as UpsertChamberTraceBody;
 
-  if (!isTranslationTrace(body.trace)) {
+  if (!isTrace(body.trace)) {
     return NextResponse.json(
       { error: "Invalid trace payload" },
       { status: 400 },
@@ -137,9 +138,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 
-  const response: { status: string; traceId: string; answer?: string } = {
+  const response: {
+    status: string;
+    traceId: string;
+    answer?: string;
+    cursor: string;
+  } = {
     status: "ok",
     traceId: trace.id,
+    cursor: buildCursor(trace),
   };
   if (trace.type === "qa") {
     response.answer = trace.a;

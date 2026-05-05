@@ -8,7 +8,7 @@ import {
   setTraceFetchStatus,
   upsertTraces,
 } from "@/store/slices/entitiesSlice";
-import { appendEntries } from "@/store/slices/urtSlice";
+import { appendEntries, buildCursorEntry } from "@/store/slices/urtSlice";
 import {
   sourceLanguageAtom,
   sourceTextAtom,
@@ -89,9 +89,15 @@ export function useFlushTranslation(): () => void {
       dispatch(setTraceFetchStatus({ id, status: "loading" }));
 
       void upsertChamberTrace(trace)
-        .then(() => {
+        .then(({ cursor }) => {
           dispatch(setTraceFetchStatus({ id, status: "done" }));
           dispatch(clearTraceError({ id }));
+          dispatch(
+            appendEntries({
+              timeline: "chamberTraces",
+              entries: [buildCursorEntry("bottom", cursor)],
+            }),
+          );
         })
         .catch((error) => {
           dispatch(setTraceFetchStatus({ id, status: "error" }));

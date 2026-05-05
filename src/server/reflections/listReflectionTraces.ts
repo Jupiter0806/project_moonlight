@@ -1,13 +1,10 @@
 import type { Firestore } from "firebase-admin/firestore";
-import type {
-  TimelineApiResponse,
-  URTEntry,
-} from "@/store/thunks/fetchTimelineThunk";
 import type { ListParams } from "../types/pagination.types";
 import { Trace } from "@/types/Trace";
 import { Reflection } from "@/types/Reflection";
 import { FetchState } from "@/types/FetchState";
 import { serializeFirestoreValue } from "@/server/helpers/firestore-serialization";
+import type { URTEntry, TimelineApiResponse } from "@/store/types";
 
 function mapEntry(trace: Trace): URTEntry {
   return {
