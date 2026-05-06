@@ -100,6 +100,16 @@ export const entitiesSlice = createSlice({
             reflectionsAdapter.upsertMany(state.reflections, reflections);
           if (users.length) usersAdapter.upsertMany(state.users, users);
         },
+      )
+      .addMatcher(
+        timelineApi.endpoints.getChamberUpdates.matchFulfilled,
+        (state, action) => {
+          const { traces, reflections, users } = action.payload;
+          if (traces.length) tracesAdapter.upsertMany(state.traces, traces);
+          if (reflections.length)
+            reflectionsAdapter.upsertMany(state.reflections, reflections);
+          if (users.length) usersAdapter.upsertMany(state.users, users);
+        },
       );
   },
 });

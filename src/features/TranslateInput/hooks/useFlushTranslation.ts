@@ -8,7 +8,7 @@ import {
   setTraceFetchStatus,
   upsertTraces,
 } from "@/store/slices/entitiesSlice";
-import { appendEntries, buildCursorEntry } from "@/store/slices/urtSlice";
+import { appendEntries, setTimelineCursor } from "@/store/slices/urtSlice";
 import {
   sourceLanguageAtom,
   sourceTextAtom,
@@ -93,9 +93,10 @@ export function useFlushTranslation(): () => void {
           dispatch(setTraceFetchStatus({ id, status: "done" }));
           dispatch(clearTraceError({ id }));
           dispatch(
-            appendEntries({
+            setTimelineCursor({
               timeline: "chamberTraces",
-              entries: [buildCursorEntry("bottom", cursor)],
+              position: "bottom",
+              cursor,
             }),
           );
         })
