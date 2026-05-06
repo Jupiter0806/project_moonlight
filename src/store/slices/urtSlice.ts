@@ -67,9 +67,6 @@ export function buildCursorEntry(
 /**
  * Upserts a cursor boundary entry at a stable position in the entries array.
  *
- * Stable entryIds ("cursor-top" / "cursor-bottom") mean the entry is
- * replaced in-place when the cursor advances, rather than accumulating one
- * entry per page. cursor=null removes the entry if present.
  */
 function upsertCursorEntry(
   entries: URTEntry[],

@@ -42,9 +42,7 @@ export function ChamberTraceList() {
 function useTraceList() {
   // RTK Query: handles fetching, caching, and deduplication automatically.
   // On fulfilled, urtSlice + entitiesSlice both update via extraReducers/matchers.
-  // todo: it's a good idea to put fetch and subscription in one single hook
-  // what happens when users come back to the page after a while?
-  // will the fetch be triggered again
+
   useGetTimelineQuery({
     timeline: "chamberTraces",
     direction: "bottom",
