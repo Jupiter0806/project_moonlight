@@ -4,6 +4,7 @@ import { chamberTraceUpdatesRatelimit } from "@/lib/rateLimit";
 import { getRequestKey } from "@/lib/getRequestKey";
 import { listChamberTraces } from "@/server/chamber/listChamberTraces";
 import { authenticate, withRateLimitHeaders } from "@/lib/apis-helpers";
+import { buildInstruction } from "@/lib/urt-instrucation-helpers";
 
 const DEFAULT_WAIT_MS = 8000;
 const POLL_STEP_MS = 4000;
@@ -63,7 +64,9 @@ export async function GET(request: NextRequest) {
           ...response,
           newReflectionsBar: {
             count: response.entries.length,
-            instructions: [],
+            instructions: [
+              buildInstruction("add-entries", { entries: response.entries }),
+            ],
           },
         });
       }

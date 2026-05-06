@@ -20,12 +20,15 @@ import {
   selectChamberUpdatesCursor,
 } from "@/store/slices/urtSlice";
 import { useEffect, useRef } from "react";
+import { NewTracesBar } from "./components/new-traces-bar";
 
 export function ChamberTraceList() {
   const traces = useTraceList();
   const fetchStatus = useAppSelector(selectURTFetchStatus("chamberTraces"));
 
   useTraceUpdates();
+
+  console.log("ChamberTraceList render", { traces, fetchStatus });
 
   return (
     <List isLoading={fetchStatus === "loading"}>
@@ -38,6 +41,7 @@ export function ChamberTraceList() {
           />
         ),
       )}
+      <NewTracesBar />
     </List>
   );
 }
@@ -45,6 +49,9 @@ export function ChamberTraceList() {
 function useTraceList() {
   // RTK Query: handles fetching, caching, and deduplication automatically.
   // On fulfilled, urtSlice + entitiesSlice both update via extraReducers/matchers.
+  // todo: it's a good idea to put fetch and subscription in one single hook
+  // what happens when users come back to the page after a while?
+  // will the fetch be triggered again
   useGetTimelineQuery({
     timeline: "chamberTraces",
     direction: "bottom",
@@ -61,9 +68,18 @@ function useTraceUpdates() {
   const updatesCursor = useAppSelector(selectChamberUpdatesCursor);
   const updatesCursorRef = useRef<string | null>(null);
 
+  const cursorFetchStatus = useAppSelector(
+    selectURTFetchStatus("chamberTraces", updatesCursor?.content.value),
+  );
+  const cursorFetchStatusRef = useRef<string | null>(null);
+
   useEffect(() => {
     updatesCursorRef.current = updatesCursor?.content.value ?? null;
   }, [updatesCursor]);
+
+  useEffect(() => {
+    cursorFetchStatusRef.current = cursorFetchStatus;
+  }, [cursorFetchStatus]);
 
   useEffect(() => {
     let active = true;
@@ -88,7 +104,14 @@ function useTraceUpdates() {
             cursor: updatesCursorRef.current,
             waitMs: 8000,
           });
-          await currentRequest.unwrap();
+
+          const response = await currentRequest.unwrap();
+          if (
+            response.newReflectionsBar &&
+            response.newReflectionsBar?.count > 0
+          )
+            // once retrieved data, sleep for a while to wait new cursor updated
+            await new Promise((resolve) => setTimeout(resolve, 200));
         } catch {
           if (!active) return;
           // Avoid tight error loops when network/auth temporarily fails.

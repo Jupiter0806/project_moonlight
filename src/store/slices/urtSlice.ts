@@ -171,18 +171,38 @@ export const urtSlice = createSlice({
         bar: URT["newReflectionsBar"];
       }>,
     ) => {
-      state[action.payload.timeline].newReflectionsBar = {
-        count:
-          state[action.payload.timeline].newReflectionsBar.count +
-          action.payload.bar.count,
-        instructions: [
-          ...state[action.payload.timeline].newReflectionsBar.instructions,
-          ...action.payload.bar.instructions,
-        ],
-      };
+      const newEntriesBar = state[action.payload.timeline].newReflectionsBar;
+      newEntriesBar.count += action.payload.bar.count;
+      newEntriesBar.instructions.push(...action.payload.bar.instructions);
     },
     resetTimeline: (state, action: PayloadAction<URTTimeline>) => {
       state[action.payload] = emptyURT();
+    },
+    runNewEntriesBarInstructions: (
+      state,
+      action: PayloadAction<{
+        timeline: URTTimeline;
+      }>,
+    ) => {
+      const timelineState = state[action.payload.timeline];
+      const instructions = timelineState.newReflectionsBar.instructions;
+
+      // run instructions
+      instructions.forEach((instruction) => {
+        switch (instruction.type) {
+          case "add-entries": {
+            const entries = instruction.params.entries;
+            timelineState.entries.push(...entries);
+            break;
+          }
+        }
+      });
+
+      // clear the bar after running instructions, since they are one-time use
+      timelineState.newReflectionsBar = {
+        count: 0,
+        instructions: [],
+      };
     },
   },
   extraReducers: (builder) => {
@@ -369,6 +389,7 @@ export const {
   updateNewReflectionsBar,
   appendNewEntriesBar,
   resetTimeline,
+  runNewEntriesBarInstructions,
 } = urtSlice.actions;
 
 export const selectURT = (timeline: URTTimeline) => (state: RootState) =>
