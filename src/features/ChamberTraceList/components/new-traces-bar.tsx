@@ -8,7 +8,7 @@ import {
 
 export function NewTracesBar() {
   const newTracesBar = useAppSelector(selectNewReflectionsBar("chamberTraces"));
-  console.log("NewTracesBar render", { newTracesBar });
+
   const dispatch = useAppDispatch();
   const runInstruction = () => {
     dispatch(runNewEntriesBarInstructions({ timeline: "chamberTraces" }));

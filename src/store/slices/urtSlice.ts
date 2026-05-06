@@ -204,6 +204,17 @@ export const urtSlice = createSlice({
         instructions: [],
       };
     },
+    setTimelineCursor: (
+      state,
+      action: PayloadAction<{
+        timeline: URTTimeline;
+        position: "top" | "bottom";
+        cursor: string | null;
+      }>,
+    ) => {
+      const { timeline, position, cursor } = action.payload;
+      upsertCursorEntry(state[timeline].entries, position, cursor);
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -343,6 +354,16 @@ export const urtSlice = createSlice({
       .addMatcher(
         timelineApi.endpoints.getChamberUpdates.matchFulfilled,
         (state, action) => {
+          const requestCursor = action.meta.arg.originalArgs.cursor ?? null;
+          const currentBottomCursor =
+            findBottomCursor(state.chamberTraces.entries)?.content.value ??
+            null;
+
+          // Ignore stale long-poll responses started from an older cursor.
+          if (requestCursor !== currentBottomCursor) {
+            return;
+          }
+
           const response = action.payload;
           state.chamberTraces.lastFetchTimestamp = Date.now();
 
@@ -353,21 +374,17 @@ export const urtSlice = createSlice({
             response.bottomCursor,
           );
 
-          const count =
-            response.newReflectionsBar?.count ?? response.entries.length;
+          const count = response.newReflectionsBar?.count ?? 0;
           const instructions = response.newReflectionsBar?.instructions ?? [];
 
           if (count === 0 && instructions.length === 0) {
             return;
           }
 
-          state.chamberTraces.newReflectionsBar = {
-            count: state.chamberTraces.newReflectionsBar.count + count,
-            instructions: [
-              ...state.chamberTraces.newReflectionsBar.instructions,
-              ...instructions,
-            ],
-          };
+          state.chamberTraces.newReflectionsBar.count += count;
+          state.chamberTraces.newReflectionsBar.instructions.push(
+            ...instructions,
+          );
         },
       )
       .addMatcher(
@@ -390,6 +407,7 @@ export const {
   appendNewEntriesBar,
   resetTimeline,
   runNewEntriesBarInstructions,
+  setTimelineCursor,
 } = urtSlice.actions;
 
 export const selectURT = (timeline: URTTimeline) => (state: RootState) =>
@@ -415,10 +433,15 @@ export const selectNewReflectionsBar =
  */
 export const selectChamberUpdatesCursor = (
   state: RootState,
-): URTEntryCursor | null =>
-  state.urt.chamberTraces.entries.findLast(
-    (e): e is URTEntryCursor =>
-      e.type === "timeline-cursor" && e.content.cursorType === "bottom",
-  ) ?? null;
+): URTEntryCursor | null => findBottomCursor(state.urt.chamberTraces.entries);
 
 export default urtSlice.reducer;
+
+function findBottomCursor(entries: URTEntry[]): URTEntryCursor | null {
+  return (
+    entries.findLast(
+      (e): e is URTEntryCursor =>
+        e.type === "timeline-cursor" && e.content.cursorType === "bottom",
+    ) ?? null
+  );
+}
