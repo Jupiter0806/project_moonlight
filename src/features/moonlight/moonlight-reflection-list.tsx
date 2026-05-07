@@ -7,6 +7,7 @@ import {
   selectURTFetchStatus,
 } from "@/store/slices/urtSlice";
 import { ReflectionList } from "../reflections/reflection-list";
+import type { URTEntryUI } from "@/store/types";
 
 export function MoonlightReflectionList() {
   const entries = useCamphorReflectionEntries();
@@ -15,7 +16,9 @@ export function MoonlightReflectionList() {
 
   return (
     <ReflectionList
-      ids={entries.map((entry) => entry.content.id)}
+      ids={entries
+        .filter((entry): entry is URTEntryUI => entry.type === "reflection")
+        .map((entry) => entry.content.id)}
       isLoading={isLoading}
     />
   );
