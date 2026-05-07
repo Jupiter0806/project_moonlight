@@ -3,24 +3,32 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Reflection } from "./reflection";
 import { useRowHeight } from "./hooks/useRowHeight";
 
+const NEW_ITEMS_BAR_ITEM = { type: "new-items-bar" } as const;
+
 export function ReflectionList({
   ids,
   isLoading,
   isRefreshing = false,
   hasMore = false,
   onLoadMore,
+  newItemsCount = 0,
+  onClickNewItems,
 }: {
   ids: string[];
   isLoading: boolean;
   isRefreshing?: boolean;
   hasMore?: boolean;
   onLoadMore?: () => void | Promise<void>;
+  newItemsCount?: number;
+  onClickNewItems?: () => void;
 }) {
   const rowHeight = useRowHeight();
+  const items: Array<string | typeof NEW_ITEMS_BAR_ITEM> =
+    newItemsCount > 0 ? [NEW_ITEMS_BAR_ITEM, ...ids] : ids;
 
   return (
     <VirtualList
-      items={ids}
+      items={items}
       isLoading={isLoading}
       isRefreshing={isRefreshing}
       hasMore={hasMore}
@@ -40,7 +48,21 @@ export function ReflectionList({
           </p>
         </div>
       )}
-      renderRow={(id) => <Reflection id={id} />}
+      renderRow={(item) => {
+        if (typeof item === "string") {
+          return <Reflection id={item} />;
+        }
+
+        return (
+          <button
+            className="text-primary w-full rounded-md border px-3 py-2 text-center text-sm"
+            onClick={onClickNewItems}
+            type="button"
+          >
+            {newItemsCount} new reflections available. Click to load.
+          </button>
+        );
+      }}
     />
   );
 }

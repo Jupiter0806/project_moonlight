@@ -168,9 +168,44 @@ export const urtSlice = createSlice({
         bar: URT["newReflectionsBar"];
       }>,
     ) => {
+      // Deduplicate against entries already in the timeline.
+      //
+      // This is specifically needed for the SSE bootstrap case: when the
+      // client connects with no cursor (e.g. the list was empty at load time),
+      // the server fetches the latest page to anchor its poll boundary and
+      // emits it as a bar update. That payload may include reflections the
+      // creator already has in their timeline from the initial page load.
+      // Without this check, the creator would see their own reflection appear
+      // in the "new items" bar.
+      //
+      // For the normal polling case (cursor present) this filter is a no-op
+      // because the server only returns entries newer than the cursor, which
+      // the client cannot already have.
+      const existingIds = new Set(
+        state[action.payload.timeline].entries.map((e) => e.entryId),
+      );
+
+      const filteredInstructions = action.payload.bar.instructions
+        .map((instr) => ({
+          ...instr,
+          params: {
+            entries: instr.params.entries.filter(
+              (e) => !existingIds.has(e.entryId),
+            ),
+          },
+        }))
+        .filter((instr) => instr.params.entries.length > 0);
+
+      const filteredCount = filteredInstructions.reduce(
+        (sum, instr) => sum + instr.params.entries.length,
+        0,
+      );
+
+      if (filteredCount === 0) return;
+
       const newEntriesBar = state[action.payload.timeline].newReflectionsBar;
-      newEntriesBar.count += action.payload.bar.count;
-      newEntriesBar.instructions.push(...action.payload.bar.instructions);
+      newEntriesBar.count += filteredCount;
+      newEntriesBar.instructions.push(...filteredInstructions);
     },
     resetTimeline: (state, action: PayloadAction<URTTimeline>) => {
       state[action.payload] = emptyURT();
@@ -189,7 +224,11 @@ export const urtSlice = createSlice({
         switch (instruction.type) {
           case "add-entries": {
             const entries = instruction.params.entries;
-            timelineState.entries.push(...entries);
+            if (action.payload.timeline === "camphorReflections") {
+              timelineState.entries.unshift(...entries);
+            } else {
+              timelineState.entries.push(...entries);
+            }
             break;
           }
         }

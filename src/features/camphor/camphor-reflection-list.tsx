@@ -1,30 +1,53 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import {
   useGetTimelineQuery,
   useLazyGetTimelineQuery,
 } from "@/store/api/timelineApi";
-import { useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
+  runNewEntriesBarInstructions,
+  selectNewReflectionsBar,
   selectURTEntries,
   selectURTFetchStatus,
 } from "@/store/slices/urtSlice";
 import { ReflectionList } from "../reflections/reflection-list";
+import { URTEntryUI } from "@/store/types";
+import { ReflectionsUpdatesListener } from "./components/reflections-updates-listener";
 
 export function CamphorReflectionList() {
   const { ids, isLoading, isRefreshing, hasMore, loadMore } =
     useCamphorReflectionEntries();
+  const { newReflectionsCount, onClickNewItems } =
+    useCamphorNewReflectionsBarState();
 
   return (
-    <ReflectionList
-      ids={ids}
-      isLoading={isLoading}
-      isRefreshing={isRefreshing}
-      hasMore={hasMore}
-      onLoadMore={loadMore}
-    />
+    <>
+      <ReflectionsUpdatesListener />
+      <ReflectionList
+        ids={ids}
+        isLoading={isLoading}
+        isRefreshing={isRefreshing}
+        hasMore={hasMore}
+        onLoadMore={loadMore}
+        newItemsCount={newReflectionsCount}
+        onClickNewItems={onClickNewItems}
+      />
+    </>
   );
+}
+
+function useCamphorNewReflectionsBarState() {
+  const dispatch = useAppDispatch();
+  const newReflectionsCount =
+    useAppSelector(selectNewReflectionsBar("camphorReflections"))?.count ?? 0;
+
+  const onClickNewItems = useCallback(() => {
+    dispatch(runNewEntriesBarInstructions({ timeline: "camphorReflections" }));
+  }, [dispatch]);
+
+  return { newReflectionsCount, onClickNewItems };
 }
 
 function useCamphorReflectionEntries() {
@@ -55,7 +78,13 @@ function useCamphorReflectionEntries() {
 
   // RTK Query: handles fetching, caching, and deduplication automatically.
   // On fulfilled, urtSlice + entitiesSlice both update via extraReducers/matchers.
-  const ids = entries.map((entry) => entry.content.id);
+  const ids = useMemo(
+    () =>
+      entries
+        .filter((entry): entry is URTEntryUI => entry.type === "reflection")
+        .map((entry) => entry.content.id),
+    [entries],
+  );
   const isLoading = ids.length === 0 && initialFetchStatus === "loading";
   const isRefreshing = ids.length > 0 && nextPageQuery.isFetching;
   const hasMore = typeof cursor === "string" && cursor.length > 0;
