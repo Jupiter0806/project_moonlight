@@ -1,4 +1,4 @@
-import { TimelineApiResponse } from "@/store/thunks/fetchTimelineThunk";
+import type { TimelineApiResponse } from "@/store/types";
 
 export async function getReflections(
   direction: "top" | "bottom" | "new",

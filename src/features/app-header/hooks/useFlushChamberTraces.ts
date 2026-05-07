@@ -20,6 +20,7 @@ import {
   selectURTEntries,
 } from "@/store/slices/urtSlice";
 import type { Reflection } from "@/types/Reflection";
+import { URTEntryUI } from "@/store/types";
 
 const REFLECTION_TIMELINE = "camphorReflections" as const;
 
@@ -33,7 +34,7 @@ export function useFlushChamberTraces() {
     if (entries.length === 0 || isFlushingRef.current) return;
 
     const chamberTraceIds = entries
-      .filter((entry) => entry.type === "trace")
+      .filter((entry): entry is URTEntryUI => entry.type === "trace")
       .map((entry) => entry.content.id);
 
     if (chamberTraceIds.length === 0) return;
