@@ -1,8 +1,9 @@
 import { cn } from "@/lib/utils";
 import { WithClassName } from "@/types/withClassName";
 import { useAutoHideScrollbar } from "@/hooks/use-auto-hide-scrollbar";
-import { CSSProperties, ReactNode, useEffect, useRef } from "react";
+import { CSSProperties, ReactNode, Ref, useEffect, useRef } from "react";
 import { List } from "react-window";
+import type { DynamicRowHeight, ListImperativeAPI } from "react-window";
 
 /**
  * Warns in development when VirtualList's container does not have a bounded
@@ -17,7 +18,11 @@ import { List } from "react-window";
 function useVirtualListHeightGuard(
   containerRef: React.RefObject<HTMLElement | null>,
   rowCount: number,
-  rowHeight: number | ((index: number) => number),
+  rowHeight:
+    | number
+    | string
+    | DynamicRowHeight
+    | ((index: number, cellProps: object) => number),
 ) {
   useEffect(() => {
     if (process.env.NODE_ENV !== "development") return;
@@ -28,7 +33,13 @@ function useVirtualListHeightGuard(
     const check = () => {
       const { height } = el.getBoundingClientRect();
       const sampleHeight =
-        typeof rowHeight === "function" ? rowHeight(0) : rowHeight;
+        typeof rowHeight === "function"
+          ? rowHeight(0, {})
+          : typeof rowHeight === "number"
+            ? rowHeight
+            : typeof rowHeight === "string"
+              ? Number.parseFloat(rowHeight)
+              : (rowHeight.getRowHeight(0) ?? rowHeight.getAverageRowHeight());
       const totalContentHeight = rowCount * sampleHeight;
       // If measured height ≥ total content height, the container is not
       // constraining the list — it grew to fit the content instead.
@@ -63,7 +74,11 @@ interface VirtualListRowProps<T> {
 
 interface VirtualListProps<T> extends WithClassName {
   items: readonly T[];
-  rowHeight?: number | ((index: number) => number);
+  rowHeight?:
+    | number
+    | string
+    | DynamicRowHeight
+    | ((index: number, cellProps: object) => number);
   loaderRowHeight?: number;
   hiddenSentinelRowHeight?: number;
   overscanCount?: number;
@@ -77,6 +92,7 @@ interface VirtualListProps<T> extends WithClassName {
   renderLoadingRow?: (index: number) => ReactNode;
   renderRefreshingIndicator?: () => ReactNode;
   renderRow: RowRenderer<T>;
+  listRef?: Ref<ListImperativeAPI>;
 }
 
 function VirtualListRow<T>({
@@ -129,6 +145,7 @@ export function VirtualList<T>({
   renderLoadingRow,
   renderRefreshingIndicator,
   renderRow,
+  listRef,
 }: VirtualListProps<T>) {
   // A Promise ref ensures only one onLoadMore is in-flight at a time.
   // It is synchronously set before the async call and cleared only after
@@ -138,6 +155,22 @@ export function VirtualList<T>({
   const { scrollbarClassName, markScrolling } = useAutoHideScrollbar();
   const hasLoadMoreRow = hasMore || isRefreshing;
   const rowCount = items.length + (hasLoadMoreRow ? 1 : 0);
+  const resolvedRowHeight = hasLoadMoreRow
+    ? (index: number) =>
+        index === items.length
+          ? isRefreshing
+            ? loaderRowHeight
+            : hiddenSentinelRowHeight
+          : typeof rowHeight === "function"
+            ? rowHeight(index, {})
+            : typeof rowHeight === "number"
+              ? rowHeight
+              : typeof rowHeight === "string"
+                ? Number.parseFloat(rowHeight)
+                : (rowHeight.getRowHeight(index) ??
+                  rowHeight.getAverageRowHeight())
+    : rowHeight;
+
   useVirtualListHeightGuard(containerRef, rowCount, rowHeight);
 
   if (isLoading) {
@@ -178,6 +211,7 @@ export function VirtualList<T>({
   return (
     <div ref={containerRef} className={cn("h-full", className)}>
       <List
+        listRef={listRef}
         className={cn(scrollbarClassName, "h-full")}
         onScroll={(event) => markScrolling(event.currentTarget)}
         overscanCount={overscanCount}
@@ -201,15 +235,7 @@ export function VirtualList<T>({
         }}
         rowComponent={VirtualListRow<T>}
         rowCount={rowCount}
-        rowHeight={(index) =>
-          hasLoadMoreRow && index === items.length
-            ? isRefreshing
-              ? loaderRowHeight
-              : hiddenSentinelRowHeight
-            : typeof rowHeight === "function"
-              ? rowHeight(index)
-              : rowHeight
-        }
+        rowHeight={resolvedRowHeight}
         rowProps={{
           items,
           renderRow,

@@ -8,17 +8,18 @@ import {
 
 export function NewTracesBar() {
   const newTracesBar = useAppSelector(selectNewReflectionsBar("chamberTraces"));
+  const count = newTracesBar?.count ?? 0;
 
   const dispatch = useAppDispatch();
   const runInstruction = () => {
     dispatch(runNewEntriesBarInstructions({ timeline: "chamberTraces" }));
   };
 
-  if (newTracesBar && newTracesBar.count === 0) return null;
+  if (count <= 0) return null;
 
   return (
     <div className="text-center" onClick={runInstruction}>
-      {newTracesBar?.count} new traces available. Click to load.
+      {count} new traces available. Click to load.
     </div>
   );
 }
