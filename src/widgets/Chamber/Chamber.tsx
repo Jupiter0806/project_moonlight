@@ -15,7 +15,7 @@ export function Chamber() {
        * - On mobile, content remains fully scrollable even when the keyboard is open
        *   because the scroll area sits above the sticky input in the flex column
        */}
-      <div className="flex-1 p-4">
+      <div className="min-h-0 flex-1 p-4">
         <ChamberTraceList />
       </div>
 
