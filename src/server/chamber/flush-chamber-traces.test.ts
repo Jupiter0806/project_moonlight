@@ -10,13 +10,14 @@ vi.mock("@/server/chamber/fetchAnswer", () => ({
 }));
 
 describe("flushChamberTraces", () => {
+  const DISABLED_SUMMARY =
+    "[Summary generation is currently disabled for testing purposes]";
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("creates one reflection with all trace ids and summary", async () => {
-    vi.mocked(fetchAnswer).mockResolvedValue("A concise summary");
-
     const reflectionSet = vi.fn();
     const traceSet = vi.fn();
     const batchDelete = vi.fn();
@@ -107,7 +108,7 @@ describe("flushChamberTraces", () => {
 
     const result = await flushChamberTraces(db, "user-1");
 
-    expect(fetchAnswer).toHaveBeenCalledTimes(1);
+    expect(fetchAnswer).not.toHaveBeenCalled();
     expect(reflectionSet).toHaveBeenCalledTimes(1);
     expect(traceSet).toHaveBeenCalledTimes(2);
 
@@ -120,7 +121,7 @@ describe("flushChamberTraces", () => {
       id: "reflection-1",
       uid: "user-1",
       traceIds: ["trace-1", "trace-2"],
-      summary: "A concise summary",
+      summary: DISABLED_SUMMARY,
     });
 
     const rootTraceCalls = setCalls.filter(
@@ -148,7 +149,7 @@ describe("flushChamberTraces", () => {
     expect(result).toEqual({
       reflectionId: "reflection-1",
       traceIds: ["trace-1", "trace-2"],
-      summary: "A concise summary",
+      summary: DISABLED_SUMMARY,
       summaryGenerated: true,
     });
   });
@@ -190,9 +191,7 @@ describe("flushChamberTraces", () => {
     expect(db.batch).not.toHaveBeenCalled();
   });
 
-  it("still flushes traces when summary generation fails", async () => {
-    vi.mocked(fetchAnswer).mockRejectedValue(new Error("gemini failed"));
-
+  it("still flushes traces when summary generation is disabled", async () => {
     const batchDelete = vi.fn();
     const commit = vi.fn().mockResolvedValue(undefined);
 
@@ -262,7 +261,7 @@ describe("flushChamberTraces", () => {
       (call) => (call[0] as { id?: string } | undefined)?.id === "reflection-1",
     );
     expect(reflectionBatchCall?.[1]).toMatchObject({
-      summary: "",
+      summary: DISABLED_SUMMARY,
       traceIds: ["trace-1"],
     });
     expect(batchDelete).toHaveBeenCalledTimes(1);
@@ -270,8 +269,8 @@ describe("flushChamberTraces", () => {
     expect(result).toEqual({
       reflectionId: "reflection-1",
       traceIds: ["trace-1"],
-      summary: "",
-      summaryGenerated: false,
+      summary: DISABLED_SUMMARY,
+      summaryGenerated: true,
     });
   });
 });

@@ -253,6 +253,9 @@ describe("TranslateInput", () => {
       const entries = selectURTEntries("chamberTraces")(reduxStore.getState());
       expect(entries).toHaveLength(1);
       expect(entries[0].type).toBe("trace");
+      if (entries[0].type !== "trace") {
+        throw new Error("Expected chamberTraces entry to be a trace");
+      }
       expect(entries[0].content.displayType).toBe("translation-trace");
     });
 
@@ -266,6 +269,10 @@ describe("TranslateInput", () => {
 
       const traces = selectAllTraces(reduxStore.getState());
       const entries = selectURTEntries("chamberTraces")(reduxStore.getState());
+      expect(entries[0].type).toBe("trace");
+      if (entries[0].type !== "trace") {
+        throw new Error("Expected chamberTraces entry to be a trace");
+      }
       expect(entries[0].content.id).toBe(traces[0].id);
     });
 

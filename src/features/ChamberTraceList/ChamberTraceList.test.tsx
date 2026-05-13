@@ -1,9 +1,55 @@
 import { describe, it, expect, vi } from "vitest";
 import { screen, act } from "@testing-library/react";
+import type { ReactNode } from "react";
+import { Fragment } from "react";
 import { ChamberTraceList } from "./ChamberTraceList";
 import { renderWithStore, createReduxStore } from "@/tests/renderWithStore";
 import { appendEntries } from "@/store/slices/urtSlice";
-import type { URTEntry } from "@/store/thunks/fetchTimelineThunk";
+import type { URTEntryUI } from "@/store/types";
+
+vi.mock("@/store/api/timelineApi", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/store/api/timelineApi")>();
+
+  return {
+    ...actual,
+    useGetTimelineQuery: vi.fn(() => ({})),
+  };
+});
+
+vi.mock("@/components/virtual-list", () => ({
+  VirtualList: ({
+    items,
+    isLoading,
+    emptyState,
+    renderRow,
+  }: {
+    items: unknown[];
+    isLoading: boolean;
+    emptyState: ReactNode;
+    renderRow: (item: unknown, index: number) => ReactNode;
+  }) => {
+    if (isLoading) {
+      return (
+        <div className="flex h-full items-center justify-center">
+          <p className="text-sm">Loading...</p>
+        </div>
+      );
+    }
+
+    if (items.length === 0) {
+      return <>{emptyState}</>;
+    }
+
+    return (
+      <>
+        {items.map((item, index) => (
+          <Fragment key={index}>{renderRow(item, index)}</Fragment>
+        ))}
+      </>
+    );
+  },
+}));
 
 // Trace delegates to QATrace/TranslateTrace which both hit the Redux store for
 // the actual trace entity. Mocking Trace keeps these tests focused solely on
@@ -27,8 +73,8 @@ vi.mock("@/features/traces/trace", () => ({
 
 const makeEntry = (
   id: string,
-  displayType: URTEntry["content"]["displayType"] = "qa-trace",
-): URTEntry => ({
+  displayType: URTEntryUI["content"]["displayType"] = "qa-trace",
+): URTEntryUI => ({
   type: "trace",
   entryId: `entry-${id}`,
   content: { id, displayType },
