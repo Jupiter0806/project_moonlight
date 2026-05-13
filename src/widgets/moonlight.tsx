@@ -1,10 +1,8 @@
-import { AppHeaderPlaceholder } from "@/features/app-header/app-header";
 import { MoonlightReflectionList } from "@/features/moonlight/moonlight-reflection-list";
 
 export function Moonlight() {
   return (
     <div className="flex h-full w-full flex-col">
-      <AppHeaderPlaceholder />
       <div className="flex-1 p-4">
         <MoonlightReflectionList />
       </div>

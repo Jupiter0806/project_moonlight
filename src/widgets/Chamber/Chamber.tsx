@@ -1,11 +1,9 @@
 import { ChamberTraceList } from "@/features/ChamberTraceList/ChamberTraceList";
 import { ChamberInput } from "../ChamberInput/ChamberInput";
-import { AppHeaderPlaceholder } from "@/features/app-header/app-header";
 
 export function Chamber() {
   return (
     <div className="flex h-full w-full flex-col">
-      <AppHeaderPlaceholder />
       {/*
        * SCROLL VIEW — placeholder
        *
