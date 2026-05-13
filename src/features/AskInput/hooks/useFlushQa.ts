@@ -17,6 +17,7 @@ import {
   streamQaTraceAnswer,
   upsertChamberTrace,
 } from "@/lib/chamberTraceService";
+import { applyChamberTraceSyncSuccess } from "@/features/traces/hooks/chamberTraceSync";
 
 export function useFlushQa() {
   const [value, setValue] = useAtom(askInputAtom);
@@ -71,6 +72,7 @@ export function useFlushQa() {
       void (async () => {
         try {
           const res = await upsertChamberTrace(trace);
+          applyChamberTraceSyncSuccess(dispatch, id, res.cursor);
 
           if (res.answer) {
             dispatch(
@@ -99,9 +101,6 @@ export function useFlushQa() {
               ]),
             );
           }
-
-          dispatch(setTraceFetchStatus({ id, status: "done" }));
-          dispatch(clearTraceError({ id }));
         } catch (error) {
           dispatch(upsertTraces([{ ...trace, qaAnswerStatus: "failed" }]));
           dispatch(setTraceFetchStatus({ id, status: "error" }));
