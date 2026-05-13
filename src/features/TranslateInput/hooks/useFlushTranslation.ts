@@ -8,7 +8,7 @@ import {
   setTraceFetchStatus,
   upsertTraces,
 } from "@/store/slices/entitiesSlice";
-import { appendEntries, setTimelineCursor } from "@/store/slices/urtSlice";
+import { appendEntries } from "@/store/slices/urtSlice";
 import {
   sourceLanguageAtom,
   sourceTextAtom,
@@ -22,6 +22,7 @@ import {
 import { LanguageKey } from "@/lib/languages";
 import type { TranslationTrace } from "@/types/Trace";
 import { upsertChamberTrace } from "@/lib/chamberTraceService";
+import { applyChamberTraceSyncSuccess } from "@/features/traces/hooks/chamberTraceSync";
 
 /**
  * Returns a flush function that:
@@ -90,15 +91,7 @@ export function useFlushTranslation(): () => void {
 
       void upsertChamberTrace(trace)
         .then(({ cursor }) => {
-          dispatch(setTraceFetchStatus({ id, status: "done" }));
-          dispatch(clearTraceError({ id }));
-          dispatch(
-            setTimelineCursor({
-              timeline: "chamberTraces",
-              position: "bottom",
-              cursor,
-            }),
-          );
+          applyChamberTraceSyncSuccess(dispatch, id, cursor);
         })
         .catch((error) => {
           dispatch(setTraceFetchStatus({ id, status: "error" }));
