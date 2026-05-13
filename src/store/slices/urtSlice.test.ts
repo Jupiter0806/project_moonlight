@@ -11,18 +11,20 @@ import urtReducer, {
   selectURTFetchStatus,
   selectNewReflectionsBar,
 } from "./urtSlice";
-import {
-  fetchTimelineThunk,
-  type URTEntry,
-  type FetchTimelineResult,
-} from "@/store/thunks/fetchTimelineThunk";
+import { fetchTimelineThunk } from "@/store/thunks/fetchTimelineThunk";
+import type { URTEntryUI, URTEntry, FetchTimelineResult } from "@/store/types";
 import type { RootState } from "@/store/store";
 
-const makeEntry = (id: string): URTEntry => ({
+const makeEntry = (id: string): URTEntryUI => ({
   type: "trace",
   entryId: id,
   content: { id, displayType: "qa-trace" },
 });
+
+const getContentId = (entry: URTEntry | undefined) => {
+  if (!entry || entry.type === "timeline-cursor") return undefined;
+  return entry.content.id;
+};
 
 const makeResult = (
   overrides: Partial<FetchTimelineResult> = {},
@@ -152,10 +154,10 @@ describe("urtSlice", () => {
         }),
       );
 
-      expect(state.camphorReflections.entries[0]?.content.id).toBe(
+      expect(getContentId(state.camphorReflections.entries[0])).toBe(
         "server-reflection",
       );
-      expect(state.camphorReflections.entries[1]?.content.id).toBe(
+      expect(getContentId(state.camphorReflections.entries[1])).toBe(
         "existing-reflection",
       );
     });
@@ -191,7 +193,7 @@ describe("urtSlice", () => {
       );
 
       expect(state.camphorReflections.entries).toHaveLength(1);
-      expect(state.camphorReflections.entries[0]?.content.id).toBe(
+      expect(getContentId(state.camphorReflections.entries[0])).toBe(
         "existing-reflection",
       );
     });
@@ -245,7 +247,16 @@ describe("urtSlice", () => {
 
   describe("updateNewReflectionsBar", () => {
     it("updates count and instructions for the specified timeline", () => {
-      const bar = { count: 7, instructions: [{ type: "scroll", params: {} }] };
+      const bar: {
+        count: number;
+        instructions: Array<{
+          type: "add-entries";
+          params: { entries: URTEntry[] };
+        }>;
+      } = {
+        count: 7,
+        instructions: [{ type: "add-entries", params: { entries: [] } }],
+      };
       const state = urtReducer(
         undefined,
         updateNewReflectionsBar({ timeline: "camphorReflections", bar }),

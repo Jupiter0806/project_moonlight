@@ -17,11 +17,8 @@ import entitiesReducer, {
   selectTraceError,
   selectReflectionFetchStatus,
 } from "./entitiesSlice";
-import {
-  fetchTimelineThunk,
-  type TimelineApiResponse,
-  type FetchTimelineResult,
-} from "@/store/thunks/fetchTimelineThunk";
+import { fetchTimelineThunk } from "@/store/thunks/fetchTimelineThunk";
+import type { TimelineApiResponse, FetchTimelineResult } from "@/store/types";
 import type { RootState } from "@/store/store";
 import type { Trace, QATrace } from "@/types/Trace";
 import type { Reflection } from "@/types/Reflection";

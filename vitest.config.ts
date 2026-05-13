@@ -1,5 +1,6 @@
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
+import { fileURLToPath, URL } from "node:url";
 
 export default defineConfig({
   plugins: [
@@ -10,6 +11,12 @@ export default defineConfig({
   resolve: {
     // Resolves @/* path aliases from tsconfig.json natively
     tsconfigPaths: true,
+    alias: {
+      // Next.js runtime helper package is not needed in Vitest.
+      "server-only": fileURLToPath(
+        new URL("./src/tests/mocks/server-only.ts", import.meta.url),
+      ),
+    },
   },
   test: {
     environment: "jsdom",

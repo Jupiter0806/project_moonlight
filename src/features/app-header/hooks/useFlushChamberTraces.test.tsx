@@ -21,6 +21,7 @@ import { useFlushChamberTraces } from "./useFlushChamberTraces";
 import { flushChamberTraces } from "@/lib/chamberTraceService";
 import type { TranslationTrace } from "@/types/Trace";
 import type { RootState } from "@/store/store";
+import type { URTEntry } from "@/store/types";
 
 vi.mock("@/lib/chamberTraceService", () => ({
   flushChamberTraces: vi.fn(),
@@ -49,6 +50,11 @@ function makeTrace(id: string): TranslationTrace {
     targetLang: "zh-CN",
   };
 }
+
+const getContentId = (entry: URTEntry | undefined) => {
+  if (!entry || entry.type === "timeline-cursor") return undefined;
+  return entry.content.id;
+};
 
 describe("useFlushChamberTraces", () => {
   beforeEach(() => {
@@ -156,7 +162,9 @@ describe("useFlushChamberTraces", () => {
     const optimisticReflectionEntries =
       selectURTEntries("camphorReflections")(root());
     expect(
-      optimisticReflectionEntries[0]?.content.id.startsWith("temp-reflection-"),
+      getContentId(optimisticReflectionEntries[0])?.startsWith(
+        "temp-reflection-",
+      ),
     ).toBe(true);
 
     // Simulate a newer reflection arriving while flush is still pending.
@@ -192,9 +200,13 @@ describe("useFlushChamberTraces", () => {
 
     const settledReflectionEntries =
       selectURTEntries("camphorReflections")(root());
-    expect(settledReflectionEntries[0]?.content.id).toBe("incoming-reflection");
-    expect(settledReflectionEntries[1]?.content.id).toBe("reflection-1");
-    expect(settledReflectionEntries[2]?.content.id).toBe("existing-reflection");
+    expect(getContentId(settledReflectionEntries[0])).toBe(
+      "incoming-reflection",
+    );
+    expect(getContentId(settledReflectionEntries[1])).toBe("reflection-1");
+    expect(getContentId(settledReflectionEntries[2])).toBe(
+      "existing-reflection",
+    );
 
     const settledReflection = selectReflectionById(root(), "reflection-1");
     expect(settledReflection?.summary).toBe("summary");
@@ -264,7 +276,7 @@ describe("useFlushChamberTraces", () => {
     const rolledBackReflectionEntries =
       selectURTEntries("camphorReflections")(root());
     expect(rolledBackReflectionEntries).toHaveLength(1);
-    expect(rolledBackReflectionEntries[0]?.content.id).toBe(
+    expect(getContentId(rolledBackReflectionEntries[0])).toBe(
       "existing-reflection",
     );
 
