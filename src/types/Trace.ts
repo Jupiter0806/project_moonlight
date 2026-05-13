@@ -10,8 +10,11 @@ interface BaseTrace {
   reflection: string;
 }
 
+export type QAAnswerStatus = "pending" | "completed" | "failed";
+
 export interface QATrace extends BaseTrace {
   type: "qa";
+  qaAnswerStatus?: QAAnswerStatus;
 }
 
 export interface TranslationTrace extends BaseTrace {
