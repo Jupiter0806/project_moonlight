@@ -2,15 +2,9 @@ import { AppSidebarTrigger } from "../app-siderbar/app-sidebar-trigger";
 import { HeaderTitle } from "./components/header-title";
 import { HeaderRightActionButtons } from "./components/header-right-action-btns";
 
-const AvoidHeaderSpacingClassname = "mt-16";
-
-export function AppHeaderPlaceholder() {
-  return <div className={`${AvoidHeaderSpacingClassname}`} />;
-}
-
 export function AppHeader() {
   return (
-    <div className="bg-background fixed z-10 flex w-full max-w-5xl items-center justify-between">
+    <div className="bg-background sticky top-0 z-10 flex h-16 w-full items-center justify-between">
       <LeftActions />
       <HeaderTitle />
       <HeaderRightActionButtons />
