@@ -66,8 +66,8 @@ export async function POST(
     scanLimit: 120,
   });
 
-  // If answer already exists, stream it back immediately for idempotent retries.
-  if (trace.a) {
+  // If answer is already completed, stream it back immediately for idempotent retries.
+  if (trace.qaAnswerStatus === "completed" && trace.a) {
     const cachedStream = new ReadableStream<Uint8Array>({
       start(controller) {
         controller.enqueue(encodeEvent({ type: "chunk", delta: trace.a }));
@@ -118,15 +118,27 @@ export async function POST(
           await upsertTraceInUserChamber(db, uid, {
             ...trace,
             a: answer,
+            qaAnswerStatus: "completed",
           });
 
           controller.enqueue(encodeEvent({ type: "done" }));
+        } else {
+          await upsertTraceInUserChamber(db, uid, {
+            ...trace,
+            a: answer,
+            qaAnswerStatus: "failed",
+          });
         }
       } catch (error) {
         const message =
           error instanceof Error
             ? error.message
             : "Failed to stream answer for QA trace";
+        await upsertTraceInUserChamber(db, uid, {
+          ...trace,
+          a: answer,
+          qaAnswerStatus: "failed",
+        });
         controller.enqueue(encodeEvent({ type: "error", message }));
       } finally {
         controller.close();

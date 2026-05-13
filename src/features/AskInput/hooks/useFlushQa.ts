@@ -38,6 +38,7 @@ export function useFlushQa() {
       user: userId,
       reflection: "",
       type: "qa",
+      qaAnswerStatus: "pending",
     };
 
     dispatch(upsertTraces([trace]));
@@ -72,18 +73,37 @@ export function useFlushQa() {
           const res = await upsertChamberTrace(trace);
 
           if (res.answer) {
-            dispatch(upsertTraces([{ ...trace, a: res.answer }]));
+            dispatch(
+              upsertTraces([
+                {
+                  ...trace,
+                  a: res.answer,
+                  qaAnswerStatus: "completed",
+                },
+              ]),
+            );
           } else {
             let streamedAnswer = "";
             await streamQaTraceAnswer(id, (delta) => {
               streamedAnswer += delta;
               dispatch(upsertTraces([{ ...trace, a: streamedAnswer }]));
             });
+
+            dispatch(
+              upsertTraces([
+                {
+                  ...trace,
+                  a: streamedAnswer,
+                  qaAnswerStatus: "completed",
+                },
+              ]),
+            );
           }
 
           dispatch(setTraceFetchStatus({ id, status: "done" }));
           dispatch(clearTraceError({ id }));
         } catch (error) {
+          dispatch(upsertTraces([{ ...trace, qaAnswerStatus: "failed" }]));
           dispatch(setTraceFetchStatus({ id, status: "error" }));
           dispatch(
             setTraceError({

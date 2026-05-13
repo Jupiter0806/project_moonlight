@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { QATrace as QATraceType } from "@/types/Trace";
 import { AiAnswerDisplay } from "../ai-answer-display";
+import { useRetryQaTrace } from "./hooks/useRetryQaTrace";
 
 export function QATrace({ traceId, className }: CommonTraceProps) {
   const trace = useAppSelector((state) => selectTraceById(state, traceId)) as
@@ -23,6 +24,9 @@ export function QATrace({ traceId, className }: CommonTraceProps) {
 
   const fetchStatus = useAppSelector(selectTraceFetchStatus(traceId));
   const fetchError = useAppSelector(selectTraceError(traceId));
+  const handleRetry = useRetryQaTrace(trace);
+  const shouldShowRetry =
+    fetchStatus === "error" || trace?.qaAnswerStatus === "failed";
 
   if (!trace) return null;
 
@@ -38,11 +42,17 @@ export function QATrace({ traceId, className }: CommonTraceProps) {
         {fetchStatus === "loading" && (
           <p className="text-sm text-gray-500">{fetchStatus}</p>
         )}
-        {fetchStatus === "error" && (
-          <p className="text-sm text-red-500">
-            Failed to fetch answer. Please try again.
-            {fetchError && ` Error: ${fetchError}`}
-          </p>
+        {shouldShowRetry && (
+          <div className="mt-2 flex items-center justify-between gap-2 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-600">
+            <span>{fetchError || "Failed to fetch answer."}</span>
+            <button
+              type="button"
+              className="font-semibold underline"
+              onClick={handleRetry}
+            >
+              Retry
+            </button>
+          </div>
         )}
       </CardContent>
     </Card>

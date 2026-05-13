@@ -1,3 +1,8 @@
+/**
+ * NOT in use
+ * use /api/chamber/traces/traceId/qa-stream instead for streaming QA answers
+ */
+
 import { getRequestKey } from "@/lib/getRequestKey";
 import { qaRatelimit } from "@/lib/rateLimit";
 import { NextRequest, NextResponse } from "next/server";

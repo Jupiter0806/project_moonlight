@@ -15,6 +15,7 @@ import {
   withRateLimitHeaders,
 } from "@/lib/apis-helpers";
 import { buildCursor } from "@/server/helpers/pagination-helpers-v2";
+import { QATrace } from "@/types/Trace";
 
 /**
  * GET /api/chamber/traces
@@ -108,6 +109,7 @@ export async function POST(request: NextRequest) {
       status: string;
       traceId: string;
       answer?: string;
+      qaAnswerStatus?: QATrace["qaAnswerStatus"];
     } = {
       status: "ok",
       traceId: existingTrace.id,
@@ -115,7 +117,14 @@ export async function POST(request: NextRequest) {
     if (existingTrace.type === "qa" && existingTrace.a) {
       existingResponse.answer = existingTrace.a;
     }
+    if (existingTrace.type === "qa") {
+      existingResponse.qaAnswerStatus = existingTrace.qaAnswerStatus;
+    }
     return NextResponse.json(existingResponse);
+  }
+
+  if (trace.type === "qa") {
+    trace.qaAnswerStatus = trace.a.trim() ? "completed" : "pending";
   }
 
   try {
@@ -129,6 +138,7 @@ export async function POST(request: NextRequest) {
     status: string;
     traceId: string;
     answer?: string;
+    qaAnswerStatus?: QATrace["qaAnswerStatus"];
     cursor: string;
   } = {
     status: "ok",
@@ -137,6 +147,7 @@ export async function POST(request: NextRequest) {
   };
   if (trace.type === "qa") {
     response.answer = trace.a;
+    response.qaAnswerStatus = trace.qaAnswerStatus;
   }
 
   return NextResponse.json(response);

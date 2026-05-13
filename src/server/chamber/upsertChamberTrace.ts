@@ -9,6 +9,10 @@ export interface UpsertChamberTraceBody {
   trace?: unknown;
 }
 
+function isQaAnswerStatus(value: unknown): boolean {
+  return value === "pending" || value === "completed" || value === "failed";
+}
+
 export function isTranslationTrace(value: unknown): value is Trace {
   if (!value || typeof value !== "object") return false;
 
@@ -33,6 +37,8 @@ export function isTranslationTrace(value: unknown): value is Trace {
     typeof trace.a === "string" &&
     typeof trace.user === "string" &&
     typeof trace.reflection === "string" &&
+    (trace.qaAnswerStatus === undefined ||
+      isQaAnswerStatus(trace.qaAnswerStatus)) &&
     trace.type === "qa"
   );
 }
@@ -116,6 +122,7 @@ export async function getQaHistoryInUserChamber(
       (trace) =>
         trace.type === "qa" &&
         trace.id !== options?.excludeTraceId &&
+        trace.qaAnswerStatus !== "failed" &&
         Boolean(trace.q?.trim()) &&
         Boolean(trace.a?.trim()),
     )
