@@ -10,6 +10,11 @@ interface UpsertChamberTraceResponse {
   answer?: string;
 }
 
+type QaTraceStreamEvent =
+  | { type: "chunk"; delta: string }
+  | { type: "done" }
+  | { type: "error"; message: string };
+
 export async function upsertChamberTrace(
   trace: Trace,
 ): Promise<UpsertChamberTraceResponse> {
@@ -36,6 +41,82 @@ export async function upsertChamberTrace(
   }
 
   return (await res.json()) as UpsertChamberTraceResponse;
+}
+
+export async function streamQaTraceAnswer(
+  traceId: string,
+  onChunk: (delta: string) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  const res = await fetch(
+    `/api/chamber/traces/${encodeURIComponent(traceId)}/qa-stream`,
+    {
+      method: "POST",
+      signal,
+    },
+  );
+
+  if (!res.ok) {
+    const contentType = res.headers.get("content-type");
+    let message = "Failed to stream QA trace answer";
+
+    if (contentType?.includes("application/json")) {
+      try {
+        const data = (await res.json()) as { error?: string };
+        message = data.error || message;
+      } catch {
+        // Ignore JSON parse failures so the original HTTP error is preserved.
+      }
+    }
+
+    throw new Error(message);
+  }
+
+  if (!res.body) {
+    throw new Error("QA stream response body is empty");
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  const handleLine = (line: string): boolean => {
+    if (!line.trim()) return false;
+
+    const event = JSON.parse(line) as QaTraceStreamEvent;
+    if (event.type === "chunk") {
+      onChunk(event.delta);
+      return false;
+    }
+
+    if (event.type === "error") {
+      throw new Error(event.message || "Failed to stream QA trace answer");
+    }
+
+    return event.type === "done";
+  };
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) {
+      break;
+    }
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? "";
+
+    for (const line of lines) {
+      if (handleLine(line)) {
+        return;
+      }
+    }
+  }
+
+  buffer += decoder.decode();
+  if (buffer.trim()) {
+    handleLine(buffer);
+  }
 }
 
 export async function flushChamberTraces(): Promise<{

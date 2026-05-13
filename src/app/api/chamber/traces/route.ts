@@ -9,7 +9,6 @@ import {
   upsertTraceInUserChamber,
 } from "@/server/chamber/upsertChamberTrace";
 import { listChamberTraces } from "@/server/chamber/listChamberTraces";
-import { fetchAnswer } from "@/server/chamber/fetchAnswer";
 import {
   authenticate,
   parsePagination,
@@ -61,7 +60,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/chamber/traces
- * Upserts one translation trace into the authenticated user's private chamber.
+ * Upserts one trace (translation or QA) into the authenticated user's private chamber.
  */
 export async function POST(request: NextRequest) {
   const { success, limit, remaining, reset } =
@@ -117,18 +116,6 @@ export async function POST(request: NextRequest) {
       existingResponse.answer = existingTrace.a;
     }
     return NextResponse.json(existingResponse);
-  }
-
-  if (trace.type === "qa" && !trace.a) {
-    try {
-      trace.a = await fetchAnswer(trace.q);
-    } catch (error) {
-      console.error("Failed to fetch answer for QA trace", error);
-      return NextResponse.json(
-        { error: "Failed to fetch answer for QA trace" },
-        { status: 500 },
-      );
-    }
   }
 
   try {

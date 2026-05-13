@@ -84,3 +84,49 @@ export async function getTraceInUserChamber(
   if (!doc.exists) return null;
   return serializeFirestoreValue(doc.data() as Trace);
 }
+
+export interface QaHistoryMessage {
+  role: "user" | "model";
+  parts: { text: string }[];
+}
+
+export async function getQaHistoryInUserChamber(
+  db: Firestore,
+  uid: string,
+  options?: {
+    excludeTraceId?: string;
+    maxTurns?: number;
+    scanLimit?: number;
+  },
+): Promise<QaHistoryMessage[]> {
+  const maxTurns = options?.maxTurns ?? 12;
+  const scanLimit = options?.scanLimit ?? 80;
+
+  const snapshot = await db
+    .collection("chambers")
+    .doc(uid)
+    .collection("traces")
+    .orderBy("createdAt", "desc")
+    .limit(Math.max(scanLimit, maxTurns))
+    .get();
+
+  const traces = snapshot.docs
+    .map((doc) => serializeFirestoreValue(doc.data() as Trace))
+    .filter(
+      (trace) =>
+        trace.type === "qa" &&
+        trace.id !== options?.excludeTraceId &&
+        Boolean(trace.q?.trim()) &&
+        Boolean(trace.a?.trim()),
+    )
+    .slice(0, maxTurns)
+    .reverse();
+
+  const history: QaHistoryMessage[] = [];
+  for (const trace of traces) {
+    history.push({ role: "user", parts: [{ text: trace.q }] });
+    history.push({ role: "model", parts: [{ text: trace.a }] });
+  }
+
+  return history;
+}

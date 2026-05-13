@@ -31,7 +31,7 @@ export function QATrace({ traceId, className }: CommonTraceProps) {
       <CardHeader>
         <CardTitle className="bg-primary-foreground">{trace.q}</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="min-h-24">
         <CardDescription>
           {trace.a && <AiAnswerDisplay answer={trace.a} />}
         </CardDescription>
