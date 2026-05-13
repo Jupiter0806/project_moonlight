@@ -13,7 +13,10 @@ import {
 } from "@/store/slices/entitiesSlice";
 import { appendEntries } from "@/store/slices/urtSlice";
 import { QATrace } from "@/types/Trace";
-import { upsertChamberTrace } from "@/lib/chamberTraceService";
+import {
+  streamQaTraceAnswer,
+  upsertChamberTrace,
+} from "@/lib/chamberTraceService";
 
 export function useFlushQa() {
   const [value, setValue] = useAtom(askInputAtom);
@@ -64,15 +67,23 @@ export function useFlushQa() {
       dispatch(clearTraceError({ id }));
       dispatch(setTraceFetchStatus({ id, status: "loading" }));
 
-      void upsertChamberTrace(trace)
-        .then((res) => {
+      void (async () => {
+        try {
+          const res = await upsertChamberTrace(trace);
+
           if (res.answer) {
             dispatch(upsertTraces([{ ...trace, a: res.answer }]));
+          } else {
+            let streamedAnswer = "";
+            await streamQaTraceAnswer(id, (delta) => {
+              streamedAnswer += delta;
+              dispatch(upsertTraces([{ ...trace, a: streamedAnswer }]));
+            });
           }
+
           dispatch(setTraceFetchStatus({ id, status: "done" }));
           dispatch(clearTraceError({ id }));
-        })
-        .catch((error) => {
+        } catch (error) {
           dispatch(setTraceFetchStatus({ id, status: "error" }));
           dispatch(
             setTraceError({
@@ -81,7 +92,8 @@ export function useFlushQa() {
                 error instanceof Error ? error.message : "Failed to sync trace",
             }),
           );
-        });
+        }
+      })();
     }
 
     setValue("");

@@ -27,6 +27,8 @@ export function AskInput() {
 
   const handleSubmit = async (formData: FormData) => {
     if (!value.trim()) return;
+
+    // this action not doing anything
     await formAction(formData);
     flushQa();
     setValue("");
