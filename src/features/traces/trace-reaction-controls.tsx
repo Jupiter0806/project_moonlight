@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectTraceById, upsertTraces } from "@/store/slices/entitiesSlice";
 import { updateTraceLiked } from "@/lib/chamberTraceService";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { BiDislike, BiLike, BiSolidDislike, BiSolidLike } from "react-icons/bi";
 import { IconButton } from "@/components/icon-button";
 
@@ -17,40 +17,50 @@ export function TraceReactionControls({
 }: TraceReactionControlsProps) {
   const dispatch = useAppDispatch();
   const trace = useAppSelector((state) => selectTraceById(state, traceId));
-  const [isSaving, setIsSaving] = useState(false);
   const latestRequestIdRef = useRef(0);
+  const likedRequestAbortRef = useRef<AbortController | null>(null);
 
   if (!trace) return null;
 
   const liked = trace.liked ?? null;
 
   const handleSetReaction = async (reaction: boolean) => {
-    if (isSaving) return;
-
     const previousLiked = trace.liked ?? null;
     const nextLiked = previousLiked === reaction ? null : reaction;
     const requestId = latestRequestIdRef.current + 1;
     latestRequestIdRef.current = requestId;
 
+    // Latest-intent wins: cancel any previous liked update request in flight.
+    likedRequestAbortRef.current?.abort();
+    const abortController = new AbortController();
+    likedRequestAbortRef.current = abortController;
+
     dispatch(upsertTraces([{ ...trace, liked: nextLiked }]));
-    setIsSaving(true);
 
     try {
-      const response = await updateTraceLiked(trace.id, nextLiked);
+      const response = await updateTraceLiked(
+        trace.id,
+        nextLiked,
+        abortController.signal,
+      );
 
       // Reconcile optimistic state with server-authoritative response and
       // ignore outdated responses from older requests.
       if (latestRequestIdRef.current === requestId) {
         dispatch(upsertTraces([{ ...trace, liked: response.liked }]));
       }
-    } catch {
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+
       // Keep UX snappy with optimistic update; rollback if persistence fails.
       if (latestRequestIdRef.current === requestId) {
         dispatch(upsertTraces([{ ...trace, liked: previousLiked }]));
       }
     } finally {
-      if (latestRequestIdRef.current === requestId) {
-        setIsSaving(false);
+      if (likedRequestAbortRef.current === abortController) {
+        likedRequestAbortRef.current = null;
       }
     }
   };
@@ -62,7 +72,6 @@ export function TraceReactionControls({
         size="icon-2xs"
         variant="ghost"
         aria-pressed={liked === true}
-        disabled={isSaving}
         className={cn(
           "text-muted-foreground/65 hover:bg-muted/20 hover:text-muted-foreground",
           liked === true && "bg-muted/35 text-foreground/75 hover:bg-muted/40",
@@ -76,7 +85,6 @@ export function TraceReactionControls({
         size="icon-2xs"
         variant="ghost"
         aria-pressed={liked === false}
-        disabled={isSaving}
         className={cn(
           "text-muted-foreground/65 hover:bg-muted/20 hover:text-muted-foreground",
           liked === false && "bg-muted/35 text-foreground/75 hover:bg-muted/40",
