@@ -16,6 +16,12 @@ interface UpdateTraceLikedResponse {
   liked: boolean | null;
 }
 
+interface UpdateTraceCorrectionResponse {
+  status: "ok";
+  traceId: string;
+  correction: string | null;
+}
+
 type QaTraceStreamEvent =
   | { type: "chunk"; delta: string }
   | { type: "done" }
@@ -155,6 +161,40 @@ export async function updateTraceLiked(
   }
 
   return (await res.json()) as UpdateTraceLikedResponse;
+}
+
+export async function updateTranslationTraceCorrection(
+  traceId: string,
+  correction: string | null,
+  signal?: AbortSignal,
+): Promise<UpdateTraceCorrectionResponse> {
+  const res = await fetch(
+    `/api/chamber/traces/${encodeURIComponent(traceId)}/correction`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ correction }),
+      signal,
+    },
+  );
+
+  if (!res.ok) {
+    const contentType = res.headers.get("content-type");
+    let message = "Failed to update translation correction";
+
+    if (contentType?.includes("application/json")) {
+      try {
+        const data = (await res.json()) as { error?: string };
+        message = data.error || message;
+      } catch {
+        // Ignore JSON parse failures so the original HTTP error is preserved.
+      }
+    }
+
+    throw new Error(message);
+  }
+
+  return (await res.json()) as UpdateTraceCorrectionResponse;
 }
 
 export async function flushChamberTraces(): Promise<{

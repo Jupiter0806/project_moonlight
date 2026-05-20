@@ -5,15 +5,19 @@ import { chamberTraceUpdatesRatelimit } from "@/lib/rateLimit";
 import { authenticate, withRateLimitHeaders } from "@/lib/apis-helpers";
 import {
   getTraceInUserChamber,
-  updateTraceLikedInUserChamber,
+  updateTranslationTraceCorrectionInUserChamber,
 } from "@/server/chamber/upsertChamberTrace";
 
-interface UpdateLikedBody {
-  liked?: unknown;
+interface UpdateCorrectionBody {
+  correction?: unknown;
 }
 
-function isValidLikedValue(value: unknown): value is boolean | null {
-  return value === null || typeof value === "boolean";
+function normalizeCorrection(value: unknown): string | null {
+  if (value === null) return null;
+  if (typeof value !== "string") return null;
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
 }
 
 export async function PATCH(
@@ -38,14 +42,16 @@ export async function PATCH(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = (await request.json()) as UpdateLikedBody;
+  const body = (await request.json()) as UpdateCorrectionBody;
 
-  if (!isValidLikedValue(body.liked)) {
+  if (!(body.correction === null || typeof body.correction === "string")) {
     return NextResponse.json(
-      { error: "Invalid liked payload" },
+      { error: "Invalid correction payload" },
       { status: 400 },
     );
   }
+
+  const correction = normalizeCorrection(body.correction);
 
   const { traceId } = await context.params;
   const db = getAdminFirestore();
@@ -55,16 +61,28 @@ export async function PATCH(
     return NextResponse.json({ error: "Trace not found" }, { status: 404 });
   }
 
+  if (existingTrace.type !== "translation") {
+    return NextResponse.json(
+      { error: "Trace is not a translation trace" },
+      { status: 400 },
+    );
+  }
+
   try {
-    await updateTraceLikedInUserChamber(db, uid, traceId, body.liked);
+    await updateTranslationTraceCorrectionInUserChamber(
+      db,
+      uid,
+      traceId,
+      correction,
+    );
 
     return NextResponse.json({
       status: "ok",
       traceId,
-      liked: body.liked,
+      correction,
     });
   } catch (error) {
-    console.error("Failed to update trace liked status", error);
+    console.error("Failed to update translation correction", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
