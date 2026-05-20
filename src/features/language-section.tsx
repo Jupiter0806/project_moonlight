@@ -8,10 +8,18 @@ export function LanguageSection({
   lang,
   value,
   className,
+  showDictionary = true,
+  traceId,
 }: {
   lang: LanguageKey;
   value: string;
+  showDictionary?: boolean;
+  traceId?: string;
 } & WithClassName) {
+  // Chinese dictionary lookup is not implemented yet, so hide dictionary actions
+  // for Chinese sections until the backend/data source is available.
+  const canUseDictionary = showDictionary && lang !== "zh-CN";
+
   return (
     <div className={cn("flex flex-col gap-4", className)}>
       <div>
@@ -20,7 +28,9 @@ export function LanguageSection({
       </div>
       <div className="flex gap-2">
         <SpeechThis text={value} language={lang} />
-        <DictionaryThis text={value} language={lang} />
+        {canUseDictionary && (
+          <DictionaryThis text={value} language={lang} traceId={traceId} />
+        )}
       </div>
     </div>
   );

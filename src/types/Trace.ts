@@ -24,6 +24,9 @@ export interface TranslationTrace extends BaseTrace {
   type: "translation";
   sourceLang: LanguageKey;
   targetLang: LanguageKey;
+  // this is designed to pick up a translation from dictionary manually,
+  // but currently dictionary only has english, so here will be english explanation
+  correction?: string;
 }
 
 export type Trace = QATrace | TranslationTrace;

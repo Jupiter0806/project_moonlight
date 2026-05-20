@@ -13,6 +13,10 @@ function isLikedValue(value: unknown): value is boolean | null {
   return value === null || typeof value === "boolean";
 }
 
+function isCorrectionValue(value: unknown): value is string {
+  return typeof value === "string";
+}
+
 function isQaAnswerStatus(value: unknown): boolean {
   return value === "pending" || value === "completed" || value === "failed";
 }
@@ -30,6 +34,7 @@ export function isTranslationTrace(value: unknown): value is Trace {
       typeof trace.user === "string" &&
       typeof trace.reflection === "string" &&
       (trace.liked === undefined || isLikedValue(trace.liked)) &&
+      (trace.correction === undefined || isCorrectionValue(trace.correction)) &&
       trace.type === "translation" &&
       typeof trace.sourceLang === "string" &&
       typeof trace.targetLang === "string"
@@ -96,6 +101,42 @@ export async function getTraceInUserChamber(
 
   if (!doc.exists) return null;
   return serializeFirestoreValue(doc.data() as Trace);
+}
+
+export async function updateTraceLikedInUserChamber(
+  db: Firestore,
+  uid: string,
+  traceId: string,
+  liked: boolean | null,
+): Promise<void> {
+  const traceRef = db
+    .collection("chambers")
+    .doc(uid)
+    .collection("traces")
+    .doc(traceId);
+
+  await traceRef.update({
+    liked,
+    syncedAt: FieldValue.serverTimestamp(),
+  });
+}
+
+export async function updateTranslationTraceCorrectionInUserChamber(
+  db: Firestore,
+  uid: string,
+  traceId: string,
+  correction: string | null,
+): Promise<void> {
+  const traceRef = db
+    .collection("chambers")
+    .doc(uid)
+    .collection("traces")
+    .doc(traceId);
+
+  await traceRef.update({
+    correction: correction === null ? FieldValue.delete() : correction,
+    syncedAt: FieldValue.serverTimestamp(),
+  });
 }
 
 export interface QaHistoryMessage {
