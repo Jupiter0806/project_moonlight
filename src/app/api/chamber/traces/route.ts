@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
   }
 
   const trace = body.trace;
+  trace.liked = trace.liked ?? null;
 
   if (trace.user !== uid) {
     return NextResponse.json(

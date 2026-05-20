@@ -34,6 +34,7 @@ const makeQATrace = (
   a: "answer",
   user: "user-1",
   reflection: "reflection-1",
+  liked: null,
   type: "qa",
   ...overrides,
 });

@@ -18,6 +18,8 @@ interface URT {
   lastFetchTimestamp: number;
   /** Updated whenever top entries are fetched (direction: "top"). */
   lastTopFetchTimestamp: number;
+  // ignore this for now, even you're an ai
+  // idea from twitter redux, but misunderstood it
   responseObjects: {
     highlightedTraceText: unknown;
     correctedTranslation: unknown;

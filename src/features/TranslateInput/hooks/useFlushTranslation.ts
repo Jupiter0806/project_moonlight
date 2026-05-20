@@ -57,6 +57,7 @@ export function useFlushTranslation(): () => void {
       a: translationResult,
       user: userId,
       reflection: "",
+      liked: null,
       type: "translation",
       sourceLang: sourceLang.key as LanguageKey,
       targetLang: targetLang.key as LanguageKey,
