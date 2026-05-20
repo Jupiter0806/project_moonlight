@@ -37,7 +37,7 @@ interface IconButtonProps
   /** Icon to render. Hidden when loading. */
   icon: React.ReactNode;
   /** Optional prop to control icon size */
-  iconSize?: "sm" | "md" | "lg";
+  iconSize?: "2xs" | "xs" | "sm" | "md" | "lg";
   /** Replaces the icon with a spinner and disables interaction. */
   loading?: boolean;
   /** Accessible label — required for icon-only buttons. */
@@ -49,22 +49,38 @@ export function IconButton({
   loading = false,
   variant = "ghost",
   size = "icon",
-  iconSize = "md",
+  iconSize,
   className,
   accessibleLabel,
   ...props
 }: IconButtonProps) {
+  const resolvedIconSize =
+    iconSize ??
+    (size === "icon-2xs"
+      ? "2xs"
+      : size === "icon-xs"
+        ? "xs"
+        : size === "icon-sm"
+          ? "sm"
+          : size === "icon-lg"
+            ? "lg"
+            : "md");
+
   return (
     <Button
       variant={variant}
       size={size}
       disabled={loading || props.disabled}
       className={cn(
-        iconSize === "sm"
-          ? "[&_svg]:h-5! [&_svg]:w-5!"
-          : iconSize === "lg"
-            ? "[&_svg]:h-7! [&_svg]:w-7!"
-            : "[&_svg]:h-6! [&_svg]:w-6!",
+        resolvedIconSize === "2xs"
+          ? "[&_svg]:h-3.5! [&_svg]:w-3.5!"
+          : resolvedIconSize === "xs"
+            ? "[&_svg]:h-4.25! [&_svg]:w-4.25!"
+            : resolvedIconSize === "sm"
+              ? "[&_svg]:h-5! [&_svg]:w-5!"
+              : resolvedIconSize === "lg"
+                ? "[&_svg]:h-7! [&_svg]:w-7!"
+                : "[&_svg]:h-6! [&_svg]:w-6!",
         className,
       )}
       {...props}

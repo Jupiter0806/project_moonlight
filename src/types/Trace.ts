@@ -8,6 +8,9 @@ interface BaseTrace {
   a: string;
   user: string;
   reflection: string;
+  // null means no comment, true means liked, false means disliked
+  // when disliked, it won't be used in summarization
+  liked: boolean | null;
 }
 
 export type QAAnswerStatus = "pending" | "completed" | "failed";

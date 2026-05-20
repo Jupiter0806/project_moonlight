@@ -8,4 +8,4 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Project Context
 
-ALWAYS consult the [../README.md](../README.md) and [README.md](README.md) file to understand the project architecture, data models, and API endpoints before starting any task.
+ALWAYS consult the [./README.md](./README.md) and [README.md](README.md) file to understand the project architecture, data models, and API endpoints before starting any task.

@@ -9,6 +9,10 @@ export interface UpsertChamberTraceBody {
   trace?: unknown;
 }
 
+function isLikedValue(value: unknown): value is boolean | null {
+  return value === null || typeof value === "boolean";
+}
+
 function isQaAnswerStatus(value: unknown): boolean {
   return value === "pending" || value === "completed" || value === "failed";
 }
@@ -25,6 +29,7 @@ export function isTranslationTrace(value: unknown): value is Trace {
       typeof trace.a === "string" &&
       typeof trace.user === "string" &&
       typeof trace.reflection === "string" &&
+      (trace.liked === undefined || isLikedValue(trace.liked)) &&
       trace.type === "translation" &&
       typeof trace.sourceLang === "string" &&
       typeof trace.targetLang === "string"
@@ -37,6 +42,7 @@ export function isTranslationTrace(value: unknown): value is Trace {
     typeof trace.a === "string" &&
     typeof trace.user === "string" &&
     typeof trace.reflection === "string" &&
+    (trace.liked === undefined || isLikedValue(trace.liked)) &&
     (trace.qaAnswerStatus === undefined ||
       isQaAnswerStatus(trace.qaAnswerStatus)) &&
     trace.type === "qa"
@@ -65,6 +71,7 @@ export async function upsertTraceInUserChamber(
     .set(
       {
         ...trace,
+        liked: trace.liked ?? null,
         user: uid,
         uid,
         chamberId: uid,

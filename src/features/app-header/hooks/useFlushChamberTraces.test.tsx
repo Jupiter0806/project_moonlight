@@ -45,6 +45,7 @@ function makeTrace(id: string): TranslationTrace {
     a: "hola",
     user: "user-1",
     reflection: "",
+    liked: null,
     type: "translation",
     sourceLang: "en",
     targetLang: "zh-CN",

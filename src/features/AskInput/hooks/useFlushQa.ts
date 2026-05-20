@@ -38,6 +38,7 @@ export function useFlushQa() {
       a: "",
       user: userId,
       reflection: "",
+      liked: null,
       type: "qa",
       qaAnswerStatus: "pending",
     };

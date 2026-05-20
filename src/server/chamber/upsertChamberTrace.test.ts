@@ -13,6 +13,7 @@ const trace: TranslationTrace = {
   a: "你好",
   user: "user-1",
   reflection: "",
+  liked: null,
   type: "translation",
   sourceLang: "en",
   targetLang: "zh-CN",
