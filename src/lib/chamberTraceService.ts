@@ -134,6 +134,7 @@ export async function streamQaTraceAnswer(
 export async function updateTraceLiked(
   traceId: string,
   liked: boolean | null,
+  signal?: AbortSignal,
 ): Promise<UpdateTraceLikedResponse> {
   const res = await fetch(
     `/api/chamber/traces/${encodeURIComponent(traceId)}/liked`,
@@ -141,6 +142,7 @@ export async function updateTraceLiked(
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ liked }),
+      signal,
     },
   );
 
