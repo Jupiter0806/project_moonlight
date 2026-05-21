@@ -13,6 +13,18 @@ export function Moonlight() {
   const [isLoading, setIsLoading] = useState(true);
   const [moonlight, setMoonlight] = useState<MoonlightData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [now, setNow] = useState(() => new Date());
+  const canGenerateMoonlight = now.getHours() >= 22;
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(new Date());
+    }, 60_000);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
 
   const loadTodayMoonlight = useCallback(async () => {
     setIsLoading(true);
@@ -37,6 +49,13 @@ export function Moonlight() {
   }, [loadTodayMoonlight]);
 
   const handleGenerate = useCallback(async () => {
+    if (!canGenerateMoonlight) {
+      setError(
+        "Moonlight opens at 10:00 PM. Keep learning and come back tonight.",
+      );
+      return;
+    }
+
     try {
       const data = await generateTodayMoonlight();
       setMoonlight(data.moonlight);
@@ -45,7 +64,7 @@ export function Moonlight() {
         e instanceof Error ? e.message : "Failed to generate today's moonlight";
       setError(message);
     }
-  }, []);
+  }, [canGenerateMoonlight]);
 
   return (
     <div className="flex h-full w-full flex-col items-center p-6">
@@ -63,6 +82,7 @@ export function Moonlight() {
       ) : (
         <MoonlightEntryWidget
           isLoading={isLoading}
+          canGenerateMoonlight={canGenerateMoonlight}
           error={error}
           onGenerate={handleGenerate}
         />
