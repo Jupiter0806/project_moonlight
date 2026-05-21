@@ -58,15 +58,55 @@ export async function flushChamberTraces(
     );
   }
 
+  const summaryInputTraces = traces.filter((trace) => trace.liked !== false);
+
+  // QA should generally lead reflection summaries; translation is supporting context.
+  const summarySortedTraces = [...summaryInputTraces].sort((a, b) => {
+    const aType = typeof a.type === "string" ? a.type.toLowerCase() : "";
+    const bType = typeof b.type === "string" ? b.type.toLowerCase() : "";
+
+    const aTypePriority = aType === "qa" ? 0 : aType === "translation" ? 1 : 2;
+    const bTypePriority = bType === "qa" ? 0 : bType === "translation" ? 1 : 2;
+
+    if (aTypePriority !== bTypePriority) {
+      return aTypePriority - bTypePriority;
+    }
+
+    const aLikedPriority = a.liked === true ? 0 : 1;
+    const bLikedPriority = b.liked === true ? 0 : 1;
+
+    if (aLikedPriority !== bLikedPriority) {
+      return aLikedPriority - bLikedPriority;
+    }
+
+    return 0;
+  });
+
+  const hasTranslationFocus =
+    summaryInputTraces.length > 0 &&
+    summaryInputTraces.every(
+      (trace) =>
+        typeof trace.type === "string" &&
+        trace.type.toLowerCase() === "translation",
+    );
+
   const summaryPrompt = [
-    "Summarize this reflection based on the traces below in 2-4 concise sentences.",
-    "Highlight key themes, intent, and outcomes.",
+    "You are writing a reflection recall note.",
+    "Output exactly 1-2 short sentences, plain text only.",
+    "Keep it compact and scannable: max 35 words total.",
+    "Focus on what was learned, verified, or corrected.",
+    "Do not use bullets, labels, or quotes.",
+    hasTranslationFocus
+      ? "This is a translation-focused reflection, so translation traces are primary."
+      : "QA traces are primary; translation traces are supporting context only.",
     "",
-    ...traces.map((trace, index) => {
+    "Traces:",
+    ...summarySortedTraces.map((trace, index) => {
       const type =
         typeof trace.type === "string" ? trace.type.toUpperCase() : "TRACE";
       const question = typeof trace.q === "string" ? trace.q : "";
       const answer = typeof trace.a === "string" ? trace.a : "";
+      const liked = trace.liked === true ? "liked" : "neutral";
 
       if (type === "TRANSLATION") {
         const sourceLang =
@@ -74,20 +114,21 @@ export async function flushChamberTraces(
         const targetLang =
           typeof trace.targetLang === "string" ? trace.targetLang : "unknown";
 
-        return `#${index + 1} [${type}]\\nQ: Translate from ${sourceLang} to ${targetLang}: ${question}\\nA: ${answer}`;
+        return `#${index + 1} [${type}] (${liked})\\nQ: Translate ${sourceLang} -> ${targetLang}: ${question}\\nA: ${answer}`;
       }
 
-      return `#${index + 1} [${type}]\\nQ: ${question}\\nA: ${answer}`;
+      return `#${index + 1} [${type}] (${liked})\\nQ: ${question}\\nA: ${answer}`;
     }),
   ].join("\n");
 
   let summary = "";
   let summaryGenerated = false;
   try {
-    // todo current summary not good, need to improve prompt and maybe do some post-processing on the answer to make it more concise and reflection-like. For now we will just return an empty summary to unblock other features.
-    // summary = await fetchAnswer(summaryPrompt);
-    summary = "[Summary generation is currently disabled for testing purposes]";
-    summaryGenerated = true;
+    // Disliked traces do not participate in summarization.
+    if (summaryInputTraces.length > 0) {
+      summary = await fetchAnswer(summaryPrompt);
+      summaryGenerated = true;
+    }
   } catch (error) {
     // Summary generation is best-effort. Flush should still succeed without it.
     console.error("Failed to generate reflection summary", error);
