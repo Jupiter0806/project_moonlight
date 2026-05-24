@@ -1,16 +1,26 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  createLocalDate,
-  getMoonlightHistoryMockAvailableDates,
-  MOONLIGHT_HISTORY_MOCK_DATE_PARTS,
+  createMoonlightHistoryDate,
+  formatMoonlightHistoryMonthKey,
+  parseMoonlightHistoryAvailableDates,
 } from "./moonlight-history-data";
 
 describe("moonlight-history-data", () => {
-  it("creates stable local dates for the mock availability list", () => {
-    const dates = getMoonlightHistoryMockAvailableDates();
+  it("formats month keys for availability api requests", () => {
+    expect(formatMoonlightHistoryMonthKey(new Date(2026, 4, 24))).toBe(
+      "2026-05",
+    );
+  });
 
-    expect(dates).toHaveLength(MOONLIGHT_HISTORY_MOCK_DATE_PARTS.length);
+  it("parses api dates into stable local noon dates", () => {
+    const dates = parseMoonlightHistoryAvailableDates([
+      "2026-05-08",
+      "2026-05-14",
+      "bad-value",
+    ]);
+
+    expect(dates).toHaveLength(2);
     expect(
       dates.map((date) => ({
         year: date.getFullYear(),
@@ -21,17 +31,20 @@ describe("moonlight-history-data", () => {
     ).toEqual([
       { year: 2026, month: 5, day: 8, hour: 12 },
       { year: 2026, month: 5, day: 14, hour: 12 },
-      { year: 2026, month: 5, day: 19, hour: 12 },
-      { year: 2026, month: 5, day: 24, hour: 12 },
     ]);
   });
 
-  it("creates a local noon date from a date part", () => {
-    const date = createLocalDate({ year: 2026, month: 5, day: 24 });
+  it("creates a local noon date from an iso date string", () => {
+    const date = createMoonlightHistoryDate("2026-05-24");
 
-    expect(date.getFullYear()).toBe(2026);
-    expect(date.getMonth()).toBe(4);
-    expect(date.getDate()).toBe(24);
-    expect(date.getHours()).toBe(12);
+    expect(date).not.toBeNull();
+    expect(date?.getFullYear()).toBe(2026);
+    expect(date?.getMonth()).toBe(4);
+    expect(date?.getDate()).toBe(24);
+    expect(date?.getHours()).toBe(12);
+  });
+
+  it("returns null for invalid date text", () => {
+    expect(createMoonlightHistoryDate("2026/05/24")).toBeNull();
   });
 });
