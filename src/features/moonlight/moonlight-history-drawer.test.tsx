@@ -6,7 +6,9 @@ import { selectedMoonlightHistoryDateAtom } from "@/atoms/moonlight-history-atom
 import { renderWithStore } from "@/tests/renderWithStore";
 import { MoonlightHistoryDrawer } from "./moonlight-history-drawer";
 
-const calendarMock = vi.fn(() => <div data-testid="calendar" />);
+const calendarMock = vi.fn((props: Record<string, unknown>) => (
+  <div data-testid="calendar" {...props} />
+));
 
 vi.mock("@/components/ui/calendar", () => ({
   Calendar: (props: Record<string, unknown>) => calendarMock(props),
@@ -75,26 +77,35 @@ describe("MoonlightHistoryDrawer", () => {
 
     await waitFor(() => {
       const latestCall = calendarMock.mock.calls.at(-1);
-      const calendarProps = latestCall?.[0] as {
-        modifiers?: { available?: Date[] };
-        modifiersClassNames?: { today?: string };
-        disabled?: unknown;
-      };
+      expect(latestCall).toBeDefined();
+      const [calendarProps] = latestCall as [
+        {
+          modifiers?: { available?: Date[] };
+          modifiersClassNames?: { today?: string };
+          disabled?: unknown;
+        },
+      ];
       expect(calendarProps.modifiers?.available).toHaveLength(3);
       expect(calendarProps.modifiersClassNames?.today).toContain("ring-2");
       expect(calendarProps.disabled).toEqual({ after: expect.any(Date) });
     });
 
-    const calendarProps = calendarMock.mock.calls[0][0] as {
-      className?: string;
-    };
+    expect(calendarMock.mock.calls[0]).toBeDefined();
+    const [calendarProps] = calendarMock.mock.calls[0] as [
+      {
+        className?: string;
+      },
+    ];
 
     expect(calendarProps.className).toContain("max-w-md");
 
     const latestCall = calendarMock.mock.calls.at(-1);
-    const latestCalendarProps = latestCall?.[0] as {
-      onSelect?: (date: Date | undefined) => void;
-    };
+    expect(latestCall).toBeDefined();
+    const [latestCalendarProps] = latestCall as [
+      {
+        onSelect?: (date: Date | undefined) => void;
+      },
+    ];
     latestCalendarProps.onSelect?.(new Date(2026, 4, 24));
 
     expect(jotaiStore.get(selectedMoonlightHistoryDateAtom)).toBe("2026-05-24");
@@ -102,13 +113,13 @@ describe("MoonlightHistoryDrawer", () => {
   });
 
   it("shows a loading indicator while available dates are being fetched", async () => {
-    let resolveFetch: ((value: Response) => void) | null = null;
+    let resolveFetch: ((value: Response) => void) | undefined;
     vi.stubGlobal(
       "fetch",
       vi.fn(
         () =>
           new Promise<Response>((resolve) => {
-            resolveFetch = resolve;
+            resolveFetch = (value: Response) => resolve(value);
           }),
       ),
     );
@@ -124,6 +135,7 @@ describe("MoonlightHistoryDrawer", () => {
       "Loading available dates...",
     );
 
+    expect(resolveFetch).toBeDefined();
     resolveFetch?.(
       new Response(
         JSON.stringify({
