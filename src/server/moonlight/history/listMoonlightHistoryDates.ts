@@ -6,6 +6,7 @@ import {
   toDateKey,
   type MoonlightHistoryDatesResult,
 } from "@/server/moonlight/history/shared";
+import { listReflectionAggregateDatesForMonth } from "@/server/moonlight/history/reflectionDailyAggregate";
 
 export async function listMoonlightHistoryDates(
   db: Firestore,
@@ -29,9 +30,15 @@ export async function listMoonlightHistoryDates(
     .orderBy("dayStartMs", "asc")
     .get();
 
+  const reflectionAggregateDates = await listReflectionAggregateDatesForMonth(
+    db,
+    uid,
+    resolvedMonthKey,
+  );
+
   const availableDates = Array.from(
-    new Set(
-      snapshot.docs
+    new Set([
+      ...snapshot.docs
         .map((doc) => {
           const data = doc.data() as Record<string, unknown>;
           const dayStartMs = data.dayStartMs;
@@ -41,8 +48,9 @@ export async function listMoonlightHistoryDates(
           return toDateKey(dayStartMs, timeZone);
         })
         .filter((date): date is string => date !== null),
-    ),
-  );
+      ...reflectionAggregateDates,
+    ]),
+  ).sort((a, b) => a.localeCompare(b));
 
   return {
     month: resolvedMonthKey,

@@ -206,9 +206,20 @@ export async function flushChamberTraces(): Promise<{
   summary: string;
   summaryGenerated: boolean;
 }> {
+  const userTimeZone = (() => {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+    } catch {
+      return "UTC";
+    }
+  })();
+
   const res = await fetch("/api/chamber/traces/flush", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-user-timezone": userTimeZone,
+    },
   });
 
   if (!res.ok) {
