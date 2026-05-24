@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
-import { GET } from "./route";
+import { GET, POST } from "./route";
 import { moonlightDatesRatelimit } from "@/lib/rateLimit";
 
 vi.mock("@/lib/rateLimit", () => ({
@@ -36,6 +36,7 @@ describe("GET /api/moonlight/date", () => {
       status: "ok",
       date: "2026-05-24",
       exists: true,
+      canGenerate: false,
       moonlight: {
         id: "2026-05-24",
         reflectionCount: 2,
@@ -53,6 +54,21 @@ describe("GET /api/moonlight/date", () => {
       status: "ok",
       date: "2026-05-23",
       exists: false,
+      canGenerate: false,
+    });
+  });
+
+  it("returns canGenerate true for dates with reflections but no moonlight", async () => {
+    const response = await GET(
+      new NextRequest("http://localhost/api/moonlight/date?date=2026-05-19"),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      status: "ok",
+      date: "2026-05-19",
+      exists: false,
+      canGenerate: true,
     });
   });
 
@@ -83,6 +99,33 @@ describe("GET /api/moonlight/date", () => {
     expect(response.status).toBe(429);
     await expect(response.json()).resolves.toEqual({
       error: "Too many requests",
+    });
+  });
+
+  it("generates historical moonlight for a date with reflections", async () => {
+    const response = await POST(
+      new NextRequest("http://localhost/api/moonlight/date?date=2026-05-08"),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      status: "ok",
+      date: "2026-05-08",
+      generated: true,
+      moonlight: {
+        id: "2026-05-08",
+      },
+    });
+  });
+
+  it("returns 400 when generating a date without reflections", async () => {
+    const response = await POST(
+      new NextRequest("http://localhost/api/moonlight/date?date=2026-05-23"),
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "No reflections, unable to generate.",
     });
   });
 });

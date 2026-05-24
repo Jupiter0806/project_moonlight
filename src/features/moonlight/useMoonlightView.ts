@@ -20,11 +20,9 @@ type MoonlightViewState =
       isLoading: boolean;
       moonlight: ReturnType<typeof useHistoricalMoonlight>["moonlight"];
       error: string | null;
-      canGenerateMoonlight: false;
+      canGenerateMoonlight: boolean;
       onGenerate: () => Promise<void>;
     };
-
-const noopGenerate = async () => {};
 
 export function useMoonlightView(): MoonlightViewState {
   const today = useTodayMoonlight();
@@ -38,8 +36,8 @@ export function useMoonlightView(): MoonlightViewState {
         isLoading: history.isLoading,
         moonlight: history.moonlight,
         error: history.error,
-        canGenerateMoonlight: false,
-        onGenerate: noopGenerate,
+        canGenerateMoonlight: history.canGenerateMoonlight,
+        onGenerate: history.onGenerate,
       };
     }
 

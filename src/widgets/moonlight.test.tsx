@@ -15,8 +15,16 @@ vi.mock("@/features/moonlight/moonlight-display-widget", () => ({
 }));
 
 vi.mock("@/features/moonlight/moonlight-entry-widget", () => ({
-  MoonlightEntryWidget: ({ variant }: { variant: "today" | "history" }) => (
-    <div data-testid="moonlight-entry">entry {variant}</div>
+  MoonlightEntryWidget: ({
+    variant,
+    selectedDate,
+  }: {
+    variant: "today" | "history";
+    selectedDate?: string;
+  }) => (
+    <div data-testid="moonlight-entry">
+      entry {variant} {selectedDate}
+    </div>
   ),
 }));
 
@@ -58,7 +66,7 @@ describe("Moonlight", () => {
     render(<Moonlight />);
 
     expect(screen.getByTestId("moonlight-entry")).toHaveTextContent(
-      "entry history",
+      "entry history 2026-05-23",
     );
   });
 });

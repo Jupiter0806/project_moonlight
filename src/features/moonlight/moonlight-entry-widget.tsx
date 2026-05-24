@@ -3,20 +3,48 @@
 import { Button } from "@/components/ui/button";
 import { useState, useCallback } from "react";
 
+function formatHistoryDateLabel(isoDate: string): string {
+  const [yearText, monthText, dayText] = isoDate.split("-");
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+
+  if (
+    !Number.isFinite(year) ||
+    !Number.isFinite(month) ||
+    !Number.isFinite(day)
+  ) {
+    return isoDate;
+  }
+
+  const date = new Date(year, month - 1, day, 12, 0, 0, 0);
+  return new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(date);
+}
+
 export function MoonlightEntryWidget({
   isLoading,
   canGenerateMoonlight,
   error,
   onGenerate,
   variant = "today",
+  selectedDate,
 }: {
   isLoading: boolean;
   canGenerateMoonlight: boolean;
   error: string | null;
   onGenerate: () => Promise<void>;
   variant?: "today" | "history";
+  selectedDate?: string;
 }) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const selectedHistoryDateLabel =
+    variant === "history" && selectedDate
+      ? formatHistoryDateLabel(selectedDate)
+      : null;
 
   const handleGenerate = useCallback(async () => {
     setIsGenerating(true);
@@ -35,8 +63,8 @@ export function MoonlightEntryWidget({
 
       {isLoading ? (
         <p className="text-muted-foreground text-sm">
-          {variant === "history"
-            ? "Checking selected Moonlight..."
+          {variant === "history" && selectedHistoryDateLabel
+            ? `Checking Moonlight for ${selectedHistoryDateLabel}...`
             : "Checking today's Moonlight..."}
         </p>
       ) : canGenerateMoonlight ? (
@@ -46,7 +74,13 @@ export function MoonlightEntryWidget({
           disabled={isGenerating}
           onClick={handleGenerate}
         >
-          {isGenerating ? "Generating Moonlight..." : "Let's Do Moonlight"}
+          {variant === "history" && selectedHistoryDateLabel
+            ? isGenerating
+              ? `Generating Moonlight for ${selectedHistoryDateLabel}...`
+              : `Generate Moonlight for ${selectedHistoryDateLabel}`
+            : isGenerating
+              ? "Generating Moonlight..."
+              : "Let's Do Moonlight"}
         </Button>
       ) : variant === "history" ? (
         <p className="text-muted-foreground text-sm leading-6">
