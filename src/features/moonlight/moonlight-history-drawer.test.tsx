@@ -25,24 +25,51 @@ vi.mock("@/components/ui/drawer", () => ({
   ),
 }));
 
+vi.mock("@/features/moonlight/moonlight-display-widget", () => ({
+  MoonlightDisplayWidget: ({ moonlight }: { moonlight: { id: string } }) => (
+    <div data-testid="moonlight-display">moonlight {moonlight.id}</div>
+  ),
+}));
+
 describe("MoonlightHistoryDrawer", () => {
   beforeEach(() => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(
-        async () =>
-          new Response(
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+
+        if (url.includes("/api/moonlight/date?date=")) {
+          return new Response(
             JSON.stringify({
               status: "ok",
-              month: "2026-05",
-              availableDates: ["2026-05-08", "2026-05-14", "2026-05-19"],
+              date: "2026-05-24",
+              exists: true,
+              moonlight: {
+                id: "2026-05-24",
+                summary: "Mock moonlight for selected date.",
+                reflectionIds: ["mock-reflection-1"],
+                reflectionCount: 1,
+              },
             }),
             {
               status: 200,
               headers: { "Content-Type": "application/json" },
             },
-          ),
-      ),
+          );
+        }
+
+        return new Response(
+          JSON.stringify({
+            status: "ok",
+            month: "2026-05",
+            availableDates: ["2026-05-08", "2026-05-14", "2026-05-19"],
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }),
     );
   });
 
@@ -78,5 +105,17 @@ describe("MoonlightHistoryDrawer", () => {
     };
 
     expect(calendarProps.className).toContain("max-w-md");
+
+    await waitFor(() => {
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        expect.stringMatching(
+          /^\/api\/moonlight\/date\?date=\d{4}-\d{2}-\d{2}$/,
+        ),
+        expect.objectContaining({
+          signal: expect.any(AbortSignal),
+        }),
+      );
+      expect(screen.getByTestId("moonlight-display")).toBeInTheDocument();
+    });
   });
 });

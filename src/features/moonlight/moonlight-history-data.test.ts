@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   createMoonlightHistoryDate,
+  formatMoonlightHistoryDateKey,
   formatMoonlightHistoryMonthKey,
   parseMoonlightHistoryAvailableDates,
 } from "./moonlight-history-data";
@@ -10,6 +11,12 @@ describe("moonlight-history-data", () => {
   it("formats month keys for availability api requests", () => {
     expect(formatMoonlightHistoryMonthKey(new Date(2026, 4, 24))).toBe(
       "2026-05",
+    );
+  });
+
+  it("formats date keys for selected-date api requests", () => {
+    expect(formatMoonlightHistoryDateKey(new Date(2026, 4, 24))).toBe(
+      "2026-05-24",
     );
   });
 
