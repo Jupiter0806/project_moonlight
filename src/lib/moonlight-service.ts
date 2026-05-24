@@ -33,7 +33,15 @@ export interface GetMoonlightByDateResponse {
   status: "ok";
   date: string;
   exists: boolean;
+  canGenerate: boolean;
   moonlight?: MoonlightData;
+}
+
+export interface GenerateMoonlightByDateResponse {
+  status: "ok";
+  date: string;
+  generated: boolean;
+  moonlight: MoonlightData;
 }
 
 function getUserTimeZone(): string {
@@ -139,4 +147,22 @@ export async function getMoonlightByDate(
   }
 
   return (await response.json()) as GetMoonlightByDateResponse;
+}
+
+export async function generateMoonlightByDate(
+  date: string,
+): Promise<GenerateMoonlightByDateResponse> {
+  const response = await fetch(`/api/moonlight/date?date=${date}`, {
+    method: "POST",
+  });
+
+  if (!response.ok) {
+    const message = await readApiError(
+      response,
+      "Failed to generate selected moonlight",
+    );
+    throw new Error(message);
+  }
+
+  return (await response.json()) as GenerateMoonlightByDateResponse;
 }

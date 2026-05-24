@@ -6,6 +6,7 @@ export type MoonlightHistoryDatesResult = {
 export type MoonlightHistoryMoonlightResult = {
   date: string;
   exists: boolean;
+  canGenerate: boolean;
   moonlight?: {
     id: string;
     summary: string;
@@ -13,6 +14,27 @@ export type MoonlightHistoryMoonlightResult = {
     reflectionCount: number;
   };
 };
+
+export type GenerateMoonlightHistoryByDateResult = {
+  date: string;
+  generated: boolean;
+  moonlight: {
+    id: string;
+    summary: string;
+    reflectionIds: string[];
+    reflectionCount: number;
+  };
+};
+
+export class GenerateMoonlightHistoryError extends Error {
+  constructor(
+    public readonly code: "NO_REFLECTIONS",
+    message: string,
+  ) {
+    super(message);
+    this.name = "GenerateMoonlightHistoryError";
+  }
+}
 
 const MOCK_AVAILABLE_DAY_NUMBERS = [8, 14, 19, 24];
 
@@ -69,16 +91,63 @@ export function getMoonlightHistoryByDate(
   dateKey: string,
 ): MoonlightHistoryMoonlightResult {
   const moonlight = MOCK_MOONLIGHT_BY_DATE[dateKey];
+
   if (!moonlight) {
+    const hasReflections = listMoonlightHistoryDates(
+      dateKey.slice(0, 7),
+    ).availableDates.includes(dateKey);
+
     return {
       date: dateKey,
       exists: false,
+      canGenerate: hasReflections,
     };
   }
 
   return {
     date: dateKey,
     exists: true,
+    canGenerate: false,
     moonlight,
+  };
+}
+
+export function generateMoonlightHistoryByDate(
+  dateKey: string,
+): GenerateMoonlightHistoryByDateResult {
+  const existingMoonlight = MOCK_MOONLIGHT_BY_DATE[dateKey];
+  if (existingMoonlight) {
+    return {
+      date: dateKey,
+      generated: false,
+      moonlight: existingMoonlight,
+    };
+  }
+
+  const hasReflections = listMoonlightHistoryDates(
+    dateKey.slice(0, 7),
+  ).availableDates.includes(dateKey);
+
+  if (!hasReflections) {
+    throw new GenerateMoonlightHistoryError(
+      "NO_REFLECTIONS",
+      "No reflections, unable to generate.",
+    );
+  }
+
+  const generatedMoonlight = {
+    id: dateKey,
+    summary:
+      "A retrospective moonlight was generated from your reflections for this date.",
+    reflectionIds: ["mock-reflection-generated-1"],
+    reflectionCount: 1,
+  };
+
+  MOCK_MOONLIGHT_BY_DATE[dateKey] = generatedMoonlight;
+
+  return {
+    date: dateKey,
+    generated: true,
+    moonlight: generatedMoonlight,
   };
 }
