@@ -36,12 +36,23 @@ vi.mock("@/server/chamber/flush-chamber-traces", () => ({
   flushChamberTraces: vi.fn(),
 }));
 
-function makeRequest(sessionCookie = "session-cookie"): NextRequest {
+function makeRequest(
+  sessionCookie = "session-cookie",
+  timeZone = "America/Los_Angeles",
+): NextRequest {
   return {
     cookies: {
       get: vi.fn((name: string) => {
         if (name !== "__session" || !sessionCookie) return undefined;
         return { value: sessionCookie };
+      }),
+    },
+    headers: {
+      get: vi.fn((name: string) => {
+        if (name === "x-user-timezone") {
+          return timeZone;
+        }
+        return null;
       }),
     },
   } as unknown as NextRequest;
@@ -86,6 +97,11 @@ describe("POST /api/chamber/traces/flush", () => {
       summary: "Summary",
       summaryGenerated: true,
     });
+    expect(flushChamberTraces).toHaveBeenCalledWith(
+      expect.anything(),
+      "user-1",
+      "America/Los_Angeles",
+    );
   });
 
   it("returns 401 when request is unauthenticated", async () => {

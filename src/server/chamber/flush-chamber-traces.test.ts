@@ -15,6 +15,7 @@ describe("flushChamberTraces", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(fetchAnswer).mockResolvedValue(DISABLED_SUMMARY);
   });
 
   it("creates one reflection with all trace ids and summary", async () => {
@@ -80,6 +81,16 @@ describe("flushChamberTraces", () => {
       doc: vi.fn((id: string) => ({ id })),
     };
 
+    const aggregateCollection = {
+      doc: vi.fn((id: string) => ({ id })),
+    };
+
+    const aggregateRootCollection = {
+      doc: vi.fn(() => ({
+        collection: vi.fn(() => aggregateCollection),
+      })),
+    };
+
     const chambersCollection = {
       doc: vi.fn().mockReturnValue(chamberDoc),
     };
@@ -101,6 +112,8 @@ describe("flushChamberTraces", () => {
         if (name === "chambers") return chambersCollection;
         if (name === "reflections") return reflectionsCollection;
         if (name === "traces") return rootTracesCollection;
+        if (name === "moonlightReflectionDailyCounts")
+          return aggregateRootCollection;
         throw new Error(`Unexpected collection: ${name}`);
       }),
       batch: vi.fn(() => batch),
@@ -108,9 +121,9 @@ describe("flushChamberTraces", () => {
 
     const result = await flushChamberTraces(db, "user-1");
 
-    expect(fetchAnswer).not.toHaveBeenCalled();
+    expect(fetchAnswer).toHaveBeenCalledTimes(1);
     expect(reflectionSet).toHaveBeenCalledTimes(1);
-    expect(traceSet).toHaveBeenCalledTimes(2);
+    expect(traceSet).toHaveBeenCalledTimes(3);
 
     const setCalls = (batch.set as unknown as { mock: { calls: unknown[][] } })
       .mock.calls;
@@ -128,7 +141,7 @@ describe("flushChamberTraces", () => {
       (call) => (call[0] as { id?: string } | undefined)?.id !== "reflection-1",
     );
 
-    expect(rootTraceCalls).toHaveLength(2);
+    expect(rootTraceCalls).toHaveLength(3);
     expect(rootTraceCalls[0]?.[1]).toMatchObject({
       id: "trace-1",
       uid: "user-1",
@@ -140,6 +153,10 @@ describe("flushChamberTraces", () => {
       uid: "user-1",
       reflection: "reflection-1",
       reflectionId: "reflection-1",
+    });
+    expect(rootTraceCalls[2]?.[1]).toMatchObject({
+      date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+      count: expect.anything(),
     });
 
     expect(batchDelete).toHaveBeenCalledTimes(2);
@@ -191,7 +208,7 @@ describe("flushChamberTraces", () => {
     expect(db.batch).not.toHaveBeenCalled();
   });
 
-  it("still flushes traces when summary generation is disabled", async () => {
+  it("still flushes traces when summary generation fails", async () => {
     const batchDelete = vi.fn();
     const commit = vi.fn().mockResolvedValue(undefined);
 
@@ -233,6 +250,16 @@ describe("flushChamberTraces", () => {
       doc: vi.fn((id: string) => ({ id })),
     };
 
+    const aggregateCollection = {
+      doc: vi.fn((id: string) => ({ id })),
+    };
+
+    const aggregateRootCollection = {
+      doc: vi.fn(() => ({
+        collection: vi.fn(() => aggregateCollection),
+      })),
+    };
+
     const chambersCollection = {
       doc: vi.fn().mockReturnValue(chamberDoc),
     };
@@ -248,10 +275,14 @@ describe("flushChamberTraces", () => {
         if (name === "chambers") return chambersCollection;
         if (name === "reflections") return reflectionsCollection;
         if (name === "traces") return rootTracesCollection;
+        if (name === "moonlightReflectionDailyCounts")
+          return aggregateRootCollection;
         throw new Error(`Unexpected collection: ${name}`);
       }),
       batch: vi.fn(() => batch),
     } as unknown as Parameters<typeof flushChamberTraces>[0];
+
+    vi.mocked(fetchAnswer).mockRejectedValue(new Error("generation failed"));
 
     const result = await flushChamberTraces(db, "user-1");
 
@@ -261,7 +292,7 @@ describe("flushChamberTraces", () => {
       (call) => (call[0] as { id?: string } | undefined)?.id === "reflection-1",
     );
     expect(reflectionBatchCall?.[1]).toMatchObject({
-      summary: DISABLED_SUMMARY,
+      summary: "",
       traceIds: ["trace-1"],
     });
     expect(batchDelete).toHaveBeenCalledTimes(1);
@@ -269,8 +300,8 @@ describe("flushChamberTraces", () => {
     expect(result).toEqual({
       reflectionId: "reflection-1",
       traceIds: ["trace-1"],
-      summary: DISABLED_SUMMARY,
-      summaryGenerated: true,
+      summary: "",
+      summaryGenerated: false,
     });
   });
 });

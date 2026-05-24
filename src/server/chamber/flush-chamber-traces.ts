@@ -1,5 +1,6 @@
 import { FieldValue, type Firestore } from "firebase-admin/firestore";
 import { fetchAnswer } from "@/server/chamber/fetchAnswer";
+import { getReflectionDailyAggregateDocRef } from "@/server/moonlight/history/reflectionDailyAggregate";
 
 export class FlushChamberTracesError extends Error {
   constructor(
@@ -31,6 +32,7 @@ export interface FlushChamberTracesResult {
 export async function flushChamberTraces(
   db: Firestore,
   uid: string,
+  requestedTimeZone: string | null = null,
 ): Promise<FlushChamberTracesResult> {
   const chamberRef = db.collection("chambers").doc(uid);
   const tracesSnapshot = await chamberRef.collection("traces").get();
@@ -135,6 +137,11 @@ export async function flushChamberTraces(
   }
 
   const batch = db.batch();
+  const reflectionAggregate = getReflectionDailyAggregateDocRef(
+    db,
+    uid,
+    requestedTimeZone,
+  );
 
   // 1. create a new reflection
   const reflectionRef = db.collection("reflections").doc();
@@ -171,6 +178,17 @@ export async function flushChamberTraces(
   tracesSnapshot.forEach((doc) => {
     batch.delete(doc.ref);
   });
+
+  // 4. increment per-day reflection aggregate used by moonlight history availability
+  batch.set(
+    reflectionAggregate.ref,
+    {
+      date: reflectionAggregate.dateKey,
+      count: FieldValue.increment(1),
+      updatedAt: FieldValue.serverTimestamp(),
+    },
+    { merge: true },
+  );
 
   await batch.commit();
 

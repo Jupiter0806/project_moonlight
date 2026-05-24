@@ -32,7 +32,11 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const result = await flushChamberTraces(getAdminFirestore(), uid);
+    const result = await flushChamberTraces(
+      getAdminFirestore(),
+      uid,
+      request.headers.get("x-user-timezone"),
+    );
     return NextResponse.json({
       status: "ok",
       reflectionId: result.reflectionId,
