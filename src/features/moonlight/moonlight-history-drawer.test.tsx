@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
+import { createStore } from "jotai";
 
+import { selectedMoonlightHistoryDateAtom } from "@/atoms/moonlight-history-atoms";
+import { renderWithStore } from "@/tests/renderWithStore";
 import { MoonlightHistoryDrawer } from "./moonlight-history-drawer";
 
 const calendarMock = vi.fn(() => <div data-testid="calendar" />);
@@ -25,39 +28,11 @@ vi.mock("@/components/ui/drawer", () => ({
   ),
 }));
 
-vi.mock("@/features/moonlight/moonlight-display-widget", () => ({
-  MoonlightDisplayWidget: ({ moonlight }: { moonlight: { id: string } }) => (
-    <div data-testid="moonlight-display">moonlight {moonlight.id}</div>
-  ),
-}));
-
 describe("MoonlightHistoryDrawer", () => {
   beforeEach(() => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async (input: RequestInfo | URL) => {
-        const url = String(input);
-
-        if (url.includes("/api/moonlight/date?date=")) {
-          return new Response(
-            JSON.stringify({
-              status: "ok",
-              date: "2026-05-24",
-              exists: true,
-              moonlight: {
-                id: "2026-05-24",
-                summary: "Mock moonlight for selected date.",
-                reflectionIds: ["mock-reflection-1"],
-                reflectionCount: 1,
-              },
-            }),
-            {
-              status: 200,
-              headers: { "Content-Type": "application/json" },
-            },
-          );
-        }
-
+      vi.fn(async () => {
         return new Response(
           JSON.stringify({
             status: "ok",
@@ -78,8 +53,14 @@ describe("MoonlightHistoryDrawer", () => {
     calendarMock.mockClear();
   });
 
-  it("passes api-loaded available dates to the calendar", async () => {
-    render(<MoonlightHistoryDrawer open onOpenChange={vi.fn()} />);
+  it("loads available dates and stores the selected historical date", async () => {
+    const jotaiStore = createStore();
+    const onOpenChange = vi.fn();
+
+    renderWithStore(
+      <MoonlightHistoryDrawer open onOpenChange={onOpenChange} />,
+      jotaiStore,
+    );
 
     expect(screen.getByTestId("calendar")).toBeInTheDocument();
 
@@ -106,16 +87,13 @@ describe("MoonlightHistoryDrawer", () => {
 
     expect(calendarProps.className).toContain("max-w-md");
 
-    await waitFor(() => {
-      expect(globalThis.fetch).toHaveBeenCalledWith(
-        expect.stringMatching(
-          /^\/api\/moonlight\/date\?date=\d{4}-\d{2}-\d{2}$/,
-        ),
-        expect.objectContaining({
-          signal: expect.any(AbortSignal),
-        }),
-      );
-      expect(screen.getByTestId("moonlight-display")).toBeInTheDocument();
-    });
+    const latestCall = calendarMock.mock.calls.at(-1);
+    const latestCalendarProps = latestCall?.[0] as {
+      onSelect?: (date: Date | undefined) => void;
+    };
+    latestCalendarProps.onSelect?.(new Date(2026, 4, 24));
+
+    expect(jotaiStore.get(selectedMoonlightHistoryDateAtom)).toBe("2026-05-24");
+    expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 });

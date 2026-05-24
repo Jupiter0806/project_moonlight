@@ -8,11 +8,13 @@ export function MoonlightEntryWidget({
   canGenerateMoonlight,
   error,
   onGenerate,
+  variant = "today",
 }: {
   isLoading: boolean;
   canGenerateMoonlight: boolean;
   error: string | null;
   onGenerate: () => Promise<void>;
+  variant?: "today" | "history";
 }) {
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -33,7 +35,9 @@ export function MoonlightEntryWidget({
 
       {isLoading ? (
         <p className="text-muted-foreground text-sm">
-          Checking today&apos;s Moonlight...
+          {variant === "history"
+            ? "Checking selected Moonlight..."
+            : "Checking today's Moonlight..."}
         </p>
       ) : canGenerateMoonlight ? (
         <Button
@@ -42,8 +46,12 @@ export function MoonlightEntryWidget({
           disabled={isGenerating}
           onClick={handleGenerate}
         >
-          {isGenerating ? "Generating Moonlight..." : "Let&apos;s Do Moonlight"}
+          {isGenerating ? "Generating Moonlight..." : "Let's Do Moonlight"}
         </Button>
+      ) : variant === "history" ? (
+        <p className="text-muted-foreground text-sm leading-6">
+          No reflections, unable to generate.
+        </p>
       ) : (
         <div className="space-y-2">
           <p className="text-muted-foreground text-sm leading-6">

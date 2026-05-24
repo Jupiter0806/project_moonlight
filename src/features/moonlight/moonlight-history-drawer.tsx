@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useAtom } from "jotai";
 
+import { selectedMoonlightHistoryDateAtom } from "@/atoms/moonlight-history-atoms";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Drawer,
@@ -10,13 +12,9 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { MoonlightDisplayWidget } from "@/features/moonlight/moonlight-display-widget";
+import { getMoonlightDates } from "@/lib/moonlight-service";
 import {
-  type MoonlightData,
-  getMoonlightByDate,
-  getMoonlightDates,
-} from "@/lib/moonlight-service";
-import {
+  createMoonlightHistoryDate,
   formatMoonlightHistoryDateKey,
   formatMoonlightHistoryMonthKey,
   parseMoonlightHistoryAvailableDates,
@@ -29,27 +27,35 @@ export function MoonlightHistoryDrawer({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    new Date(),
+  const [selectedHistoryDate, setSelectedHistoryDate] = useAtom(
+    selectedMoonlightHistoryDateAtom,
+  );
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(() =>
+    selectedHistoryDate
+      ? (createMoonlightHistoryDate(selectedHistoryDate) ?? new Date())
+      : new Date(),
   );
   const [timeZone] = useState(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone,
   );
   const [visibleMonth, setVisibleMonth] = useState(() => new Date());
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
-  const [selectedMoonlight, setSelectedMoonlight] =
-    useState<MoonlightData | null>(null);
-  const [isSelectedMoonlightLoading, setIsSelectedMoonlightLoading] =
-    useState(false);
 
   const visibleMonthKey = useMemo(
     () => formatMoonlightHistoryMonthKey(visibleMonth),
     [visibleMonth],
   );
-  const selectedDateKey = useMemo(
-    () => (selectedDate ? formatMoonlightHistoryDateKey(selectedDate) : null),
-    [selectedDate],
-  );
+
+  const handleSelectDate = (date: Date | undefined) => {
+    setSelectedDate(date);
+
+    if (!date) {
+      return;
+    }
+
+    setSelectedHistoryDate(formatMoonlightHistoryDateKey(date));
+    onOpenChange(false);
+  };
 
   useEffect(() => {
     if (!open) {
@@ -82,43 +88,6 @@ export function MoonlightHistoryDrawer({
     };
   }, [open, visibleMonthKey]);
 
-  useEffect(() => {
-    if (!open || !selectedDateKey) {
-      setSelectedMoonlight(null);
-      return;
-    }
-
-    const controller = new AbortController();
-
-    async function loadSelectedMoonlight() {
-      setIsSelectedMoonlightLoading(true);
-
-      try {
-        const data = await getMoonlightByDate(
-          selectedDateKey,
-          controller.signal,
-        );
-        setSelectedMoonlight(
-          data.exists && data.moonlight ? data.moonlight : null,
-        );
-      } catch {
-        if (!controller.signal.aborted) {
-          setSelectedMoonlight(null);
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsSelectedMoonlightLoading(false);
-        }
-      }
-    }
-
-    void loadSelectedMoonlight();
-
-    return () => {
-      controller.abort();
-    };
-  }, [open, selectedDateKey]);
-
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent>
@@ -133,7 +102,7 @@ export function MoonlightHistoryDrawer({
           <Calendar
             mode="single"
             selected={selectedDate}
-            onSelect={setSelectedDate}
+            onSelect={handleSelectDate}
             onMonthChange={setVisibleMonth}
             timeZone={timeZone}
             modifiers={{ available: availableDates }}
@@ -143,20 +112,6 @@ export function MoonlightHistoryDrawer({
             }}
             className="mx-auto w-full max-w-md rounded-3xl border"
           />
-        </div>
-
-        <div className="border-t px-4 py-6">
-          {isSelectedMoonlightLoading ? (
-            <p className="text-muted-foreground text-center text-sm">
-              Loading selected moonlight...
-            </p>
-          ) : selectedMoonlight ? (
-            <MoonlightDisplayWidget moonlight={selectedMoonlight} />
-          ) : (
-            <p className="text-muted-foreground text-center text-sm">
-              No moonlight found for the selected date.
-            </p>
-          )}
         </div>
       </DrawerContent>
     </Drawer>
