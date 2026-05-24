@@ -99,6 +99,30 @@ This increases complexity and makes future generation behavior harder to impleme
   - Consistent UX.
   - Lower maintenance and reduced drift.
 
+### D6. Date picker technology choice
+
+- Decision:
+  - Use shadcn Calendar (implemented on top of `react-day-picker`).
+  - Keep the calendar in a lazy-loaded history drawer.
+- Why:
+  - Supports required date highlighting (`availableDates`) without custom calendar logic.
+  - Aligns with existing shadcn-based UI and theming conventions.
+  - Reduces integration risk versus introducing a separate visual/design system.
+  - Preserves initial page performance by deferring calendar code until History is opened.
+
+#### Date Picker Decision Matrix
+
+| Option                               | Highlight Available Dates   | UI Consistency With Current Stack | Initial Render Impact | Complexity / Maintenance | Decision     |
+| ------------------------------------ | --------------------------- | --------------------------------- | --------------------- | ------------------------ | ------------ |
+| shadcn Calendar (`react-day-picker`) | Strong (built-in modifiers) | Strong                            | Low when lazy-loaded  | Medium-low               | **Selected** |
+| Native `input[type=date]`            | Weak / inconsistent         | Medium                            | Very low              | Low                      | Rejected     |
+| Alternative full date picker library | Varies                      | Medium-low                        | Medium-high           | Medium-high              | Rejected     |
+
+Notes:
+
+1. `react-day-picker` is the official underlying engine for shadcn Calendar.
+2. The selected option balances capability (highlighted dates), consistency, and performance.
+
 ## Architecture Changes
 
 ### UI Layer
