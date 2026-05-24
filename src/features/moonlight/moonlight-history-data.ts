@@ -1,26 +1,33 @@
-export type MoonlightHistoryMockDatePart = {
-  year: number;
-  month: number;
-  day: number;
-};
+export function formatMoonlightHistoryMonthKey(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${date.getFullYear()}-${month}`;
+}
 
-export const MOONLIGHT_HISTORY_MOCK_DATE_PARTS = [
-  { year: 2026, month: 5, day: 8 },
-  { year: 2026, month: 5, day: 14 },
-  { year: 2026, month: 5, day: 19 },
-  { year: 2026, month: 5, day: 24 },
-] satisfies readonly MoonlightHistoryMockDatePart[];
+export function createMoonlightHistoryDate(isoDate: string): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) {
+    return null;
+  }
 
-export function createLocalDate({
-  year,
-  month,
-  day,
-}: MoonlightHistoryMockDatePart): Date {
+  const [yearText, monthText, dayText] = isoDate.split("-");
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+
+  if (
+    !Number.isFinite(year) ||
+    !Number.isFinite(month) ||
+    !Number.isFinite(day)
+  ) {
+    return null;
+  }
+
   return new Date(year, month - 1, day, 12, 0, 0, 0);
 }
 
-export function getMoonlightHistoryMockAvailableDates(): Date[] {
-  return MOONLIGHT_HISTORY_MOCK_DATE_PARTS.map((datePart) =>
-    createLocalDate(datePart),
-  );
+export function parseMoonlightHistoryAvailableDates(
+  availableDates: string[],
+): Date[] {
+  return availableDates
+    .map((dateText) => createMoonlightHistoryDate(dateText))
+    .filter((date): date is Date => date !== null);
 }

@@ -107,6 +107,17 @@ export const moonlightRatelimit = new Ratelimit({
 });
 
 /**
+ * Moonlight dates reads
+ * 20 requests per minute per user/IP.
+ */
+export const moonlightDatesRatelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(20, "1 m"),
+  prefix: "rl:moonlight-dates",
+  analytics: true,
+});
+
+/**
  * Users reads
  * 60 requests per minute per user/IP keeps UX smooth while limiting abuse.
  */

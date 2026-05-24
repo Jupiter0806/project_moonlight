@@ -1,11 +1,9 @@
-import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
 
 import { MoonlightHistoryDrawer } from "./moonlight-history-drawer";
 
-const calendarMock = vi.fn((props: Record<string, unknown>) => (
-  <div data-testid="calendar" />
-));
+const calendarMock = vi.fn(() => <div data-testid="calendar" />);
 
 vi.mock("@/components/ui/calendar", () => ({
   Calendar: (props: Record<string, unknown>) => calendarMock(props),
@@ -28,17 +26,57 @@ vi.mock("@/components/ui/drawer", () => ({
 }));
 
 describe("MoonlightHistoryDrawer", () => {
-  it("passes mock available dates to the calendar", () => {
+  beforeEach(() => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              status: "ok",
+              month: "2026-05",
+              availableDates: ["2026-05-08", "2026-05-14", "2026-05-19"],
+            }),
+            {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            },
+          ),
+      ),
+    );
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    calendarMock.mockClear();
+  });
+
+  it("passes api-loaded available dates to the calendar", async () => {
     render(<MoonlightHistoryDrawer open onOpenChange={vi.fn()} />);
 
     expect(screen.getByTestId("calendar")).toBeInTheDocument();
 
+    await waitFor(() => {
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        expect.stringMatching(/^\/api\/moonlight\/dates\?month=\d{4}-\d{2}$/),
+        expect.objectContaining({
+          signal: expect.any(AbortSignal),
+        }),
+      );
+    });
+
+    await waitFor(() => {
+      const latestCall = calendarMock.mock.calls.at(-1);
+      const calendarProps = latestCall?.[0] as {
+        modifiers?: { available?: Date[] };
+      };
+      expect(calendarProps.modifiers?.available).toHaveLength(3);
+    });
+
     const calendarProps = calendarMock.mock.calls[0][0] as {
-      modifiers?: { available?: Date[] };
       className?: string;
     };
 
-    expect(calendarProps.modifiers?.available).toHaveLength(4);
     expect(calendarProps.className).toContain("max-w-md");
   });
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -10,7 +10,11 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { getMoonlightHistoryMockAvailableDates } from "./moonlight-history-data";
+import {
+  formatMoonlightHistoryMonthKey,
+  parseMoonlightHistoryAvailableDates,
+} from "./moonlight-history-data";
+import { getMoonlightDates } from "@/lib/moonlight-service";
 
 export function MoonlightHistoryDrawer({
   open,
@@ -25,10 +29,44 @@ export function MoonlightHistoryDrawer({
   const [timeZone] = useState(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone,
   );
-  const availableDates = useMemo(
-    () => getMoonlightHistoryMockAvailableDates(),
-    [],
+  const [visibleMonth, setVisibleMonth] = useState(() => new Date());
+  const [availableDates, setAvailableDates] = useState<Date[]>([]);
+
+  const visibleMonthKey = useMemo(
+    () => formatMoonlightHistoryMonthKey(visibleMonth),
+    [visibleMonth],
   );
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const controller = new AbortController();
+
+    async function loadAvailableDates() {
+      try {
+        const data = await getMoonlightDates(
+          visibleMonthKey,
+          controller.signal,
+        );
+
+        setAvailableDates(
+          parseMoonlightHistoryAvailableDates(data.availableDates ?? []),
+        );
+      } catch {
+        if (!controller.signal.aborted) {
+          setAvailableDates([]);
+        }
+      }
+    }
+
+    void loadAvailableDates();
+
+    return () => {
+      controller.abort();
+    };
+  }, [open, visibleMonthKey]);
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -45,6 +83,7 @@ export function MoonlightHistoryDrawer({
             mode="single"
             selected={selectedDate}
             onSelect={setSelectedDate}
+            onMonthChange={setVisibleMonth}
             timeZone={timeZone}
             modifiers={{ available: availableDates }}
             modifiersClassNames={{
