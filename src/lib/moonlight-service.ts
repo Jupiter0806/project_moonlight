@@ -29,6 +29,13 @@ export interface GetMoonlightDatesResponse {
   availableDates: string[];
 }
 
+export interface GetMoonlightByDateResponse {
+  status: "ok";
+  date: string;
+  exists: boolean;
+  moonlight?: MoonlightData;
+}
+
 function getUserTimeZone(): string {
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
@@ -112,4 +119,24 @@ export async function getMoonlightDates(
   }
 
   return (await response.json()) as GetMoonlightDatesResponse;
+}
+
+export async function getMoonlightByDate(
+  date: string,
+  signal?: AbortSignal,
+): Promise<GetMoonlightByDateResponse> {
+  const response = await fetch(`/api/moonlight/date?date=${date}`, {
+    method: "GET",
+    signal,
+  });
+
+  if (!response.ok) {
+    const message = await readApiError(
+      response,
+      "Failed to load selected moonlight",
+    );
+    throw new Error(message);
+  }
+
+  return (await response.json()) as GetMoonlightByDateResponse;
 }

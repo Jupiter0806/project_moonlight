@@ -10,11 +10,17 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { MoonlightDisplayWidget } from "@/features/moonlight/moonlight-display-widget";
 import {
+  type MoonlightData,
+  getMoonlightByDate,
+  getMoonlightDates,
+} from "@/lib/moonlight-service";
+import {
+  formatMoonlightHistoryDateKey,
   formatMoonlightHistoryMonthKey,
   parseMoonlightHistoryAvailableDates,
 } from "./moonlight-history-data";
-import { getMoonlightDates } from "@/lib/moonlight-service";
 
 export function MoonlightHistoryDrawer({
   open,
@@ -31,10 +37,18 @@ export function MoonlightHistoryDrawer({
   );
   const [visibleMonth, setVisibleMonth] = useState(() => new Date());
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
+  const [selectedMoonlight, setSelectedMoonlight] =
+    useState<MoonlightData | null>(null);
+  const [isSelectedMoonlightLoading, setIsSelectedMoonlightLoading] =
+    useState(false);
 
   const visibleMonthKey = useMemo(
     () => formatMoonlightHistoryMonthKey(visibleMonth),
     [visibleMonth],
+  );
+  const selectedDateKey = useMemo(
+    () => (selectedDate ? formatMoonlightHistoryDateKey(selectedDate) : null),
+    [selectedDate],
   );
 
   useEffect(() => {
@@ -68,6 +82,43 @@ export function MoonlightHistoryDrawer({
     };
   }, [open, visibleMonthKey]);
 
+  useEffect(() => {
+    if (!open || !selectedDateKey) {
+      setSelectedMoonlight(null);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    async function loadSelectedMoonlight() {
+      setIsSelectedMoonlightLoading(true);
+
+      try {
+        const data = await getMoonlightByDate(
+          selectedDateKey,
+          controller.signal,
+        );
+        setSelectedMoonlight(
+          data.exists && data.moonlight ? data.moonlight : null,
+        );
+      } catch {
+        if (!controller.signal.aborted) {
+          setSelectedMoonlight(null);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsSelectedMoonlightLoading(false);
+        }
+      }
+    }
+
+    void loadSelectedMoonlight();
+
+    return () => {
+      controller.abort();
+    };
+  }, [open, selectedDateKey]);
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent>
@@ -92,6 +143,20 @@ export function MoonlightHistoryDrawer({
             }}
             className="mx-auto w-full max-w-md rounded-3xl border"
           />
+        </div>
+
+        <div className="border-t px-4 py-6">
+          {isSelectedMoonlightLoading ? (
+            <p className="text-muted-foreground text-center text-sm">
+              Loading selected moonlight...
+            </p>
+          ) : selectedMoonlight ? (
+            <MoonlightDisplayWidget moonlight={selectedMoonlight} />
+          ) : (
+            <p className="text-muted-foreground text-center text-sm">
+              No moonlight found for the selected date.
+            </p>
+          )}
         </div>
       </DrawerContent>
     </Drawer>
