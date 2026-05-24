@@ -8,11 +8,36 @@ import { MoonlightDisplayWidget } from "@/features/moonlight/moonlight-display-w
 import { MoonlightEntryWidget } from "@/features/moonlight/moonlight-entry-widget";
 import { useMoonlightView } from "@/features/moonlight/useMoonlightView";
 
+function formatHistoryDateLabel(isoDate: string): string {
+  const [yearText, monthText, dayText] = isoDate.split("-");
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+
+  if (
+    !Number.isFinite(year) ||
+    !Number.isFinite(month) ||
+    !Number.isFinite(day)
+  ) {
+    return isoDate;
+  }
+
+  const date = new Date(year, month - 1, day, 12, 0, 0, 0);
+  return new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(date);
+}
+
 export function Moonlight() {
   const moonlightView = useMoonlightView();
   const clearSelectedHistoryDate = useSetAtom(selectedMoonlightHistoryDateAtom);
   const selectedHistoryDate =
     moonlightView.mode === "history" ? moonlightView.selectedDate : undefined;
+  const selectedHistoryDateLabel = selectedHistoryDate
+    ? formatHistoryDateLabel(selectedHistoryDate)
+    : null;
 
   return (
     <div className="flex h-full w-full flex-col items-center p-6">
@@ -34,7 +59,9 @@ export function Moonlight() {
             Close the day with a quick review and keep what matters in memory.
           </p>
           <p className="text-muted-foreground text-sm">
-            Checking today&apos;s Moonlight...
+            {moonlightView.mode === "history" && selectedHistoryDateLabel
+              ? `Checking Moonlight for ${selectedHistoryDateLabel}...`
+              : "Checking today's Moonlight..."}
           </p>
         </div>
       ) : moonlightView.moonlight ? (

@@ -97,4 +97,22 @@ describe("Moonlight", () => {
 
     expect(jotaiStore.get(selectedMoonlightHistoryDateAtom)).toBeNull();
   });
+
+  it("shows history-aware loading copy when selected history date is loading", () => {
+    vi.mocked(useMoonlightView).mockReturnValue({
+      mode: "history",
+      selectedDate: "2026-05-24",
+      isLoading: true,
+      moonlight: null,
+      error: null,
+      canGenerateMoonlight: false,
+      onGenerate: async () => {},
+    });
+
+    render(<Moonlight />);
+
+    expect(
+      screen.getByText("Checking Moonlight for May 24, 2026..."),
+    ).toBeInTheDocument();
+  });
 });
