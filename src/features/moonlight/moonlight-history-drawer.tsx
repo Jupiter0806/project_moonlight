@@ -41,6 +41,11 @@ export function MoonlightHistoryDrawer({
   const [visibleMonth, setVisibleMonth] = useState(() => new Date());
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
   const [isLoadingDates, setIsLoadingDates] = useState(open);
+  const today = useMemo(() => {
+    const date = new Date();
+    date.setHours(12, 0, 0, 0);
+    return date;
+  }, []);
 
   const visibleMonthKey = useMemo(
     () => formatMoonlightHistoryMonthKey(visibleMonth),
@@ -126,8 +131,10 @@ export function MoonlightHistoryDrawer({
             modifiersClassNames={{
               available:
                 "bg-primary/15 text-primary ring-1 ring-inset ring-primary/30 hover:bg-primary/20",
+              today:
+                "bg-primary/10 text-primary ring-2 ring-primary/60 ring-inset font-semibold",
             }}
-            disabled={isLoadingDates}
+            disabled={isLoadingDates ? true : { after: today }}
             aria-busy={isLoadingDates}
             className="mx-auto w-full max-w-md rounded-3xl border"
           />
