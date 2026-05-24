@@ -40,6 +40,7 @@ export function MoonlightHistoryDrawer({
   );
   const [visibleMonth, setVisibleMonth] = useState(() => new Date());
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
+  const [isLoadingDates, setIsLoadingDates] = useState(open);
 
   const visibleMonthKey = useMemo(
     () => formatMoonlightHistoryMonthKey(visibleMonth),
@@ -65,6 +66,8 @@ export function MoonlightHistoryDrawer({
     const controller = new AbortController();
 
     async function loadAvailableDates() {
+      setIsLoadingDates(true);
+
       try {
         const data = await getMoonlightDates(
           visibleMonthKey,
@@ -77,6 +80,10 @@ export function MoonlightHistoryDrawer({
       } catch {
         if (!controller.signal.aborted) {
           setAvailableDates([]);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoadingDates(false);
         }
       }
     }
@@ -99,6 +106,16 @@ export function MoonlightHistoryDrawer({
         </DrawerHeader>
 
         <div className="px-4 pb-6">
+          {isLoadingDates ? (
+            <p
+              role="status"
+              aria-live="polite"
+              className="text-muted-foreground mb-3 animate-pulse text-center text-sm"
+            >
+              Loading available dates...
+            </p>
+          ) : null}
+
           <Calendar
             mode="single"
             selected={selectedDate}
@@ -110,6 +127,8 @@ export function MoonlightHistoryDrawer({
               available:
                 "bg-primary/15 text-primary ring-1 ring-inset ring-primary/30 hover:bg-primary/20",
             }}
+            disabled={isLoadingDates}
+            aria-busy={isLoadingDates}
             className="mx-auto w-full max-w-md rounded-3xl border"
           />
         </div>

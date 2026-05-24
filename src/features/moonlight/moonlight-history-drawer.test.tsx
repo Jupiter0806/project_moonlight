@@ -96,4 +96,46 @@ describe("MoonlightHistoryDrawer", () => {
     expect(jotaiStore.get(selectedMoonlightHistoryDateAtom)).toBe("2026-05-24");
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
+
+  it("shows a loading indicator while available dates are being fetched", async () => {
+    let resolveFetch: ((value: Response) => void) | null = null;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        () =>
+          new Promise<Response>((resolve) => {
+            resolveFetch = resolve;
+          }),
+      ),
+    );
+
+    const jotaiStore = createStore();
+
+    renderWithStore(
+      <MoonlightHistoryDrawer open onOpenChange={vi.fn()} />,
+      jotaiStore,
+    );
+
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Loading available dates...",
+    );
+
+    resolveFetch?.(
+      new Response(
+        JSON.stringify({
+          status: "ok",
+          month: "2026-05",
+          availableDates: ["2026-05-08"],
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    });
+  });
 });
