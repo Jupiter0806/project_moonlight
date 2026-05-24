@@ -3,6 +3,12 @@ import { NextRequest } from "next/server";
 
 import { GET, POST } from "./route";
 import { moonlightDatesRatelimit } from "@/lib/rateLimit";
+import { authenticate } from "@/lib/apis-helpers";
+import {
+  GenerateMoonlightHistoryError,
+  generateMoonlightHistoryByDate,
+  getMoonlightHistoryByDate,
+} from "@/server/moonlight/listMoonlightHistoryDates";
 
 vi.mock("@/lib/rateLimit", () => ({
   moonlightDatesRatelimit: {
@@ -14,7 +20,56 @@ vi.mock("@/lib/getRequestKey", () => ({
   getRequestKey: vi.fn(async () => "request-key"),
 }));
 
-describe("GET /api/moonlight/date", () => {
+vi.mock("@/lib/apis-helpers", () => ({
+  withRateLimitHeaders: vi.fn(
+    (limit: number, remaining: number, reset: number) => ({
+      "X-RateLimit-Limit": String(limit),
+      "X-RateLimit-Remaining": String(remaining),
+      "X-RateLimit-Reset": String(reset),
+      "Retry-After": "1",
+    }),
+  ),
+  authenticate: vi.fn(async () => "test-uid"),
+}));
+
+vi.mock("@/lib/firebaseAdmin", () => ({
+  getAdminFirestore: vi.fn(() => ({}) as unknown),
+}));
+
+vi.mock("@/server/moonlight/listMoonlightHistoryDates", () => ({
+  GenerateMoonlightHistoryError: class MockGenerateMoonlightHistoryError extends Error {
+    code: "NO_REFLECTIONS";
+
+    constructor(code: "NO_REFLECTIONS", message: string) {
+      super(message);
+      this.code = code;
+      this.name = "GenerateMoonlightHistoryError";
+    }
+  },
+  getMoonlightHistoryByDate: vi.fn(async () => ({
+    date: "2026-05-24",
+    exists: true,
+    canGenerate: false,
+    moonlight: {
+      id: "day-key-1",
+      summary: "Summary",
+      reflectionIds: ["r1", "r2"],
+      reflectionCount: 2,
+    },
+  })),
+  generateMoonlightHistoryByDate: vi.fn(async () => ({
+    date: "2026-05-24",
+    generated: true,
+    moonlight: {
+      id: "day-key-1",
+      summary: "Summary",
+      reflectionIds: ["r1", "r2"],
+      reflectionCount: 2,
+    },
+  })),
+}));
+
+describe("/api/moonlight/date", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(moonlightDatesRatelimit.limit).mockResolvedValue({
@@ -24,9 +79,10 @@ describe("GET /api/moonlight/date", () => {
       reset: Date.now() + 10_000,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
+    vi.mocked(authenticate).mockResolvedValue("test-uid");
   });
 
-  it("returns selected date moonlight for existing mock data", async () => {
+  it("GET returns selected date moonlight", async () => {
     const response = await GET(
       new NextRequest("http://localhost/api/moonlight/date?date=2026-05-24"),
     );
@@ -38,38 +94,24 @@ describe("GET /api/moonlight/date", () => {
       exists: true,
       canGenerate: false,
       moonlight: {
-        id: "2026-05-24",
         reflectionCount: 2,
       },
     });
+    expect(getMoonlightHistoryByDate).toHaveBeenCalled();
   });
 
-  it("returns exists false when mock moonlight is not found", async () => {
-    const response = await GET(
-      new NextRequest("http://localhost/api/moonlight/date?date=2026-05-23"),
+  it("POST generates selected date moonlight", async () => {
+    const response = await POST(
+      new NextRequest("http://localhost/api/moonlight/date?date=2026-05-24"),
     );
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({
+    await expect(response.json()).resolves.toMatchObject({
       status: "ok",
-      date: "2026-05-23",
-      exists: false,
-      canGenerate: false,
+      date: "2026-05-24",
+      generated: true,
     });
-  });
-
-  it("returns canGenerate true for dates with reflections but no moonlight", async () => {
-    const response = await GET(
-      new NextRequest("http://localhost/api/moonlight/date?date=2026-05-19"),
-    );
-
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({
-      status: "ok",
-      date: "2026-05-19",
-      exists: false,
-      canGenerate: true,
-    });
+    expect(generateMoonlightHistoryByDate).toHaveBeenCalled();
   });
 
   it("returns 400 for invalid date", async () => {
@@ -80,6 +122,19 @@ describe("GET /api/moonlight/date", () => {
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({
       error: "Invalid date",
+    });
+  });
+
+  it("returns 401 when user is not authenticated", async () => {
+    vi.mocked(authenticate).mockResolvedValue(null);
+
+    const response = await GET(
+      new NextRequest("http://localhost/api/moonlight/date?date=2026-05-24"),
+    );
+
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toEqual({
+      error: "Unauthorized",
     });
   });
 
@@ -102,25 +157,16 @@ describe("GET /api/moonlight/date", () => {
     });
   });
 
-  it("generates historical moonlight for a date with reflections", async () => {
-    const response = await POST(
-      new NextRequest("http://localhost/api/moonlight/date?date=2026-05-08"),
+  it("POST returns 400 for no reflections", async () => {
+    vi.mocked(generateMoonlightHistoryByDate).mockRejectedValue(
+      new GenerateMoonlightHistoryError(
+        "NO_REFLECTIONS",
+        "No reflections, unable to generate.",
+      ),
     );
 
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toMatchObject({
-      status: "ok",
-      date: "2026-05-08",
-      generated: true,
-      moonlight: {
-        id: "2026-05-08",
-      },
-    });
-  });
-
-  it("returns 400 when generating a date without reflections", async () => {
     const response = await POST(
-      new NextRequest("http://localhost/api/moonlight/date?date=2026-05-23"),
+      new NextRequest("http://localhost/api/moonlight/date?date=2026-05-24"),
     );
 
     expect(response.status).toBe(400);
