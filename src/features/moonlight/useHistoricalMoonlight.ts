@@ -21,18 +21,21 @@ export type HistoricalMoonlightState = {
 
 export function useHistoricalMoonlight(): HistoricalMoonlightState {
   const selectedDate = useAtomValue(selectedMoonlightHistoryDateAtom);
+  const date = selectedDate;
   const [isLoading, setIsLoading] = useState(false);
   const [moonlight, setMoonlight] = useState<MoonlightData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [canGenerateMoonlight, setCanGenerateMoonlight] = useState(false);
 
   useEffect(() => {
-    if (!selectedDate) {
+    if (!date) {
       setMoonlight(null);
       setError(null);
       setCanGenerateMoonlight(false);
       return;
     }
+    // Capture a stable, non-null date for the async request closure.
+    const historicalDate = date;
 
     const controller = new AbortController();
 
@@ -41,10 +44,14 @@ export function useHistoricalMoonlight(): HistoricalMoonlightState {
       setError(null);
 
       try {
-        const data = await getMoonlightByDate(selectedDate, controller.signal);
+        const data = await getMoonlightByDate(
+          historicalDate,
+          controller.signal,
+        );
         setMoonlight(data.exists && data.moonlight ? data.moonlight : null);
         setCanGenerateMoonlight(Boolean(data.canGenerate));
       } catch (e) {
+        // Ignore state updates for requests canceled by dependency changes/unmount.
         if (!controller.signal.aborted) {
           const message =
             e instanceof Error
@@ -66,7 +73,7 @@ export function useHistoricalMoonlight(): HistoricalMoonlightState {
     return () => {
       controller.abort();
     };
-  }, [selectedDate]);
+  }, [date]);
 
   const onGenerate = async () => {
     if (!selectedDate) {
