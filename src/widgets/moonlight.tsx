@@ -1,70 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import {
-  type MoonlightData,
-  generateTodayMoonlight,
-  getTodayMoonlight,
-} from "@/lib/moonlight-service";
 import { MoonlightDisplayWidget } from "@/features/moonlight/moonlight-display-widget";
 import { MoonlightEntryWidget } from "@/features/moonlight/moonlight-entry-widget";
+import { useMoonlightView } from "@/features/moonlight/useMoonlightView";
 
 export function Moonlight() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [moonlight, setMoonlight] = useState<MoonlightData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [now, setNow] = useState(() => new Date());
-  const canGenerateMoonlight = now.getHours() >= 22;
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setNow(new Date());
-    }, 60_000);
-
-    return () => {
-      clearInterval(timer);
-    };
-  }, []);
-
-  const loadTodayMoonlight = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const data = await getTodayMoonlight();
-
-      setMoonlight(data.exists && data.moonlight ? data.moonlight : null);
-    } catch (e) {
-      const message =
-        e instanceof Error ? e.message : "Failed to load today's moonlight";
-      setError(message);
-      setMoonlight(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadTodayMoonlight();
-  }, [loadTodayMoonlight]);
-
-  const handleGenerate = useCallback(async () => {
-    if (!canGenerateMoonlight) {
-      setError(
-        "Moonlight opens at 10:00 PM. Keep learning and come back tonight.",
-      );
-      return;
-    }
-
-    try {
-      const data = await generateTodayMoonlight();
-      setMoonlight(data.moonlight);
-    } catch (e) {
-      const message =
-        e instanceof Error ? e.message : "Failed to generate today's moonlight";
-      setError(message);
-    }
-  }, [canGenerateMoonlight]);
+  const {
+    mode,
+    isLoading,
+    moonlight,
+    error,
+    canGenerateMoonlight,
+    onGenerate,
+  } = useMoonlightView();
 
   return (
     <div className="flex h-full w-full flex-col items-center p-6">
@@ -84,7 +32,8 @@ export function Moonlight() {
           isLoading={isLoading}
           canGenerateMoonlight={canGenerateMoonlight}
           error={error}
-          onGenerate={handleGenerate}
+          onGenerate={onGenerate}
+          variant={mode === "history" ? "history" : "today"}
         />
       )}
     </div>
