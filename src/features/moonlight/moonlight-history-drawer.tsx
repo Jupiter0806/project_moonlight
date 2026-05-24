@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -10,6 +10,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { getMoonlightHistoryMockAvailableDates } from "./moonlight-history-data";
 
 export function MoonlightHistoryDrawer({
   open,
@@ -23,6 +24,10 @@ export function MoonlightHistoryDrawer({
   );
   const [timeZone] = useState(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone,
+  );
+  const availableDates = useMemo(
+    () => getMoonlightHistoryMockAvailableDates(),
+    [],
   );
 
   return (
@@ -41,7 +46,12 @@ export function MoonlightHistoryDrawer({
             selected={selectedDate}
             onSelect={setSelectedDate}
             timeZone={timeZone}
-            className="mx-auto w-full max-w-sm rounded-3xl border"
+            modifiers={{ available: availableDates }}
+            modifiersClassNames={{
+              available:
+                "bg-primary/15 text-primary ring-1 ring-inset ring-primary/30 hover:bg-primary/20",
+            }}
+            className="mx-auto w-full max-w-md rounded-3xl border"
           />
         </div>
       </DrawerContent>
