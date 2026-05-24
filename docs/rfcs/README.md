@@ -16,3 +16,4 @@ This directory stores Request for Comments documents for major product and archi
 ## RFCs
 
 - [2026-05-24 Historical Moonlight Access and On-Demand Backfill](./2026-05-24-historical-moonlight-access-and-backfill.md)
+- [2026-05-24 Moonlight History View Coordination and Date Picker](./2026-05-24-moonlight-history-view-coordination-and-date-picker.md)
