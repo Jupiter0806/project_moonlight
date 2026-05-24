@@ -115,6 +115,9 @@ export async function getMoonlightDates(
 ): Promise<GetMoonlightDatesResponse> {
   const response = await fetch(`/api/moonlight/dates?month=${month}`, {
     method: "GET",
+    headers: {
+      "x-user-timezone": getUserTimeZone(),
+    },
     signal,
   });
 
@@ -135,6 +138,9 @@ export async function getMoonlightByDate(
 ): Promise<GetMoonlightByDateResponse> {
   const response = await fetch(`/api/moonlight/date?date=${date}`, {
     method: "GET",
+    headers: {
+      "x-user-timezone": getUserTimeZone(),
+    },
     signal,
   });
 
@@ -154,6 +160,9 @@ export async function generateMoonlightByDate(
 ): Promise<GenerateMoonlightByDateResponse> {
   const response = await fetch(`/api/moonlight/date?date=${date}`, {
     method: "POST",
+    headers: {
+      "x-user-timezone": getUserTimeZone(),
+    },
   });
 
   if (!response.ok) {

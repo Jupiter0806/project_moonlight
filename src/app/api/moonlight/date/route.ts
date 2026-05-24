@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { withRateLimitHeaders } from "@/lib/apis-helpers";
+import { authenticate, withRateLimitHeaders } from "@/lib/apis-helpers";
+import { getAdminFirestore } from "@/lib/firebaseAdmin";
 import { getRequestKey } from "@/lib/getRequestKey";
 import { moonlightDatesRatelimit } from "@/lib/rateLimit";
 import {
@@ -26,12 +27,27 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Invalid date" }, { status: 400 });
   }
 
-  const result = getMoonlightHistoryByDate(dateParam);
+  const uid = await authenticate(request);
+  if (!uid) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-  return NextResponse.json({
-    status: "ok",
-    ...result,
-  });
+  try {
+    const result = await getMoonlightHistoryByDate(
+      getAdminFirestore(),
+      uid,
+      dateParam,
+      request.headers.get("x-user-timezone"),
+    );
+
+    return NextResponse.json({
+      status: "ok",
+      ...result,
+    });
+  } catch (error) {
+    console.error("Failed to load selected moonlight", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -52,8 +68,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid date" }, { status: 400 });
   }
 
+  const uid = await authenticate(request);
+  if (!uid) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    const result = generateMoonlightHistoryByDate(dateParam);
+    const result = await generateMoonlightHistoryByDate(
+      getAdminFirestore(),
+      uid,
+      dateParam,
+      request.headers.get("x-user-timezone"),
+    );
 
     return NextResponse.json({
       status: "ok",
@@ -66,6 +92,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    console.error("Failed to generate selected moonlight", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { withRateLimitHeaders } from "@/lib/apis-helpers";
+import { authenticate, withRateLimitHeaders } from "@/lib/apis-helpers";
+import { getAdminFirestore } from "@/lib/firebaseAdmin";
 import { getRequestKey } from "@/lib/getRequestKey";
 import { moonlightDatesRatelimit } from "@/lib/rateLimit";
 
@@ -24,10 +25,25 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Invalid month" }, { status: 400 });
   }
 
-  const result = listMoonlightHistoryDates(monthParam);
+  const uid = await authenticate(request);
+  if (!uid) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-  return NextResponse.json({
-    status: "ok",
-    ...result,
-  });
+  try {
+    const result = await listMoonlightHistoryDates(
+      getAdminFirestore(),
+      uid,
+      monthParam,
+      request.headers.get("x-user-timezone"),
+    );
+
+    return NextResponse.json({
+      status: "ok",
+      ...result,
+    });
+  } catch (error) {
+    console.error("Failed to load moonlight history dates", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
 }
