@@ -77,8 +77,12 @@ describe("MoonlightHistoryDrawer", () => {
       const latestCall = calendarMock.mock.calls.at(-1);
       const calendarProps = latestCall?.[0] as {
         modifiers?: { available?: Date[] };
+        modifiersClassNames?: { today?: string };
+        disabled?: unknown;
       };
       expect(calendarProps.modifiers?.available).toHaveLength(3);
+      expect(calendarProps.modifiersClassNames?.today).toContain("ring-2");
+      expect(calendarProps.disabled).toEqual({ after: expect.any(Date) });
     });
 
     const calendarProps = calendarMock.mock.calls[0][0] as {
