@@ -1,5 +1,7 @@
 import { usePathname } from "next/navigation";
 import { ChamberMoreOptions } from "./chamber-more-options";
+import { MoonlightMoreOptions } from "./moonlight-more-options";
+import { ReflectionMoreOptions } from "./reflection-more-options";
 
 export function MoreOptions() {
   const pathname = usePathname();
@@ -9,8 +11,10 @@ export function MoreOptions() {
       return <ChamberMoreOptions />;
 
     case "/camphor":
-      // return <CamphorMoreOptions />;
-      return null;
+      return <ReflectionMoreOptions />;
+
+    case "/moonlight":
+      return <MoonlightMoreOptions />;
   }
 
   return null;
