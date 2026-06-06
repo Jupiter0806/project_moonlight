@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { useAtom } from "jotai";
+import { BsPencilSquare } from "react-icons/bs";
 import { BsTranslate } from "react-icons/bs";
 import { HiOutlineSparkles } from "react-icons/hi2";
 import { useFlushChamberTraces } from "../hooks/useFlushChamberTraces";
@@ -47,6 +48,14 @@ export function ChamberMoreOptions() {
           <HiOutlineSparkles />
           QA
           <span className="sr-only">qa</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          hidden={currInput === "marginalia"}
+          onClick={() => setCurrInput("marginalia")}
+        >
+          <BsPencilSquare />
+          Marginalia
+          <span className="sr-only">marginalia</span>
         </DropdownMenuItem>
       </DropdownMenuGroup>
     </DropdownMenuContent>

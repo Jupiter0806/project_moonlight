@@ -1,5 +1,5 @@
 import { atom } from "jotai";
 
-export const currentChamberInputAtom = atom<"asking" | "translating">(
-  "translating",
-);
+export const currentChamberInputAtom = atom<
+  "asking" | "translating" | "marginalia"
+>("marginalia");
