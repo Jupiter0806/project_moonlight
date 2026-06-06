@@ -15,22 +15,25 @@ const AskInput = dynamic(() => import("@/features/AskInput/AskInput"), {
   loading: () => <span>Loading...</span>,
 });
 
+const MarginaliaInput = dynamic(
+  () => import("@/features/marginalia-input/marginalia-input"),
+  {
+    loading: () => <span>Loading...</span>,
+  },
+);
+
 export function ChamberInput() {
   const currInput = useAtomValue(currentChamberInputAtom);
 
-  if (currInput === "marginalia") {
-    return (
-      <div className="bg-card flex flex-col gap-3 rounded-3xl p-6">
-        <p className="text-muted-foreground text-sm">
-          Marginalia input is coming next.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="bg-card flex flex-col gap-3 rounded-3xl p-6">
-      {currInput === "asking" ? <AskInput /> : <TranslateInput />}
+      {currInput === "asking" ? (
+        <AskInput />
+      ) : currInput === "marginalia" ? (
+        <MarginaliaInput />
+      ) : (
+        <TranslateInput />
+      )}
     </div>
   );
 }
