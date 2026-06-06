@@ -15,7 +15,7 @@ export function useRetryUpsertTranslateTrace(
   const isLoggedIn = useAppSelector(selectIsLoggedIn);
 
   return async () => {
-    if (!trace || trace.type === "qa") return;
+    if (!trace || trace.type !== "translation") return;
 
     if (!isLoggedIn) {
       dispatch(setTraceFetchStatus({ id: trace.id, status: "error" }));

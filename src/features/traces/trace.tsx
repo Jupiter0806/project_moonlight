@@ -1,6 +1,7 @@
 import type { WithClassName } from "@/types/withClassName";
 import { QATrace } from "./qa-trace";
 import { TranslateTrace } from "./translate-trace";
+import { MarginaliaTrace } from "./marginalia-trace";
 import type { URTEntryUI } from "@/store/types";
 import { TraceReactionControls } from "./trace-reaction-controls";
 
@@ -18,6 +19,9 @@ export function Trace({ traceId, displayType, className }: TraceProps) {
       break;
     case "translation-trace":
       content = <TranslateTrace traceId={traceId} className={className} />;
+      break;
+    case "marginalia-trace":
+      content = <MarginaliaTrace traceId={traceId} className={className} />;
       break;
   }
 
