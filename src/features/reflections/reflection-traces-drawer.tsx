@@ -8,7 +8,7 @@ import { Reflection } from "@/types/Reflection";
 import { TraceList } from "../traces/trace-list";
 import { useQuery } from "@tanstack/react-query";
 import { getReflectionTraces } from "@/lib/reflections-services";
-import { Ref, useEffect } from "react";
+import { useEffect } from "react";
 import { useAppDispatch } from "@/store/hooks";
 import {
   clearTraceError,
@@ -30,11 +30,17 @@ export function ReflectionTracesDrawer({
 
   return (
     <Drawer open={open} onClose={onClose}>
-      <DrawerContent aria-describedby={"Traces for selected reflection."}>
+      <DrawerContent
+        className="select-text"
+        aria-describedby={"Traces for selected reflection."}
+      >
         <DrawerHeader>
           <DrawerTitle>Reflection Traces</DrawerTitle>
         </DrawerHeader>
-        <div className="overflow-y-auto px-4 pb-6">
+        <div
+          data-vaul-no-drag
+          className="overflow-y-auto px-4 pb-6 select-text"
+        >
           <TraceList entries={reflection.traceIds} isLoading={false} />
         </div>
       </DrawerContent>
@@ -80,7 +86,7 @@ function useReflectionTraces(reflection: Reflection) {
         dispatch(clearTraceError({ id: trace }));
       });
     }
-  }, [isLoading, error, data]);
+  }, [isLoading, error, data, dispatch, reflection.traceIds]);
 }
 
 export default ReflectionTracesDrawer;
