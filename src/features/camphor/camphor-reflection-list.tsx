@@ -17,14 +17,24 @@ import { URTEntryUI } from "@/store/types";
 import { ReflectionsUpdatesListener } from "./components/reflections-updates-listener";
 
 export function CamphorReflectionList() {
-  const { ids, isLoading, isRefreshing, hasMore, loadMore } =
-    useCamphorReflectionEntries();
+  const {
+    ids,
+    isLoading,
+    isRefreshing,
+    hasMore,
+    loadMore,
+    initialTopCursor,
+    hasInitialResponse,
+  } = useCamphorReflectionEntries();
   const { newReflectionsCount, onClickNewItems } =
     useCamphorNewReflectionsBarState();
 
   return (
     <>
-      <ReflectionsUpdatesListener />
+      <ReflectionsUpdatesListener
+        enabled={hasInitialResponse}
+        initialCursor={initialTopCursor}
+      />
       <ReflectionList
         ids={ids}
         isLoading={isLoading}
@@ -88,6 +98,16 @@ function useCamphorReflectionEntries() {
   const isLoading = ids.length === 0 && initialFetchStatus === "loading";
   const isRefreshing = ids.length > 0 && nextPageQuery.isFetching;
   const hasMore = typeof cursor === "string" && cursor.length > 0;
+  const initialTopCursor = initialQuery.data?.topCursor;
+  const hasInitialResponse = initialQuery.isSuccess;
 
-  return { ids, isLoading, isRefreshing, hasMore, loadMore };
+  return {
+    ids,
+    isLoading,
+    isRefreshing,
+    hasMore,
+    loadMore,
+    initialTopCursor,
+    hasInitialResponse,
+  };
 }
