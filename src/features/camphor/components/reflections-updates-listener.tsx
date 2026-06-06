@@ -1,6 +1,5 @@
 "use client";
 
-import { useGetTimelineQuery } from "@/store/api/timelineApi";
 import {
   upsertReflections,
   upsertTraces,
@@ -17,28 +16,35 @@ type UpdatesPayload = TimelineApiResponse & {
   nextCursor?: string;
 };
 
-export function ReflectionsUpdatesListener() {
-  useReflectionUpdates();
+interface ReflectionsUpdatesListenerProps {
+  enabled: boolean;
+  initialCursor?: string;
+}
+
+export function ReflectionsUpdatesListener({
+  enabled,
+  initialCursor,
+}: ReflectionsUpdatesListenerProps) {
+  useReflectionUpdates(enabled, initialCursor);
 
   return null;
 }
 
-function useReflectionUpdates() {
+function useReflectionUpdates(enabled: boolean, initialCursor?: string) {
   const dispatch = useAppDispatch();
-  const initialTopCursor = useGetTimelineQuery({
-    timeline: "camphorReflections",
-    direction: "bottom",
-  }).data?.topCursor;
-
-  const cursorRef = useRef<string | undefined>(initialTopCursor);
+  const cursorRef = useRef<string | undefined>(initialCursor);
 
   useEffect(() => {
-    if (!cursorRef.current && initialTopCursor) {
-      cursorRef.current = initialTopCursor;
+    if (!cursorRef.current && initialCursor) {
+      cursorRef.current = initialCursor;
     }
-  }, [initialTopCursor]);
+  }, [initialCursor]);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     let active = true;
     let eventSource: EventSource | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
@@ -106,5 +112,5 @@ function useReflectionUpdates() {
       }
       eventSource?.close();
     };
-  }, [dispatch]);
+  }, [dispatch, enabled]);
 }
