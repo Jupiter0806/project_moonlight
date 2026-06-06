@@ -9,6 +9,7 @@ import { fetchAnswer } from "@/server/chamber/fetchAnswer";
 type ReflectionLike = {
   id: string;
   summary: string;
+  hasMarginalia: boolean;
 };
 
 export type MoonlightDoc = {
@@ -203,6 +204,7 @@ async function listTodayReflections(
       return {
         id,
         summary,
+        hasMarginalia: reflection.hasMarginalia === true,
       };
     })
     .filter((reflection) => reflection.id.length > 0);
