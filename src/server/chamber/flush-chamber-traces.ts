@@ -62,13 +62,27 @@ export async function flushChamberTraces(
 
   const summaryInputTraces = traces.filter((trace) => trace.liked !== false);
 
-  // QA should generally lead reflection summaries; translation is supporting context.
+  // Marginalia is primary, QA is secondary, and translation is supporting context.
   const summarySortedTraces = [...summaryInputTraces].sort((a, b) => {
     const aType = typeof a.type === "string" ? a.type.toLowerCase() : "";
     const bType = typeof b.type === "string" ? b.type.toLowerCase() : "";
 
-    const aTypePriority = aType === "qa" ? 0 : aType === "translation" ? 1 : 2;
-    const bTypePriority = bType === "qa" ? 0 : bType === "translation" ? 1 : 2;
+    const aTypePriority =
+      aType === "marginalia"
+        ? 0
+        : aType === "qa"
+          ? 1
+          : aType === "translation"
+            ? 2
+            : 3;
+    const bTypePriority =
+      bType === "marginalia"
+        ? 0
+        : bType === "qa"
+          ? 1
+          : bType === "translation"
+            ? 2
+            : 3;
 
     if (aTypePriority !== bTypePriority) {
       return aTypePriority - bTypePriority;
@@ -84,6 +98,12 @@ export async function flushChamberTraces(
     return 0;
   });
 
+  const hasMarginalia = summaryInputTraces.some(
+    (trace) =>
+      typeof trace.type === "string" &&
+      trace.type.toLowerCase() === "marginalia",
+  );
+
   const hasTranslationFocus =
     summaryInputTraces.length > 0 &&
     summaryInputTraces.every(
@@ -98,9 +118,11 @@ export async function flushChamberTraces(
     "Keep it compact and scannable: max 35 words total.",
     "Focus on what was learned, verified, or corrected.",
     "Do not use bullets, labels, or quotes.",
-    hasTranslationFocus
-      ? "This is a translation-focused reflection, so translation traces are primary."
-      : "QA traces are primary; translation traces are supporting context only.",
+    hasMarginalia
+      ? "Marginalia traces are primary; QA and translation traces are supporting context."
+      : hasTranslationFocus
+        ? "This is a translation-focused reflection, so translation traces are primary."
+        : "QA traces are primary; translation traces are supporting context only.",
     "",
     "Traces:",
     ...summarySortedTraces.map((trace, index) => {
@@ -109,6 +131,10 @@ export async function flushChamberTraces(
       const question = typeof trace.q === "string" ? trace.q : "";
       const answer = typeof trace.a === "string" ? trace.a : "";
       const liked = trace.liked === true ? "liked" : "neutral";
+
+      if (type === "MARGINALIA") {
+        return `#${index + 1} [${type}] (${liked})\\nNote: ${question}`;
+      }
 
       if (type === "TRANSLATION") {
         const sourceLang =

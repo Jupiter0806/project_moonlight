@@ -304,4 +304,129 @@ describe("flushChamberTraces", () => {
       summaryGenerated: false,
     });
   });
+
+  it("prioritizes marginalia traces in summary prompt ordering", async () => {
+    const commit = vi.fn().mockResolvedValue(undefined);
+
+    const chamberDocs = [
+      {
+        ref: { id: "trace-qa" },
+        data: () => ({
+          id: "trace-qa",
+          type: "qa",
+          q: "What changed in auth flow?",
+          a: "Token refresh moved server-side.",
+          user: "user-1",
+          reflection: "",
+          liked: null,
+          createdAt: 1,
+        }),
+      },
+      {
+        ref: { id: "trace-note" },
+        data: () => ({
+          id: "trace-note",
+          type: "marginalia",
+          q: "Remember to verify stale cache assumptions.",
+          a: "",
+          user: "user-1",
+          reflection: "",
+          liked: true,
+          createdAt: 2,
+        }),
+      },
+      {
+        ref: { id: "trace-trans" },
+        data: () => ({
+          id: "trace-trans",
+          type: "translation",
+          q: "stale cache",
+          a: "cache obsoleto",
+          user: "user-1",
+          reflection: "",
+          sourceLang: "en",
+          targetLang: "es",
+          liked: null,
+          createdAt: 3,
+        }),
+      },
+    ];
+
+    const tracesSnapshot = {
+      empty: false,
+      docs: chamberDocs,
+      forEach: (cb: (doc: (typeof chamberDocs)[number]) => void) =>
+        chamberDocs.forEach(cb),
+    };
+
+    const chamberTracesCollection = {
+      get: vi.fn().mockResolvedValue(tracesSnapshot),
+    };
+
+    const chamberDoc = {
+      collection: vi.fn().mockReturnValue(chamberTracesCollection),
+    };
+
+    const reflectionsCollection = {
+      doc: vi.fn().mockReturnValue({ id: "reflection-1" }),
+    };
+
+    const rootTracesCollection = {
+      doc: vi.fn((id: string) => ({ id })),
+    };
+
+    const aggregateCollection = {
+      doc: vi.fn((id: string) => ({ id })),
+    };
+
+    const aggregateRootCollection = {
+      doc: vi.fn(() => ({
+        collection: vi.fn(() => aggregateCollection),
+      })),
+    };
+
+    const chambersCollection = {
+      doc: vi.fn().mockReturnValue(chamberDoc),
+    };
+
+    const batch = {
+      set: vi.fn(),
+      delete: vi.fn(),
+      commit,
+    };
+
+    const db = {
+      collection: vi.fn((name: string) => {
+        if (name === "chambers") return chambersCollection;
+        if (name === "reflections") return reflectionsCollection;
+        if (name === "traces") return rootTracesCollection;
+        if (name === "moonlightReflectionDailyCounts")
+          return aggregateRootCollection;
+        throw new Error(`Unexpected collection: ${name}`);
+      }),
+      batch: vi.fn(() => batch),
+    } as unknown as Parameters<typeof flushChamberTraces>[0];
+
+    await flushChamberTraces(db, "user-1");
+
+    expect(fetchAnswer).toHaveBeenCalledTimes(1);
+    const prompt = vi.mocked(fetchAnswer).mock.calls[0]?.[0] ?? "";
+
+    expect(prompt).toContain(
+      "Marginalia traces are primary; QA and translation traces are supporting context.",
+    );
+
+    const marginaliaIndex = prompt.indexOf("[MARGINALIA]");
+    const qaIndex = prompt.indexOf("[QA]");
+    const translationIndex = prompt.indexOf("[TRANSLATION]");
+
+    expect(marginaliaIndex).toBeGreaterThan(-1);
+    expect(qaIndex).toBeGreaterThan(-1);
+    expect(translationIndex).toBeGreaterThan(-1);
+    expect(marginaliaIndex).toBeLessThan(qaIndex);
+    expect(qaIndex).toBeLessThan(translationIndex);
+    expect(prompt).toContain(
+      "Note: Remember to verify stale cache assumptions.",
+    );
+  });
 });
