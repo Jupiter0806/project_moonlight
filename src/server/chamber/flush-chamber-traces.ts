@@ -61,6 +61,11 @@ export async function flushChamberTraces(
   }
 
   const summaryInputTraces = traces.filter((trace) => trace.liked !== false);
+  const hasMarginalia = summaryInputTraces.some(
+    (trace) =>
+      typeof trace.type === "string" &&
+      trace.type.toLowerCase() === "marginalia",
+  );
 
   // Marginalia is primary, QA is secondary, and translation is supporting context.
   const summarySortedTraces = [...summaryInputTraces].sort((a, b) => {
@@ -97,12 +102,6 @@ export async function flushChamberTraces(
 
     return 0;
   });
-
-  const hasMarginalia = summaryInputTraces.some(
-    (trace) =>
-      typeof trace.type === "string" &&
-      trace.type.toLowerCase() === "marginalia",
-  );
 
   const hasTranslationFocus =
     summaryInputTraces.length > 0 &&
@@ -180,6 +179,7 @@ export async function flushChamberTraces(
       uid,
       traceIds,
       summary,
+      hasMarginalia,
     },
     { merge: true },
   );

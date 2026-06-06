@@ -3,6 +3,7 @@ import { Timestamp, type Firestore } from "firebase-admin/firestore";
 export type ReflectionLike = {
   id: string;
   summary: string;
+  hasMarginalia: boolean;
 };
 
 export type MoonlightDoc = {
@@ -228,6 +229,7 @@ export async function listReflectionsInWindow(
     .map((reflection) => ({
       id: typeof reflection.id === "string" ? reflection.id : "",
       summary: typeof reflection.summary === "string" ? reflection.summary : "",
+      hasMarginalia: reflection.hasMarginalia === true,
     }))
     .filter((reflection) => reflection.id.length > 0);
 }
