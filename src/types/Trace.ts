@@ -29,4 +29,8 @@ export interface TranslationTrace extends BaseTrace {
   correction?: string;
 }
 
-export type Trace = QATrace | TranslationTrace;
+export interface MarginaliaTrace extends BaseTrace {
+  type: "marginalia";
+}
+
+export type Trace = QATrace | TranslationTrace | MarginaliaTrace;

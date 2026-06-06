@@ -9,13 +9,19 @@ import { serializeFirestoreValue } from "@/server/helpers/firestore-serializatio
 import type { URTEntry, TimelineApiResponse } from "@/store/types";
 
 function mapEntry(trace: Trace): URTEntry {
+  const displayType =
+    trace.type === "translation"
+      ? "translation-trace"
+      : trace.type === "marginalia"
+        ? "marginalia-trace"
+        : "qa-trace";
+
   return {
     type: "trace",
     entryId: `entry-${trace.id}`,
     content: {
       id: trace.id,
-      displayType:
-        trace.type === "translation" ? "translation-trace" : "qa-trace",
+      displayType,
     },
   };
 }

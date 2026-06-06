@@ -18,7 +18,7 @@ export function TranslateTrace({ traceId, className }: CommonTraceProps) {
 
   const handleRetry = useRetryUpsertTranslateTrace(trace);
 
-  if (!trace || trace.type === "qa") return null;
+  if (!trace || trace.type !== "translation") return null;
 
   return (
     <Card size="sm" className={cn(className)}>

@@ -25,6 +25,18 @@ export function isTranslationTrace(value: unknown): value is Trace {
   if (!value || typeof value !== "object") return false;
 
   const trace = value as Record<string, unknown>;
+  if (trace.type === "marginalia") {
+    return (
+      typeof trace.id === "string" &&
+      typeof trace.createdAt === "number" &&
+      typeof trace.q === "string" &&
+      typeof trace.a === "string" &&
+      typeof trace.user === "string" &&
+      typeof trace.reflection === "string" &&
+      (trace.liked === undefined || isLikedValue(trace.liked))
+    );
+  }
+
   if (trace.type === "translation")
     return (
       typeof trace.id === "string" &&

@@ -30,7 +30,12 @@ export interface URTEntryUI extends URTEntryBase {
   entryId: string;
   content: {
     id: string;
-    displayType: "reflection" | "qa-trace" | "translation-trace" | "none";
+    displayType:
+      | "reflection"
+      | "qa-trace"
+      | "translation-trace"
+      | "marginalia-trace"
+      | "none";
   };
 }
 

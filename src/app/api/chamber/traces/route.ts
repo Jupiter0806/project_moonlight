@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/chamber/traces
- * Upserts one trace (translation or QA) into the authenticated user's private chamber.
+ * Upserts one trace (translation, QA, or marginalia) into the authenticated user's private chamber.
  */
 export async function POST(request: NextRequest) {
   const { success, limit, remaining, reset } =
