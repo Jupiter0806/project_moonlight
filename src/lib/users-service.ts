@@ -1,12 +1,13 @@
 import type { User } from "@/types/User";
 
-export async function getUsers(userIds: string[]): Promise<User[]> {
-  const ids = userIds.map((id) => id.trim()).filter(Boolean);
-  if (ids.length === 0) {
-    return [];
-  }
+const USERS_FETCH_BATCH_SIZE = 50;
 
-  const path = `/api/users?userIds=${ids.join(",")}`;
+function normalizeUserIds(userIds: string[]): string[] {
+  return [...new Set(userIds.map((id) => id.trim()).filter(Boolean))].sort();
+}
+
+async function fetchUsersBatch(userIds: string[]): Promise<User[]> {
+  const path = `/api/users?userIds=${userIds.join(",")}`;
   const url =
     typeof window !== "undefined"
       ? new URL(path, window.location.origin).toString()
@@ -30,6 +31,28 @@ export async function getUsers(userIds: string[]): Promise<User[]> {
   }
 
   return await res.json();
+}
+
+export async function getUsers(userIds: string[]): Promise<User[]> {
+  const ids = normalizeUserIds(userIds);
+  if (ids.length === 0) {
+    return [];
+  }
+
+  if (ids.length <= USERS_FETCH_BATCH_SIZE) {
+    return await fetchUsersBatch(ids);
+  }
+
+  const chunks: string[][] = [];
+  for (let i = 0; i < ids.length; i += USERS_FETCH_BATCH_SIZE) {
+    chunks.push(ids.slice(i, i + USERS_FETCH_BATCH_SIZE));
+  }
+
+  const results = await Promise.all(
+    chunks.map((chunk) => fetchUsersBatch(chunk)),
+  );
+
+  return results.flat();
 }
 
 export async function getUser(uid: string): Promise<User | undefined> {

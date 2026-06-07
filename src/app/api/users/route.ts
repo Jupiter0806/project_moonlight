@@ -5,6 +5,8 @@ import { authenticate, withRateLimitHeaders } from "@/lib/apis-helpers";
 import { getAdminFirestore } from "@/lib/firebaseAdmin";
 import { fetchUsers } from "@/server/users/fetchUsers";
 
+const MAX_USER_IDS_PER_REQUEST = 50;
+
 /**
  * GET /api/users
  * Returns requested users.
@@ -31,7 +33,22 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const userIds = request.nextUrl.searchParams.get("userIds")?.split(",") ?? [];
+  const userIds = [
+    ...new Set(
+      (request.nextUrl.searchParams.get("userIds")?.split(",") ?? [])
+        .map((id) => id.trim())
+        .filter(Boolean),
+    ),
+  ];
+
+  if (userIds.length > MAX_USER_IDS_PER_REQUEST) {
+    return NextResponse.json(
+      {
+        error: `Too many userIds. Maximum is ${MAX_USER_IDS_PER_REQUEST}.`,
+      },
+      { status: 400 },
+    );
+  }
 
   try {
     const response = await fetchUsers(getAdminFirestore(), userIds);
