@@ -4,35 +4,85 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Reflection } from "@/types/Reflection";
-import { TraceList } from "../traces/trace-list";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getReflection, getReflectionTraces } from "@/lib/reflections-services";
 import { useQuery } from "@tanstack/react-query";
-import { getReflectionTraces } from "@/lib/reflections-services";
 import { useEffect } from "react";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   clearTraceError,
+  selectReflectionById,
   setTraceError,
   setTraceFetchStatus,
+  upsertReflections,
   upsertTraces,
 } from "@/store/slices/entitiesSlice";
+import type { Reflection } from "@/types/Reflection";
+import { TraceList } from "../traces/trace-list";
 
-export function ReflectionTracesDrawer({
-  reflection,
-  open,
-  onClose,
-}: {
-  reflection: Reflection;
+type ReflectionTracesDrawerProps = {
+  reflectionId: string;
   open: boolean;
   onClose: () => void;
-}) {
-  useReflectionTraces(reflection);
+};
+
+type ReflectionTracesDrawerViewProps = {
+  reflection?: Reflection;
+  isReflectionLoading: boolean;
+  open: boolean;
+  onClose: () => void;
+};
+
+export function ReflectionTracesDrawer({
+  reflectionId,
+  open,
+  onClose,
+}: ReflectionTracesDrawerProps) {
+  const storeReflection = useAppSelector((state) =>
+    selectReflectionById(state, reflectionId),
+  ) as Reflection | undefined;
+  const dispatch = useAppDispatch();
+
+  const { data: fetchedReflection, isFetching: isFetchingReflection } =
+    useQuery({
+      queryKey: ["reflection", reflectionId],
+      queryFn: () => getReflection(reflectionId),
+      enabled: open && !storeReflection,
+      staleTime: Infinity,
+      retry: false,
+    });
+
+  const resolvedReflection = storeReflection ?? fetchedReflection;
+
+  useEffect(() => {
+    if (fetchedReflection) {
+      dispatch(upsertReflections([fetchedReflection]));
+    }
+  }, [dispatch, fetchedReflection]);
+
+  return (
+    <ReflectionTracesDrawerView
+      open={open}
+      onClose={onClose}
+      reflection={resolvedReflection}
+      isReflectionLoading={open && !resolvedReflection && isFetchingReflection}
+    />
+  );
+}
+
+function ReflectionTracesDrawerView({
+  reflection,
+  isReflectionLoading,
+  open,
+  onClose,
+}: ReflectionTracesDrawerViewProps) {
+  useReflectionTraces(reflection, open);
 
   return (
     <Drawer open={open} onClose={onClose}>
       <DrawerContent
         className="select-text"
-        aria-describedby={"Traces for selected reflection."}
+        aria-describedby="Traces for selected reflection."
       >
         <DrawerHeader>
           <DrawerTitle>Reflection Traces</DrawerTitle>
@@ -41,29 +91,39 @@ export function ReflectionTracesDrawer({
           data-vaul-no-drag
           className="overflow-y-auto px-4 pb-6 select-text"
         >
-          <TraceList entries={reflection.traceIds} isLoading={false} />
+          {!reflection ? (
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-40" />
+              {isReflectionLoading && <Skeleton className="h-4 w-3/4" />}
+            </div>
+          ) : (
+            <TraceList entries={reflection.traceIds} isLoading={false} />
+          )}
         </div>
       </DrawerContent>
     </Drawer>
   );
 }
 
-function useReflectionTraces(reflection: Reflection) {
-  // todo
-  // need to find which traces required to be fetched based on pagination cursor
-  // and their fetch status in the store, then trigger fetch for those traces
-  // for now, we just fetch all traces when the drawer opens, which is not ideal
-
+function useReflectionTraces(
+  reflection: Reflection | undefined,
+  open: boolean,
+) {
   const dispatch = useAppDispatch();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["reflectionTraces", reflection.id],
-    queryFn: () => getReflectionTraces(reflection.id, "bottom"),
+    queryKey: ["reflectionTraces", reflection?.id],
+    queryFn: () => getReflectionTraces(reflection!.id, "bottom"),
+    enabled: open && Boolean(reflection),
     staleTime: Infinity,
     retry: false,
   });
 
   useEffect(() => {
+    if (!reflection) {
+      return;
+    }
+
     if (isLoading) {
       reflection.traceIds.forEach((trace) => {
         dispatch(setTraceFetchStatus({ id: trace, status: "loading" }));
@@ -86,7 +146,7 @@ function useReflectionTraces(reflection: Reflection) {
         dispatch(clearTraceError({ id: trace }));
       });
     }
-  }, [isLoading, error, data, dispatch, reflection.traceIds]);
+  }, [isLoading, error, data, dispatch, reflection]);
 }
 
 export default ReflectionTracesDrawer;

@@ -3,10 +3,7 @@
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { useAppSelector } from "@/store/hooks";
-import { selectReflectionById } from "@/store/slices/entitiesSlice";
 import { type MoonlightData } from "@/lib/moonlight-service";
-import type { Reflection } from "@/types/Reflection";
 
 const ReflectionTracesDrawer = dynamic(
   () => import("@/features/reflections/reflection-traces-drawer"),
@@ -113,35 +110,24 @@ function MoonlightParagraph({ text }: { text: string }) {
 }
 
 function MoonlightReflectionLink({ reflectionId }: { reflectionId: string }) {
-  const reflection = useAppSelector((state) =>
-    selectReflectionById(state, reflectionId),
-  ) as Reflection | undefined;
   const [open, setOpen] = useState(false);
-
-  if (!reflection) {
-    return (
-      <span
-        className="text-blue-600 underline underline-offset-4 dark:text-blue-400"
-        title={`Reflection ${reflectionId}`}
-      >
-        reflection
-      </span>
-    );
-  }
+  const handleOpen = () => {
+    setOpen(true);
+  };
 
   return (
     <>
       <button
         type="button"
-        className="font-medium text-blue-600 underline underline-offset-4 dark:text-blue-400"
-        onClick={() => setOpen(true)}
+        className="font-medium text-blue-600 underline underline-offset-4 select-text dark:text-blue-400"
+        onClick={handleOpen}
         title="Open reflection drawer"
       >
         reflection
       </button>
 
       <ReflectionTracesDrawer
-        reflection={reflection}
+        reflectionId={reflectionId}
         open={open}
         onClose={() => setOpen(false)}
       />
