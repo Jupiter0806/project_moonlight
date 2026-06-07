@@ -69,7 +69,7 @@ describe("ReflectionTracesDrawer", () => {
       />,
     );
 
-    expect(screen.getByText("Reflection Traces")).toBeInTheDocument();
+    expect(screen.getByText("Traces")).toBeInTheDocument();
     expect(document.querySelectorAll('[data-slot="skeleton"]').length).toBe(2);
 
     await waitFor(() => {
