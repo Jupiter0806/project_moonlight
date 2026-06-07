@@ -53,7 +53,7 @@ export function Reflection({ id }: { id: string }) {
       </CardFooter>
       {open && (
         <ReflectionTracesDrawer
-          reflection={reflection}
+          reflectionId={reflection.id}
           open={open}
           onClose={() => setDrawerOpen(false)}
         />
