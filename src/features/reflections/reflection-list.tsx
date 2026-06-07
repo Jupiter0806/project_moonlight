@@ -2,6 +2,7 @@ import { VirtualList } from "@/components/virtual-list";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Reflection } from "./reflection";
 import { useRowHeight } from "./hooks/useRowHeight";
+import { useHydrateMissingUsers } from "@/features/user/hooks/useHydrateMissingUsers";
 
 const NEW_ITEMS_BAR_ITEM = { type: "new-items-bar" } as const;
 
@@ -23,6 +24,8 @@ export function ReflectionList({
   onClickNewItems?: () => void;
 }) {
   const rowHeight = useRowHeight();
+  useHydrateMissingUsers(ids);
+
   const items: Array<string | typeof NEW_ITEMS_BAR_ITEM> =
     newItemsCount > 0 ? [NEW_ITEMS_BAR_ITEM, ...ids] : ids;
 
