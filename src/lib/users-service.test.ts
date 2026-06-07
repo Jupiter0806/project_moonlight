@@ -9,8 +9,11 @@ describe("users-service", () => {
 
   it("deduplicates and fetches users in a single batch for <= 50 ids", async () => {
     const fetchMock = vi.fn(
-      async () =>
-        new Response(
+      async (_input: RequestInfo | URL, _init?: RequestInit) => {
+        void _input;
+        void _init;
+
+        return new Response(
           JSON.stringify([
             { id: "u1", displayName: "User 1", email: "u1@example.com" },
             { id: "u2", displayName: "User 2", email: "u2@example.com" },
@@ -19,7 +22,8 @@ describe("users-service", () => {
             status: 200,
             headers: { "Content-Type": "application/json" },
           },
-        ),
+        );
+      },
     );
     vi.stubGlobal("fetch", fetchMock);
 
@@ -32,11 +36,15 @@ describe("users-service", () => {
 
   it("chunks user fetches when ids exceed 50", async () => {
     const fetchMock = vi.fn(
-      async () =>
-        new Response(JSON.stringify([]), {
+      async (_input: RequestInfo | URL, _init?: RequestInit) => {
+        void _input;
+        void _init;
+
+        return new Response(JSON.stringify([]), {
           status: 200,
           headers: { "Content-Type": "application/json" },
-        }),
+        });
+      },
     );
     vi.stubGlobal("fetch", fetchMock);
 
