@@ -2,7 +2,7 @@
 
 import { WithClassName } from "@/types/withClassName";
 import { clsx } from "clsx";
-import { useCallback, useState, type Ref } from "react";
+import { useCallback, useEffect, useRef, useState, type Ref } from "react";
 
 interface InputProps extends WithClassName {
   ref?: Ref<HTMLTextAreaElement>;
@@ -27,6 +27,7 @@ export function Input({
   className,
 }: InputProps) {
   const [internalValue, setInternalValue] = useState(defaultValue ?? "");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const displayValue = value !== undefined ? value : internalValue;
 
@@ -35,18 +36,35 @@ export function Input({
     el.style.height = `${el.scrollHeight}px`;
   };
 
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    if (!displayValue) {
+      el.style.height = "auto";
+    } else {
+      autoResize(el);
+    }
+  }, [displayValue]);
+
   const fireChange = useCallback((val: string) => onChange?.(val), [onChange]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
     setInternalValue(val);
-    autoResize(e.target);
     fireChange(val);
   };
 
   return (
     <textarea
-      ref={ref}
+      ref={(el) => {
+        (
+          textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>
+        ).current = el;
+        if (typeof ref === "function") ref(el);
+        else if (ref)
+          (ref as React.MutableRefObject<HTMLTextAreaElement | null>).current =
+            el;
+      }}
       name={name}
       rows={1}
       placeholder={placeholder}
