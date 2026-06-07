@@ -55,7 +55,7 @@ export function ChamberComposer({
 
       {error && <p className="text-sm text-red-500">{error}</p>}
 
-      <div className="mt-2 flex items-center justify-between gap-2">
+      <div className="mt-2 flex items-center justify-end gap-2 md:justify-between">
         <p className="text-muted-foreground hidden text-xs md:block">
           Press Cmd/Ctrl+Enter to submit
         </p>
