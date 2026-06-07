@@ -81,15 +81,15 @@ function ReflectionTracesDrawerView({
   return (
     <Drawer open={open} onClose={onClose}>
       <DrawerContent
-        className="select-text"
+        className="h-dvh max-h-dvh p-0 select-text before:inset-0 before:rounded-none data-[vaul-drawer-direction=bottom]:mt-0 data-[vaul-drawer-direction=bottom]:max-h-dvh"
         aria-describedby="Traces for selected reflection."
       >
         <DrawerHeader>
-          <DrawerTitle>Reflection Traces</DrawerTitle>
+          <DrawerTitle>Traces</DrawerTitle>
         </DrawerHeader>
         <div
           data-vaul-no-drag
-          className="overflow-y-auto px-4 pb-6 select-text"
+          className="min-h-0 flex-1 overflow-y-auto px-4 pb-6 select-text"
         >
           {!reflection ? (
             <div className="space-y-3">
