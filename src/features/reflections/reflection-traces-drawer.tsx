@@ -79,7 +79,7 @@ function ReflectionTracesDrawerView({
   useReflectionTraces(reflection, open);
 
   return (
-    <Drawer open={open} onClose={onClose}>
+    <Drawer open={open} onClose={onClose} handleOnly>
       <DrawerContent
         className="h-dvh max-h-dvh p-0 select-text before:inset-x-0 before:top-0 before:bottom-0 before:rounded-t-3xl before:rounded-b-none data-[vaul-drawer-direction=bottom]:mt-6 data-[vaul-drawer-direction=bottom]:max-h-[calc(100dvh-1.5rem)]"
         aria-describedby="Traces for selected reflection."
