@@ -44,7 +44,7 @@ export function decodeCursor(cursor: string): DecodedPageCursor | null {
 }
 
 export function buildPaginationBaseQuery<T>(
-  ref: FirebaseFirestore.CollectionReference<T>,
+  ref: FirebaseFirestore.Query<T>,
   // for chamber traces, bottom is latest by default
   options?: { bottomLatest?: boolean },
 ) {
@@ -53,7 +53,7 @@ export function buildPaginationBaseQuery<T>(
 }
 
 export function buildPaginationQuery<T>(
-  ref: FirebaseFirestore.CollectionReference<T>,
+  ref: FirebaseFirestore.Query<T>,
   params: ListParams,
   // for chamber traces, bottom is latest by default
   options?: { bottomLatest?: boolean },
@@ -102,7 +102,7 @@ export async function buildPaginationCursor<
   R,
   T extends { createdAt: unknown; id: string },
 >(
-  ref: FirebaseFirestore.CollectionReference<R>,
+  ref: FirebaseFirestore.Query<R>,
   docs: T[],
   options?: { bottomLatest?: boolean; direction?: ListParams["direction"] },
 ) {

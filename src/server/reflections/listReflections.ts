@@ -24,8 +24,9 @@ export async function listReflections(
   params: ListParams,
 ): Promise<TimelineApiResponse> {
   const reflectionRef = db.collection("reflections");
+  const reflectionQuery = reflectionRef.where("uid", "==", params.uid);
 
-  const query = buildPaginationQuery(reflectionRef, params);
+  const query = buildPaginationQuery(reflectionQuery, params);
 
   const snapshot = await query.get();
 
@@ -46,7 +47,7 @@ export async function listReflections(
   }
 
   const { topCursor, bottomCursor } = await buildPaginationCursor(
-    reflectionRef,
+    reflectionQuery,
     rawReflections,
     { direction: params.direction },
   );
