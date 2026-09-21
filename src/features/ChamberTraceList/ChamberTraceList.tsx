@@ -112,7 +112,7 @@ export function ChamberTraceList() {
 
   return (
     <>
-      <TracesUpdatesListener />
+      {/* <TracesUpdatesListener /> */}
       <VirtualList
         className="h-full"
         items={items}
