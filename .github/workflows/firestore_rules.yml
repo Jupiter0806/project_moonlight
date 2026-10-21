@@ -45,7 +45,7 @@ jobs:
           credentials_json: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}" # This can be the raw JSON or Base64
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -78,7 +78,7 @@ jobs:
           credentials_json: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}" # This can be the raw JSON or Base64
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
@@ -113,7 +113,7 @@ jobs:
           credentials_json: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 }}" # This can be the raw JSON or Base64
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
 
