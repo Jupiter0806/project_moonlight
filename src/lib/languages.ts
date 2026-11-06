@@ -7,6 +7,7 @@ export interface Language {
 export const LANGUAGES = [
   { key: "en", name: "English", inputPlaceholder: "Enter Text" },
   { key: "zh-CN", name: "Chinese", inputPlaceholder: "输入文本" },
+  { key: "ja", name: "Japanese", inputPlaceholder: "テキストを入力" },
 ] as const satisfies Language[];
 
 export type LanguageKey = (typeof LANGUAGES)[number]["key"];
